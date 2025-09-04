@@ -1,0 +1,11 @@
+/* (optional) Eigene Variablen vor CoreUI setzen
+$primary: #4f46e5;
+*/
+
+@import "@coreui/coreui/scss/coreui";  /* CoreUI SCSS (inkl. Bootstrap-Basis) */
+
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+/* Eigene Styles nach CoreUI */
+
+@import "theme";
