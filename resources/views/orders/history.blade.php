@@ -19,22 +19,25 @@
                                     @php
                                         $bgColor = str_contains($history->event_type, 'created') ? 'bg-primary' :
                                                    (str_contains($history->event_type, 'status') ? 'bg-info' :
+                                                   (str_contains($history->event_type, 'unpacked') ? 'bg-warning' :
                                                    (str_contains($history->event_type, 'packed') ? 'bg-success' :
-                                                   (str_contains($history->event_type, 'deleted') ? 'bg-danger' : 'bg-secondary')));
+                                                   (str_contains($history->event_type, 'deleted') ? 'bg-danger' : 'bg-secondary'))));
                                     @endphp
                                     
                                     <div class="position-absolute rounded-circle {{ $bgColor }} d-flex align-items-center justify-content-center text-white" 
                                          style="left: 0; top: 0.25rem; width: 2rem; height: 2rem;">
                                         @if(str_contains($history->event_type, 'created'))
-                                            <i class="bi bi-plus-circle"></i>
+                                            <i class="fas fa-plus-circle"></i>
+                                        @elseif(str_contains($history->event_type, 'unpacked'))
+                                            <i class="fas fa-undo"></i>
                                         @elseif(str_contains($history->event_type, 'packed'))
-                                            <i class="bi bi-check-circle"></i>
+                                            <i class="fas fa-check-circle"></i>
                                         @elseif(str_contains($history->event_type, 'status'))
-                                            <i class="bi bi-arrow-repeat"></i>
+                                            <i class="fas fa-sync-alt"></i>
                                         @elseif(str_contains($history->event_type, 'deleted'))
-                                            <i class="bi bi-x-circle"></i>
+                                            <i class="fas fa-times-circle"></i>
                                         @else
-                                            <i class="bi bi-info-circle"></i>
+                                            <i class="fas fa-info-circle"></i>
                                         @endif
                                     </div>
                                     
@@ -78,7 +81,4 @@
         </div>
     </div>
 
-    @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    @endpush
 </x-app-layout>

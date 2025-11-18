@@ -46,9 +46,9 @@
                                 <div class="col-md-7">
                                     <div class="d-flex align-items-start">
                                         @if($item->is_packed)
-                                            <i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
+                                            <i class="fas fa-check-circle text-success fs-4 me-2"></i>
                                         @else
-                                            <i class="bi bi-circle text-muted fs-4 me-2"></i>
+                                            <i class="far fa-circle text-muted fs-4 me-2"></i>
                                         @endif
                                         <div>
                                             <h6 class="mb-0 {{ $item->is_packed ? 'text-success' : '' }}">{{ $item->article_name }}</h6>
@@ -101,7 +101,4 @@
         </div>
     @endif
 
-    @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    @endpush
 </x-app-layout>
