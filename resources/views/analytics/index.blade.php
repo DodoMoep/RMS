@@ -1,123 +1,100 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Bestellungs-Analytik
-            </h2>
-            @can('analytics.export')
-                <a href="{{ route('analytics.export') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    Bericht exportieren (PDF)
-                </a>
-            @endcan
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Bestellungs-Analytik</h4>
+        @can('analytics.export')
+            <a href="{{ route('analytics.export') }}" class="btn btn-success">
+                <i class="fas fa-file-pdf me-1"></i> Bericht exportieren (PDF)
+            </a>
+        @endcan
+    </div>
+    <!-- Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Gesamt Bestellungen</h6>
+                    <h2 class="mb-0">{{ $totalOrders }}</h2>
+                </div>
+            </div>
         </div>
-    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Overview Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-gray-500 text-sm font-medium">Gesamt Bestellungen</h3>
-                        <p class="text-3xl font-bold mt-2">{{ $totalOrders }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-gray-500 text-sm font-medium">Aktive Bestellungen</h3>
-                        <p class="text-3xl font-bold mt-2 text-yellow-600">{{ $activeOrders }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-gray-500 text-sm font-medium">Artikel verpackt (diesen Monat)</h3>
-                        <p class="text-3xl font-bold mt-2 text-green-600">{{ $itemsPacked }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-gray-500 text-sm font-medium">Packer aktiv</h3>
-                        <p class="text-3xl font-bold mt-2 text-blue-600">{{ $packerPerformance->count() }}</p>
-                    </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Aktive Bestellungen</h6>
+                    <h2 class="mb-0 text-warning">{{ $activeOrders }}</h2>
                 </div>
             </div>
+        </div>
 
-            <!-- Status Distribution -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold mb-4">Bestellungen nach Status</h3>
-                        <div class="space-y-3">
-                            @foreach($statusData as $status)
-                                @php
-                                    $statusEnum = \App\Enums\OrderStatus::from($status->status);
-                                @endphp
-                                <div>
-                                    <div class="flex justify-between mb-1">
-                                        <span class="text-sm font-medium">{{ $statusEnum->label() }}</span>
-                                        <span class="text-sm text-gray-500">{{ $status->count }}</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        @php
-                                            $percentage = $totalOrders > 0 ? ($status->count / $totalOrders) * 100 : 0;
-                                        @endphp
-                                        <div class="h-2 rounded-full {{ str_replace(['text-', '100'], ['bg-', '600'], $statusEnum->color()) }}" style="width: {{ $percentage }}%"></div>
-                                    </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Artikel verpackt (diesen Monat)</h6>
+                    <h2 class="mb-0 text-success">{{ $itemsPacked }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Packer aktiv</h6>
+                    <h2 class="mb-0 text-primary">{{ $packerPerformance->count() }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Distribution -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Bestellungen nach Status</h5>
+                    <div class="vstack gap-3">
+                        @foreach($statusData as $status)
+                            @php
+                                $statusEnum = $status->status instanceof \App\Enums\OrderStatus 
+                                    ? $status->status 
+                                    : \App\Enums\OrderStatus::from($status->status);
+                                $percentage = $totalOrders > 0 ? ($status->count / $totalOrders) * 100 : 0;
+                                $bgClass = str_replace(['bg-', '-100'], ['', ''], $statusEnum->color());
+                            @endphp
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small fw-medium">{{ $statusEnum->label() }}</span>
+                                    <span class="small text-muted">{{ $status->count }}</span>
                                 </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold mb-4">Top 10 Artikel</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="border-b">
-                                        <th class="text-left py-2 text-xs font-medium text-gray-500 uppercase">Artikel</th>
-                                        <th class="text-right py-2 text-xs font-medium text-gray-500 uppercase">Menge</th>
-                                        <th class="text-right py-2 text-xs font-medium text-gray-500 uppercase">Bestellungen</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($topItemsData as $item)
-                                        <tr class="border-b">
-                                            <td class="py-2 text-sm">{{ $item->article_name }}</td>
-                                            <td class="py-2 text-sm text-right">{{ $item->total_quantity }}</td>
-                                            <td class="py-2 text-sm text-right">{{ $item->order_count }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar {{ $bgClass }}" role="progressbar" style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Time Series -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Bestellungen über Zeit</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="border-b bg-gray-50">
-                                    <th class="text-left py-2 px-4 text-xs font-medium text-gray-500 uppercase">Datum</th>
-                                    <th class="text-right py-2 px-4 text-xs font-medium text-gray-500 uppercase">Anzahl</th>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Top 10 Artikel</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Artikel</th>
+                                    <th class="text-end">Menge</th>
+                                    <th class="text-end">Bestellungen</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($timeSeriesData as $data)
-                                    <tr class="border-b hover:bg-gray-50">
-                                        <td class="py-2 px-4 text-sm">{{ $data->period }}</td>
-                                        <td class="py-2 px-4 text-sm text-right">
-                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded">{{ $data->count }}</span>
-                                        </td>
+                                @foreach($topItemsData as $item)
+                                    <tr>
+                                        <td class="small">{{ $item->article_name }}</td>
+                                        <td class="small text-end">{{ $item->total_quantity }}</td>
+                                        <td class="small text-end">{{ $item->order_count }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -125,42 +102,65 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Packer Performance -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Packer-Leistung</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Packer</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bestellungen verpackt</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($packerPerformance as $packer)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $packer->packer_name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-medium">
-                                                {{ $packer->orders_packed }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="2" class="px-6 py-4 text-center text-gray-500">
-                                            Keine Daten verfügbar.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <!-- Time Series -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Bestellungen über Zeit</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Datum</th>
+                            <th class="text-end">Anzahl</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($timeSeriesData as $data)
+                            <tr>
+                                <td class="small">{{ $data->period }}</td>
+                                <td class="small text-end">
+                                    <span class="badge bg-primary">{{ $data->count }}</span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Packer Performance -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Packer-Leistung</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Packer</th>
+                            <th class="text-end">Bestellungen verpackt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($packerPerformance as $packer)
+                            <tr>
+                                <td class="fw-medium">{{ $packer->packer_name }}</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success">{{ $packer->orders_packed }}</span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">
+                                    Keine Daten verfügbar.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

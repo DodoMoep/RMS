@@ -72,7 +72,7 @@
                     <div class="card shadow-sm">
                         <div class="card-body text-center py-5">
                             <i class="fas fa-home fa-3x text-muted mb-3"></i>
-                            <h5>Willkommen im Rental Management System</h5>
+                            <h5>Willkommen im Rosenau Management System</h5>
                             <p class="text-muted mb-0">Wählen Sie einen Menüpunkt aus der Navigation.</p>
                         </div>
                     </div>

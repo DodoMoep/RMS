@@ -13,8 +13,8 @@ class OrderAnalyticsController extends Controller
         $period = $request->get('period', 30);
 
         $totalOrders = Order::count();
-        $activeOrders = Order::whereIn('status', [OrderStatus::NEW, OrderStatus::IN_PROGRESS])->count();
-        $itemsPacked = Order::whereIn('status', [OrderStatus::PACKED, OrderStatus::IN_DELIVERY, OrderStatus::DELIVERED])
+        $activeOrders = Order::whereIn('status', [OrderStatus::NEW->value, OrderStatus::IN_PROGRESS->value])->count();
+        $itemsPacked = Order::whereIn('status', [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value])
             ->whereMonth('created_at', now()->month)
             ->withCount('items')
             ->get()
