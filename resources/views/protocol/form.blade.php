@@ -137,7 +137,7 @@
             document.getElementById('clear').onclick = () => pad.clear();
 
             function beforeSubmit(){
-                if (pad.isEmpty()){ alert('Bitte unterschreiben.'); return false; }
+                if (pad.isEmpty()){ alert('{{ __('common.messages.please_sign') }}'); return false; }
                 document.getElementById('signature_data').value = pad.toDataURL('image/png');
                 return true;
             }

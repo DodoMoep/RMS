@@ -15,13 +15,11 @@ class Article extends Model
         'sku',
         'description',
         'price',
-        'stock',
         'is_active',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'stock' => 'integer',
         'is_active' => 'boolean',
     ];
 

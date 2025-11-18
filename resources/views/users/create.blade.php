@@ -44,7 +44,7 @@
 
             <div class="col">
                 <fieldset>
-                    <legend class="fs-6 fw-semibold mb-2">Berechtigungen</legend>
+                    <legend class="fs-6 fw-semibold mb-2">{{ __('roles.permissions') }}</legend>
                     <div class="vstack gap-1 overflow-auto border rounded p-2" style="max-height: 16rem;">
                         @foreach($perms as $perm)
                             <label class="d-flex align-items-center gap-2">

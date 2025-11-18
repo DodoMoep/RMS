@@ -8,7 +8,7 @@
     <div class="col-md-6">
         <x-input-label for="tenant_id" value="Mieter:in"/>
         <select id="tenant_id" name="tenant_id" class="form-select" required>
-            <option value="">Bitte wählen…</option>
+            <option value="">{{ __('common.messages.please_select') }}</option>
             @foreach($tenants as $t)
                 <option value="{{ $t->id }}" @selected(old('tenant_id', $rental->tenant_id ?? '')==$t->id)>{{ $t->name }}</option>
             @endforeach
@@ -19,7 +19,7 @@
     <div class="col-md-6">
         <x-input-label for="hall_id" value="Halle"/>
         <select id="hall_id" name="hall_id" class="form-select" required>
-            <option value="">Bitte wählen…</option>
+            <option value="">{{ __('common.messages.please_select') }}</option>
             @foreach($halls as $h)
                 <option value="{{ $h->id }}" @selected(old('hall_id', $rental->hall_id ?? '')==$h->id)>{{ $h->name }}</option>
             @endforeach

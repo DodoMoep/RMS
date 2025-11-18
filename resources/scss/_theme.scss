@@ -51,6 +51,12 @@ body {
     min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
 }
 
+// Custom navigation indentation for collapsible groups
+.nav-group-items .nav-link {
+    padding-left: 3rem !important;
+    margin-left: 1rem !important;
+}
+
 @if $enable-dark-mode {
     @include color-mode(dark) {
         body {

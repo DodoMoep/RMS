@@ -1,10 +1,10 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <form method="get" class="d-flex gap-2">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Suche…" class="form-control form-control-sm">
-            <button class="btn btn-outline-secondary btn-sm">Suchen</button>
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('common.common.search') }}…" class="form-control form-control-sm">
+            <button class="btn btn-outline-secondary btn-sm">{{ __('common.common.search') }}</button>
         </form>
-        <a href="{{ route('articles.create') }}" class="btn btn-primary btn-sm">Neu</a>
+        <a href="{{ route('articles.create') }}" class="btn btn-primary btn-sm">{{ __('common.common.create') }}</a>
     </div>
 
     @if(session('ok'))
@@ -19,12 +19,11 @@
             <table class="table table-sm align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Name</th>
-                        <th>SKU</th>
-                        <th>Preis</th>
-                        <th>Lager</th>
-                        <th>Status</th>
-                        <th class="text-end">Aktionen</th>
+                        <th>{{ __('articles.name') }}</th>
+                        <th>{{ __('articles.sku') }}</th>
+                        <th>{{ __('articles.price') }}</th>
+                        <th>{{ __('articles.status') }}</th>
+                        <th class="text-end">{{ __('common.common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -45,27 +44,22 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge {{ $article->stock > 10 ? 'bg-success' : ($article->stock > 0 ? 'bg-warning text-dark' : 'bg-danger') }}">
-                                    {{ $article->stock }}
-                                </span>
-                            </td>
-                            <td>
                                 @if($article->is_active)
-                                    <span class="badge bg-success">Aktiv</span>
+                                    <span class="badge bg-success">{{ __('articles.active') }}</span>
                                 @else
-                                    <span class="badge bg-secondary">Inaktiv</span>
+                                    <span class="badge bg-secondary">{{ __('articles.inactive') }}</span>
                                 @endif
                             </td>
                             <td class="text-end text-nowrap">
-                                <a href="{{ route('articles.edit', $article) }}" class="btn btn-link btn-sm">Bearbeiten</a>
-                                <form action="{{ route('articles.destroy', $article) }}" method="post" class="d-inline" onsubmit="return confirm('Wirklich löschen?')">
+                                <a href="{{ route('articles.edit', $article) }}" class="btn btn-link btn-sm">{{ __('common.common.edit') }}</a>
+                                <form action="{{ route('articles.destroy', $article) }}" method="post" class="d-inline" onsubmit="return confirm('{{ __('common.messages.confirm_delete') }}')">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-link text-danger btn-sm">Löschen</button>
+                                    <button class="btn btn-link text-danger btn-sm">{{ __('common.common.delete') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-muted">Keine Artikel vorhanden.</td></tr>
+                        <tr><td colspan="5" class="text-muted">{{ __('articles.no_articles') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

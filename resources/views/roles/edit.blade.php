@@ -15,7 +15,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <div class="fw-semibold mb-2">Berechtigungen</div>
+                    <div class="fw-semibold mb-2">{{ __('roles.permissions') }}</div>
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2">
                         @foreach($permissions as $perm)
                             <div class="col">

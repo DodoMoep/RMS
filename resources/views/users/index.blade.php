@@ -23,10 +23,10 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Rollen</th>
-                        <th>Berechtigungen</th>
+                        <th>{{ __('users.name') }}</th>
+                        <th>{{ __('users.email') }}</th>
+                        <th>{{ __('users.roles') }}</th>
+                        <th>{{ __('users.permissions') }}</th>
                         <th></th>
                     </tr>
                 </thead>

@@ -11,19 +11,27 @@ class OrderAnalyticsController extends Controller
     public function index(Request $request)
     {
         $period = $request->get('period', 30);
-
-        $totalOrders = Order::count();
-        $activeOrders = Order::whereIn('status', [OrderStatus::NEW->value, OrderStatus::IN_PROGRESS->value])->count();
-        $itemsPacked = Order::whereIn('status', [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value])
-            ->whereMonth('created_at', now()->month)
+        
+        // Build base query with date filter
+        $query = Order::query();
+        if ($period !== 'all') {
+            $query->where('created_at', '>=', now()->subDays((int)$period));
+        }
+        
+        $totalOrders = (clone $query)->count();
+        $activeOrders = (clone $query)->whereIn('status', [OrderStatus::NEW->value, OrderStatus::IN_PROGRESS->value])->count();
+        
+        // Items packed in the period
+        $itemsPacked = (clone $query)
+            ->whereIn('status', [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value])
             ->withCount('items')
             ->get()
             ->sum('items_count');
 
-        $statusData = Order::ordersByStatus();
+        $statusData = Order::ordersByStatus($period);
         $timeSeriesData = Order::ordersOverTime('day', $period);
-        $topItemsData = Order::topItems(10);
-        $packerPerformance = Order::packerPerformance();
+        $topItemsData = Order::topItems(10, $period);
+        $packerPerformance = Order::packerPerformance($period);
 
         return view('analytics.index', compact(
             'totalOrders',
@@ -32,7 +40,8 @@ class OrderAnalyticsController extends Controller
             'statusData',
             'timeSeriesData',
             'topItemsData',
-            'packerPerformance'
+            'packerPerformance',
+            'period'
         ));
     }
 

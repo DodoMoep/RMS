@@ -42,22 +42,40 @@
                             <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
                         </li>
                         <li class="nav-item dropdown">
+                            <a class="nav-link py-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-language"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end pt-0">
+                                <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold my-2">
+                                    <div class="fw-semibold">{{ __('common.navigation.language') }}</div>
+                                </div>
+                                @foreach(config('app.available_locales') as $locale => $name)
+                                    <a class="dropdown-item {{ app()->getLocale() === $locale ? 'active' : '' }}" href="{{ route('language.switch', $locale) }}">
+                                        {{ $name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </li>
+                        <li class="nav-item py-1">
+                            <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+                        </li>
+                        <li class="nav-item dropdown">
                             <a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <div class="avatar avatar-md"><img class="avatar-img" src="{{ auth()->user()->avatar_url }}" alt="{{ Auth::user()->email }}"></div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end pt-0">
                                 <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold my-2">
-                                    <div class="fw-semibold">Settings</div>
+                                    <div class="fw-semibold">{{ __('common.navigation.settings') }}</div>
                                 </div>
                                 <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                    <i class="icon me-2 fas fa-id-badge"></i> Profile
+                                    <i class="icon me-2 fas fa-id-badge"></i> {{ __('common.navigation.profile') }}
                                 </a>
 
                                 <div class="dropdown-divider"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();">
-                                        <i class="icon me-2 fas fa-right-from-bracket"></i> {{ __('Log Out') }}
+                                        <i class="icon me-2 fas fa-right-from-bracket"></i> {{ __('common.navigation.logout') }}
                                     </a>
                                 </form>
                             </div>

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <h1 class="h3 mb-3">Berechtigung bearbeiten</h1>
+    <h1 class="h3 mb-3">{{ __('permissions.edit') }}</h1>
 
     <div class="card">
         <div class="card-body">

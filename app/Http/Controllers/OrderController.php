@@ -101,8 +101,11 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
+        // Refresh order to get latest data
+        $order->refresh();
+        
         if (!$order->canBeModified()) {
-            return back()->withErrors(['Diese Bestellung kann nicht mehr bearbeitet werden.']);
+            return back()->withErrors(['Diese Bestellung kann nicht mehr bearbeitet werden. Der Status wurde möglicherweise von einem anderen Benutzer geändert.']);
         }
 
         $validated = $request->validate([
@@ -116,7 +119,14 @@ class OrderController extends Controller
             'items.*.article_id' => 'required|exists:articles,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.notes' => 'nullable|string',
+            'expected_status' => 'nullable|string',
         ]);
+        
+        // Check if status changed since form was opened (optimistic locking)
+        if (isset($validated['expected_status']) && $order->status->value !== $validated['expected_status']) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Die Bestellung wurde von einem anderen Benutzer geändert. Bitte überprüfen Sie die aktuelle Version.');
+        }
 
         $order->update([
             'customer_name' => $validated['customer_name'],
@@ -131,11 +141,14 @@ class OrderController extends Controller
         foreach ($validated['items'] as $itemData) {
             if (!empty($itemData['id'])) {
                 $orderItem = $order->items()->find($itemData['id']);
-                if ($orderItem && $orderItem->canBeModified()) {
-                    $orderItem->update([
-                        'quantity_ordered' => $itemData['quantity'],
-                        'notes' => $itemData['notes'] ?? null,
-                    ]);
+                if ($orderItem) {
+                    // Only update if item can be modified (not packed or partially packed)
+                    if ($orderItem->canBeModified()) {
+                        $orderItem->update([
+                            'quantity_ordered' => $itemData['quantity'],
+                            'notes' => $itemData['notes'] ?? null,
+                        ]);
+                    }
                     $existingItemIds[] = $orderItem->id;
                 }
             } else {
@@ -152,8 +165,11 @@ class OrderController extends Controller
             }
         }
 
-        // Delete removed items (only unpacked ones)
-        $order->items()->whereNotIn('id', $existingItemIds)->where('is_packed', false)->delete();
+        // Delete removed items (only items with no packing)
+        $order->items()->whereNotIn('id', $existingItemIds)
+            ->where('quantity_packed', 0)
+            ->where('is_packed', false)
+            ->delete();
 
         return redirect()->route('orders.show', $order)->with('ok', 'Bestellung aktualisiert.');
     }
@@ -170,11 +186,40 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        // Prevent changing status of delivered orders
+        if ($order->status === OrderStatus::DELIVERED) {
+            return back()->with('error', 'Abgeschlossene Bestellungen können nicht mehr geändert werden.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:new,in_progress,packed,in_delivery,delivered',
         ]);
 
         $newStatus = OrderStatus::from($validated['status']);
+
+        // Define status order for validation
+        $statusOrder = [
+            OrderStatus::NEW->value => 1,
+            OrderStatus::IN_PROGRESS->value => 2,
+            OrderStatus::PACKED->value => 3,
+            OrderStatus::IN_DELIVERY->value => 4,
+            OrderStatus::DELIVERED->value => 5,
+        ];
+
+        // Prevent changing status backwards from packed (delivery document already generated)
+        if ($order->status === OrderStatus::PACKED && $statusOrder[$newStatus->value] < $statusOrder[OrderStatus::PACKED->value]) {
+            return back()->with('error', 'Der Status kann nicht zurückgesetzt werden, da bereits ein Lieferschein generiert wurde.');
+        }
+
+        // Prevent changing status backwards from in_delivery
+        if ($order->status === OrderStatus::IN_DELIVERY && $statusOrder[$newStatus->value] < $statusOrder[OrderStatus::IN_DELIVERY->value]) {
+            return back()->with('error', 'Der Status kann nicht zurückgesetzt werden.');
+        }
+
+        // Prevent setting status to packed if not all items are fully packed
+        if ($newStatus === OrderStatus::PACKED && !$order->isFullyPacked()) {
+            return back()->with('error', 'Alle Artikel müssen vollständig verpackt sein, bevor der Status auf "Verpackt" gesetzt werden kann.');
+        }
 
         if ($newStatus === OrderStatus::DELIVERED) {
             $order->update([

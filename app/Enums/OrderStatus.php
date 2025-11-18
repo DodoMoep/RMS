@@ -13,22 +13,22 @@ enum OrderStatus: string
     public function label(): string
     {
         return match($this) {
-            self::NEW => 'Neu',
-            self::IN_PROGRESS => 'In Bearbeitung',
-            self::PACKED => 'Verpackt',
-            self::IN_DELIVERY => 'In Zustellung',
-            self::DELIVERED => 'Zugestellt',
+            self::NEW => __('orders.statuses.new'),
+            self::IN_PROGRESS => __('orders.statuses.in_progress'),
+            self::PACKED => __('orders.statuses.packed'),
+            self::IN_DELIVERY => __('orders.statuses.in_delivery'),
+            self::DELIVERED => __('orders.statuses.delivered'),
         };
     }
 
     public function color(): string
     {
         return match($this) {
-            self::NEW => 'bg-blue-100 text-blue-800',
-            self::IN_PROGRESS => 'bg-yellow-100 text-yellow-800',
-            self::PACKED => 'bg-purple-100 text-purple-800',
-            self::IN_DELIVERY => 'bg-orange-100 text-orange-800',
-            self::DELIVERED => 'bg-green-100 text-green-800',
+            self::NEW => 'bg-primary text-white',
+            self::IN_PROGRESS => 'bg-warning text-dark',
+            self::PACKED => 'bg-info text-white',
+            self::IN_DELIVERY => 'bg-secondary text-white',
+            self::DELIVERED => 'bg-success text-white',
         };
     }
 

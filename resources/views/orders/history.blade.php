@@ -1,14 +1,14 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Bestellverlauf - {{ $order->order_number }}</h4>
-        <a href="{{ route('orders.show', $order) }}" class="btn btn-secondary btn-sm">Zurück zur Bestellung</a>
+        <h4>{{ __('orders.history') }} - {{ $order->order_number }}</h4>
+        <a href="{{ route('orders.show', $order) }}" class="btn btn-secondary btn-sm">{{ __('orders.back_to_order') }}</a>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Zeitverlauf</h5>
+                    <h5 class="card-title mb-4">{{ __('orders.timeline') }}</h5>
                     
                     <div class="position-relative">
                         <div class="position-absolute" style="left: 1rem; top: 0; bottom: 0; width: 2px; background-color: #dee2e6;"></div>
@@ -50,14 +50,14 @@
                                             
                                             <div class="small text-muted">
                                                 @if($history->user)
-                                                    <div><strong>Benutzer:</strong> {{ $history->user->name }}</div>
+                                                    <div><strong>{{ __('orders.user') }}:</strong> {{ $history->user->name }}</div>
                                                 @endif
                                                 
-                                                <div><strong>Ereignistyp:</strong> <code class="badge bg-secondary">{{ $history->event_type }}</code></div>
+                                                <div><strong>{{ __('orders.event_type') }}:</strong> <code class="badge bg-secondary">{{ $history->event_type }}</code></div>
                                                 
                                                 @if($history->metadata && count($history->metadata) > 0)
                                                     <div class="mt-2">
-                                                        <strong>Details:</strong>
+                                                        <strong>{{ __('orders.details') }}:</strong>
                                                         <div class="bg-white p-2 rounded border mt-1">
                                                             @foreach($history->metadata as $key => $value)
                                                                 <div class="small">{{ $key }}: {{ is_array($value) ? json_encode($value) : $value }}</div>

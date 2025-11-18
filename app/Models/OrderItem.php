@@ -49,7 +49,19 @@ class OrderItem extends Model
 
     public function canBeModified(): bool
     {
-        return !$this->is_packed && $this->order->canBeModified();
+        // Cannot modify if fully packed or partially packed
+        return $this->quantity_packed === 0 && !$this->is_packed && $this->order->canBeModified();
+    }
+    
+    public function isPartiallyPacked(): bool
+    {
+        return $this->quantity_packed > 0 && !$this->is_packed;
+    }
+    
+    public function canBeDeleted(): bool
+    {
+        // Cannot delete if any quantity has been packed
+        return $this->quantity_packed === 0;
     }
 
     public function markAsPacked(int $quantity = null): void

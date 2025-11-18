@@ -25,7 +25,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="text-muted">Keine Einträge.</td></tr>
+                    <tr><td colspan="4" class="text-muted">{{ __('common.messages.no_results') }}</td></tr>
                 @endforelse
                 </tbody>
             </table>

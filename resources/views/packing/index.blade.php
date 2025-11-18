@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Verpackung - Offene Bestellungen</h4>
+        <h4>{{ __('packing.title') }} - {{ __('packing.open_orders') }}</h4>
     </div>
 
     @if(session('ok'))
@@ -15,12 +15,12 @@
             <table class="table table-sm align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Bestellnummer</th>
-                        <th>Kunde</th>
-                        <th>Artikel</th>
-                        <th>Fortschritt</th>
-                        <th>Erstellt am</th>
-                        <th class="text-end">Aktion</th>
+                        <th>{{ __('orders.order_number') }}</th>
+                        <th>{{ __('orders.customer_name') }}</th>
+                        <th>{{ __('orders.items') }}</th>
+                        <th>{{ __('packing.progress') }}</th>
+                        <th>{{ __('orders.created_at') }}</th>
+                        <th class="text-end">{{ __('common.common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,7 +33,7 @@
                         <tr>
                             <td><a href="{{ route('packing.show', $order) }}" class="text-decoration-none fw-semibold">{{ $order->order_number }}</a></td>
                             <td>{{ $order->customer_name }}</td>
-                            <td>{{ $totalItems }} Artikel</td>
+                            <td>{{ $totalItems }} {{ __('orders.items') }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="progress flex-grow-1 me-2" style="height: 20px;">
@@ -43,11 +43,11 @@
                             </td>
                             <td>{{ $order->created_at->format('d.m.Y H:i') }}</td>
                             <td class="text-end">
-                                <a href="{{ route('packing.show', $order) }}" class="btn btn-primary btn-sm">Verpacken</a>
+                                <a href="{{ route('packing.show', $order) }}" class="btn btn-primary btn-sm">{{ __('packing.pack') }}</a>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-muted">Keine Bestellungen zum Verpacken vorhanden.</td></tr>
+                        <tr><td colspan="6" class="text-muted">{{ __('packing.no_orders') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -107,7 +107,14 @@ class Order extends Model
 
     public function generateDeliveryNote(): string
     {
+        // Always generate delivery note in German
+        $previousLocale = app()->getLocale();
+        app()->setLocale('de');
+        
         $pdf = \PDF::loadView('delivery-notes.template', ['order' => $this]);
+        
+        // Restore previous locale
+        app()->setLocale($previousLocale);
         
         $filename = "delivery-note-{$this->order_number}.pdf";
         $path = "delivery-notes/{$filename}";
@@ -143,14 +150,18 @@ class Order extends Model
         ]);
     }
 
-    public static function ordersByStatus()
+    public static function ordersByStatus($period = 30)
     {
-        return static::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get();
+        $query = static::select('status', DB::raw('count(*) as count'));
+        
+        if ($period !== 'all') {
+            $query->where('created_at', '>=', now()->subDays((int)$period));
+        }
+        
+        return $query->groupBy('status')->get();
     }
 
-    public static function ordersOverTime(string $period = 'day', int $days = 30)
+    public static function ordersOverTime(string $period = 'day', $days = 30)
     {
         $dateFormat = match($period) {
             'hour' => '%Y-%m-%d %H:00',
@@ -160,42 +171,57 @@ class Order extends Model
             default => '%Y-%m-%d',
         };
 
-        return static::select(
+        $query = static::select(
             DB::raw("DATE_FORMAT(created_at, '{$dateFormat}') as period"),
             DB::raw('count(*) as count')
-        )
-        ->where('created_at', '>=', now()->subDays($days))
-        ->groupBy('period')
-        ->orderBy('period')
-        ->get();
+        );
+        
+        if ($days !== 'all') {
+            $query->where('created_at', '>=', now()->subDays((int)$days));
+        }
+        
+        return $query->groupBy('period')
+            ->orderBy('period')
+            ->get();
     }
 
-    public static function topItems(int $limit = 10)
+    public static function topItems(int $limit = 10, $period = 30)
     {
-        return OrderItem::select(
+        $query = OrderItem::select(
             'article_id',
             'article_name',
             DB::raw('SUM(quantity_ordered) as total_quantity'),
             DB::raw('COUNT(DISTINCT order_id) as order_count')
-        )
-        ->groupBy('article_id', 'article_name')
-        ->orderByDesc('total_quantity')
-        ->limit($limit)
-        ->get();
+        );
+        
+        if ($period !== 'all') {
+            $query->whereHas('order', function($q) use ($period) {
+                $q->where('created_at', '>=', now()->subDays((int)$period));
+            });
+        }
+        
+        return $query->groupBy('article_id', 'article_name')
+            ->orderByDesc('total_quantity')
+            ->limit($limit)
+            ->get();
     }
 
-    public static function packerPerformance()
+    public static function packerPerformance($period = 30)
     {
-        return static::select(
+        $query = static::select(
             'packed_by',
             'users.name as packer_name',
             DB::raw('COUNT(*) as orders_packed')
         )
         ->join('users', 'orders.packed_by', '=', 'users.id')
         ->whereNotNull('packed_by')
-        ->whereIn('status', ['packed', 'in_delivery', 'delivered'])
-        ->groupBy('packed_by', 'users.name')
-        ->get();
+        ->whereIn('status', ['packed', 'in_delivery', 'delivered']);
+        
+        if ($period !== 'all') {
+            $query->where('orders.created_at', '>=', now()->subDays((int)$period));
+        }
+        
+        return $query->groupBy('packed_by', 'users.name')->get();
     }
 
     protected static function boot()

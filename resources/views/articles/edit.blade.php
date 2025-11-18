@@ -8,8 +8,8 @@
                     </form>
                     <div class="mt-4 pt-3 border-top">
                         <small class="text-muted">
-                            <div><strong>Erstellt:</strong> {{ $article->created_at->format('d.m.Y H:i') }}</div>
-                            <div><strong>Letzte Änderung:</strong> {{ $article->updated_at->format('d.m.Y H:i') }}</div>
+                            <div><strong>{{ __('common.dates.created_at') }}:</strong> {{ $article->created_at->format('d.m.Y H:i') }}</div>
+                            <div><strong>{{ __('common.dates.updated_at') }}:</strong> {{ $article->updated_at->format('d.m.Y H:i') }}</div>
                         </small>
                     </div>
                 </div></div>

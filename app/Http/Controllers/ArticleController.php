@@ -25,7 +25,6 @@ class ArticleController extends Controller
             'sku' => 'nullable|string|unique:articles,sku|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 
@@ -46,7 +45,6 @@ class ArticleController extends Controller
             'sku' => 'nullable|string|max:255|unique:articles,sku,' . $article->id,
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 

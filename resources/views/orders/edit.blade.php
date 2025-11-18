@@ -4,6 +4,7 @@
             <div class="card shadow-sm"><div class="card-body">
                     <form method="post" action="{{ route('orders.update', $order) }}">
                         @method('PUT')
+                        <input type="hidden" name="expected_status" value="{{ $order->status->value }}">
                         @include('orders._form')
                     </form>
                 </div></div>

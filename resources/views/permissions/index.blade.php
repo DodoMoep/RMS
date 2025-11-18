@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">Berechtigungen</h1>
+        <h1 class="h3 mb-0">{{ __('permissions.title') }}</h1>
         @can('perm.add')
-            <a href="{{ route('permissions.create') }}" class="btn btn-primary">Neue Berechtigung</a>
+            <a href="{{ route('permissions.create') }}" class="btn btn-primary">{{ __('permissions.create') }}</a>
         @endcan
     </div>
 
@@ -28,7 +28,7 @@
                             @endcan
                             @can('perm.delete')
                             <form action="{{ route('permissions.destroy', $permission) }}" method="POST" class="d-inline"
-                                  onsubmit="return confirm('Berechtigung wirklich löschen?')">
+                                  onsubmit="return confirm('{{ __('permissions.messages.confirm_delete') }}')">>
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Löschen</button>
                             </form>
@@ -36,7 +36,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="2" class="text-center text-muted py-4">Keine Berechtigungen vorhanden.</td></tr>
+                    <tr><td colspan="2" class="text-center text-muted py-4">{{ __('permissions.no_permissions') }}</td></tr>
                 @endforelse
                 </tbody>
             </table>

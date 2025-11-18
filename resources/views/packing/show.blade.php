@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Bestellung verpacken - {{ $order->order_number }}</h4>
-        <a href="{{ route('packing.index') }}" class="btn btn-secondary btn-sm">Zurück zur Übersicht</a>
+        <h4>{{ __('packing.pack_order') }} - {{ $order->order_number }}</h4>
+        <a href="{{ route('packing.index') }}" class="btn btn-secondary btn-sm">{{ __('packing.back_to_overview') }}</a>
     </div>
 
     @if(session('ok'))
@@ -21,11 +21,11 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h5 class="mb-1">Kunde: {{ $order->customer_name }}</h5>
-                    <p class="text-muted mb-0 small">Erstellt von: {{ $order->creator->name }}</p>
+                    <h5 class="mb-1">{{ __('orders.customer_name') }}: {{ $order->customer_name }}</h5>
+                    <p class="text-muted mb-0 small">{{ __('orders.created_by') }}: {{ $order->creator->name }}</p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <p class="text-muted mb-1 small">Fortschritt</p>
+                    <p class="text-muted mb-1 small">{{ __('packing.progress') }}</p>
                     <h3 class="mb-0 text-primary">{{ $packedItems }} / {{ $totalItems }}</h3>
                 </div>
             </div>
@@ -37,7 +37,7 @@
 
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <h5 class="card-title">Artikel-Checkliste</h5>
+            <h5 class="card-title">{{ __('packing.checklist') }}</h5>
             <div class="vstack gap-3">
                 @foreach($order->items as $item)
                     <div class="card {{ $item->is_packed ? 'border-success bg-light' : '' }}">
@@ -53,11 +53,11 @@
                                         <div>
                                             <h6 class="mb-0 {{ $item->is_packed ? 'text-success' : '' }}">{{ $item->article_name }}</h6>
                                             <small class="{{ $item->is_packed ? 'text-success' : 'text-muted' }}">
-                                                SKU: {{ $item->article_sku ?? 'N/A' }} | 
-                                                Menge: {{ $item->quantity_packed }}/{{ $item->quantity_ordered }}
+                                                {{ __('orders.sku') }}: {{ $item->article_sku ?? 'N/A' }} | 
+                                                {{ __('orders.quantity') }}: {{ $item->quantity_packed }}/{{ $item->quantity_ordered }}
                                             </small>
                                             @if($item->notes)
-                                                <div class="mt-1"><strong>Hinweis:</strong> {{ $item->notes }}</div>
+                                                <div class="mt-1"><strong>{{ __('orders.notes') }}:</strong> {{ $item->notes }}</div>
                                             @endif
                                         </div>
                                     </div>
@@ -70,13 +70,13 @@
                                                 <input type="number" name="quantity" min="1" max="{{ $item->remainingQuantity() }}" value="{{ $item->remainingQuantity() }}" class="form-control form-control-sm d-inline-block me-2" style="width:80px;">
                                             @endif
                                             <button class="btn btn-success btn-sm">
-                                                {{ $item->quantity_ordered > 1 ? 'Teilweise verpacken' : 'Verpackt' }}
+                                                {{ $item->quantity_ordered > 1 ? __('packing.pack_partial') : __('packing.packed') }}
                                             </button>
                                         </form>
                                     @else
                                         <form action="{{ route('packing.unpack-item', $item) }}" method="POST" class="d-inline">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-warning btn-sm">Rückgängig</button>
+                                            <button class="btn btn-warning btn-sm">{{ __('packing.undo') }}</button>
                                         </form>
                                     @endif
                                 </div>
@@ -91,11 +91,11 @@
     @if($order->isFullyPacked())
         <div class="card border-success shadow-sm">
             <div class="card-body text-center">
-                <h4 class="text-success mb-2">✓ Alle Artikel verpackt!</h4>
-                <p class="text-muted mb-3">Die Bestellung ist bereit zum Abschluss.</p>
+                <h4 class="text-success mb-2">✓ {{ __('packing.all_items_packed') }}</h4>
+                <p class="text-muted mb-3">{{ __('packing.ready_to_complete') }}</p>
                 <form action="{{ route('packing.complete', $order) }}" method="POST" class="d-inline">
                     @csrf
-                    <button class="btn btn-success btn-lg">Bestellung abschließen</button>
+                    <button class="btn btn-success btn-lg">{{ __('packing.complete_order') }}</button>
                 </form>
             </div>
         </div>

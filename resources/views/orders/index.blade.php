@@ -1,20 +1,20 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <form method="get" class="d-flex gap-2 flex-wrap">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Suche…" class="form-control form-control-sm" style="width:200px;">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('common.common.search') }}…" class="form-control form-control-sm" style="width:200px;">
             <select name="status" class="form-select form-select-sm" style="width:150px;">
-                <option value="">Alle Status</option>
-                <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>Neu</option>
-                <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Bearbeitung</option>
-                <option value="packed" {{ request('status') == 'packed' ? 'selected' : '' }}>Verpackt</option>
-                <option value="in_delivery" {{ request('status') == 'in_delivery' ? 'selected' : '' }}>In Zustellung</option>
-                <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Zugestellt</option>
+                <option value="">{{ __('orders.statuses.all') }}</option>
+                <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>{{ __('orders.statuses.new') }}</option>
+                <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>{{ __('orders.statuses.in_progress') }}</option>
+                <option value="packed" {{ request('status') == 'packed' ? 'selected' : '' }}>{{ __('orders.statuses.packed') }}</option>
+                <option value="in_delivery" {{ request('status') == 'in_delivery' ? 'selected' : '' }}>{{ __('orders.statuses.in_delivery') }}</option>
+                <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>{{ __('orders.statuses.delivered') }}</option>
             </select>
-            <button class="btn btn-outline-secondary btn-sm">Filtern</button>
-            <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm">Zurücksetzen</a>
+            <button class="btn btn-outline-secondary btn-sm">{{ __('common.common.filter') }}</button>
+            <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('common.common.reset') }}</a>
         </form>
         @can('orders.create')
-            <a href="{{ route('orders.create') }}" class="btn btn-primary btn-sm">Neu</a>
+            <a href="{{ route('orders.create') }}" class="btn btn-primary btn-sm">{{ __('common.common.create') }}</a>
         @endcan
     </div>
 
@@ -30,12 +30,12 @@
             <table class="table table-sm align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Bestellnummer</th>
-                        <th>Kunde</th>
-                        <th>Status</th>
-                        <th>Artikel</th>
-                        <th>Erstellt am</th>
-                        <th class="text-end">Aktionen</th>
+                        <th>{{ __('orders.order_number') }}</th>
+                        <th>{{ __('orders.customer_name') }}</th>
+                        <th>{{ __('orders.status') }}</th>
+                        <th>{{ __('orders.items') }}</th>
+                        <th>{{ __('orders.created_at') }}</th>
+                        <th class="text-end">{{ __('common.common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,24 +47,24 @@
                             <td>{{ $order->items->count() }}</td>
                             <td>{{ $order->created_at->format('d.m.Y H:i') }}</td>
                             <td class="text-end text-nowrap">
-                                <a href="{{ route('orders.show', $order) }}" class="btn btn-link btn-sm">Ansehen</a>
+                                <a href="{{ route('orders.show', $order) }}" class="btn btn-link btn-sm">{{ __('common.common.view') }}</a>
                                 @can('orders.edit')
                                     @if($order->canBeModified())
-                                        <a href="{{ route('orders.edit', $order) }}" class="btn btn-link btn-sm">Bearbeiten</a>
+                                        <a href="{{ route('orders.edit', $order) }}" class="btn btn-link btn-sm">{{ __('common.common.edit') }}</a>
                                     @endif
                                 @endcan
                                 @can('orders.delete')
                                     @if($order->canBeModified())
-                                        <form action="{{ route('orders.destroy', $order) }}" method="post" class="d-inline" onsubmit="return confirm('Wirklich löschen?')">
+                                        <form action="{{ route('orders.destroy', $order) }}" method="post" class="d-inline" onsubmit="return confirm('{{ __('orders.messages.confirm_delete') }}')">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-link text-danger btn-sm">Löschen</button>
+                                            <button class="btn btn-link text-danger btn-sm">{{ __('common.common.delete') }}</button>
                                         </form>
                                     @endif
                                 @endcan
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-muted">Keine Bestellungen gefunden.</td></tr>
+                        <tr><td colspan="6" class="text-muted">{{ __('orders.no_orders') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

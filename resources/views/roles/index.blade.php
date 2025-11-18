@@ -16,9 +16,9 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                 <tr>
-                    <th>Name</th>
-                    <th>Berechtigungen</th>
-                    <th class="text-end">Aktionen</th>
+                    <th>{{ __('roles.name') }}</th>
+                    <th>{{ __('roles.permissions') }}</th>
+                    <th class="text-end">{{ __('common.common.actions') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -34,7 +34,7 @@
                             @endcan
                             @can('role.delete')
                             <form action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline"
-                                  onsubmit="return confirm('Rolle wirklich löschen?')">
+                                  onsubmit="return confirm('{{ __('roles.messages.confirm_delete') }}')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Löschen</button>
                             </form>
