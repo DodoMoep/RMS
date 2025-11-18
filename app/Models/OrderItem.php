@@ -41,7 +41,7 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Article::class);
     }
-    
+
     public function packedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'packed_by');
