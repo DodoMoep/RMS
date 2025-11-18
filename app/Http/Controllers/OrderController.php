@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
-use App\Models\InventoryItem;
+use App\Models\Article;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
@@ -39,8 +39,8 @@ class OrderController extends Controller
 
     public function create()
     {
-        $inventoryItems = InventoryItem::orderBy('name')->get();
-        return view('orders.create', compact('inventoryItems'));
+        $articles = Article::active()->orderBy('name')->get();
+        return view('orders.create', compact('articles'));
     }
 
     public function store(Request $request)
@@ -52,7 +52,7 @@ class OrderController extends Controller
             'customer_address' => 'nullable|string',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.inventory_item_id' => 'required|exists:inventory_items,id',
+            'items.*.article_id' => 'required|exists:articles,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.notes' => 'nullable|string',
         ]);
@@ -68,12 +68,13 @@ class OrderController extends Controller
         ]);
 
         foreach ($validated['items'] as $item) {
-            $inventoryItem = InventoryItem::find($item['inventory_item_id']);
+            $article = Article::find($item['article_id']);
             
             $order->items()->create([
-                'inventory_item_id' => $inventoryItem->id,
-                'item_name' => $inventoryItem->name,
-                'item_sku' => $inventoryItem->sku,
+                'article_id' => $article->id,
+                'article_name' => $article->name,
+                'article_sku' => $article->sku,
+                'article_price' => $article->price,
                 'quantity_ordered' => $item['quantity'],
                 'notes' => $item['notes'] ?? null,
             ]);
@@ -84,7 +85,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['creator', 'packer', 'items.inventoryItem', 'history.user']);
+        $order->load(['creator', 'packer', 'items.article', 'history.user']);
         return view('orders.show', compact('order'));
     }
 
@@ -94,8 +95,8 @@ class OrderController extends Controller
             return back()->withErrors(['Diese Bestellung kann nicht mehr bearbeitet werden.']);
         }
 
-        $inventoryItems = InventoryItem::orderBy('name')->get();
-        return view('orders.edit', compact('order', 'inventoryItems'));
+        $articles = Article::active()->orderBy('name')->get();
+        return view('orders.edit', compact('order', 'articles'));
     }
 
     public function update(Request $request, Order $order)
@@ -112,7 +113,7 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.id' => 'nullable|exists:order_items,id',
-            'items.*.inventory_item_id' => 'required|exists:inventory_items,id',
+            'items.*.article_id' => 'required|exists:articles,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.notes' => 'nullable|string',
         ]);
@@ -138,11 +139,12 @@ class OrderController extends Controller
                     $existingItemIds[] = $orderItem->id;
                 }
             } else {
-                $inventoryItem = InventoryItem::find($itemData['inventory_item_id']);
+                $article = Article::find($itemData['article_id']);
                 $newItem = $order->items()->create([
-                    'inventory_item_id' => $inventoryItem->id,
-                    'item_name' => $inventoryItem->name,
-                    'item_sku' => $inventoryItem->sku,
+                    'article_id' => $article->id,
+                    'article_name' => $article->name,
+                    'article_sku' => $article->sku,
+                    'article_price' => $article->price,
                     'quantity_ordered' => $itemData['quantity'],
                     'notes' => $itemData['notes'] ?? null,
                 ]);

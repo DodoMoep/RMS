@@ -66,9 +66,9 @@
                             <div class="item-row grid grid-cols-12 gap-4 mb-4">
                                 <div class="col-span-6">
                                     <label class="block text-sm font-medium text-gray-700">Artikel *</label>
-                                    <select name="items[0][inventory_item_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <select name="items[0][article_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         <option value="">-- Artikel wählen --</option>
-                                        @foreach($inventoryItems as $item)
+                                        @foreach($articles as $item)
                                             <option value="{{ $item->id }}">{{ $item->name }} @if($item->sku)({{ $item->sku }})@endif</option>
                                         @endforeach
                                     </select>

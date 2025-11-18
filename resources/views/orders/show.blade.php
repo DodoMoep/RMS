@@ -184,8 +184,8 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($order->items as $item)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $item->item_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->item_sku }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $item->article_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->article_sku }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->quantity_ordered }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->quantity_packed }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">

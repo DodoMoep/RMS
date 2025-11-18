@@ -12,9 +12,10 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'inventory_item_id',
-        'item_name',
-        'item_sku',
+        'article_id',
+        'article_name',
+        'article_sku',
+        'article_price',
         'quantity_ordered',
         'quantity_packed',
         'is_packed',
@@ -28,6 +29,7 @@ class OrderItem extends Model
         'packed_at' => 'datetime',
         'quantity_ordered' => 'integer',
         'quantity_packed' => 'integer',
+        'article_price' => 'decimal:2',
     ];
 
     public function order(): BelongsTo
@@ -35,9 +37,10 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function inventoryItem(): BelongsTo
+    public function article(): BelongsTo
     {
-        return $this->belongsTo(InventoryItem::class);
+        return $this->belongsTo(Article::class);
+    }
     }
 
     public function packedByUser(): BelongsTo
@@ -68,9 +71,9 @@ class OrderItem extends Model
             'packed_by' => auth()->id(),
         ]);
 
-        $this->order->logHistory('item_packed', "Item '{$this->item_name}' packed ({$packQuantity} units)", [
+        $this->order->logHistory('item_packed', "Item '{$this->article_name}' packed ({$packQuantity} units)", [
             'item_id' => $this->id,
-            'item_name' => $this->item_name,
+            'item_name' => $this->article_name,
             'quantity_packed' => $packQuantity,
             'packed_by' => auth()->user()->name,
         ]);
@@ -89,9 +92,9 @@ class OrderItem extends Model
             'packed_by' => null,
         ]);
 
-        $this->order->logHistory('item_unpacked', "Item '{$this->item_name}' unpacked", [
+        $this->order->logHistory('item_unpacked', "Item '{$this->article_name}' unpacked", [
             'item_id' => $this->id,
-            'item_name' => $this->item_name,
+            'item_name' => $this->article_name,
         ]);
     }
 

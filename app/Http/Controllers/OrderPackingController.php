@@ -25,7 +25,7 @@ class OrderPackingController extends Controller
                 ->withErrors(['Diese Bestellung kann nicht verpackt werden.']);
         }
 
-        $order->load(['items.inventoryItem', 'creator']);
+        $order->load(['items.article', 'creator']);
 
         return view('packing.show', compact('order'));
     }

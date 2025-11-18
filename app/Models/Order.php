@@ -173,12 +173,12 @@ class Order extends Model
     public static function topItems(int $limit = 10)
     {
         return OrderItem::select(
-            'inventory_item_id',
-            'item_name',
+            'article_id',
+            'article_name',
             DB::raw('SUM(quantity_ordered) as total_quantity'),
             DB::raw('COUNT(DISTINCT order_id) as order_count')
         )
-        ->groupBy('inventory_item_id', 'item_name')
+        ->groupBy('article_id', 'article_name')
         ->orderByDesc('total_quantity')
         ->limit($limit)
         ->get();

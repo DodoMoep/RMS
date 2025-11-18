@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->char('order_id', 36);
-            $table->char('inventory_item_id', 36)->nullable();
-            $table->string('item_name');
-            $table->string('item_sku')->nullable();
+            $table->foreignUuid('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignUuid('article_id')->nullable()->constrained('articles')->onDelete('set null');
+            $table->string('article_name');
+            $table->string('article_sku')->nullable();
+            $table->decimal('article_price', 10, 2)->nullable();
             $table->integer('quantity_ordered');
             $table->integer('quantity_packed')->default(0);
             $table->boolean('is_packed')->default(false);
@@ -24,9 +25,6 @@ return new class extends Migration
             $table->foreignId('packed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->foreign('inventory_item_id')->references('id')->on('inventory_items')->onDelete('set null');
             
             $table->index('order_id');
             $table->index('is_packed');

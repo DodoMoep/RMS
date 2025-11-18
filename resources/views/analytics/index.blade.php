@@ -87,7 +87,7 @@
                                 <tbody>
                                     @foreach($topItemsData as $item)
                                         <tr class="border-b">
-                                            <td class="py-2 text-sm">{{ $item->item_name }}</td>
+                                            <td class="py-2 text-sm">{{ $item->article_name }}</td>
                                             <td class="py-2 text-sm text-right">{{ $item->total_quantity }}</td>
                                             <td class="py-2 text-sm text-right">{{ $item->order_count }}</td>
                                         </tr>

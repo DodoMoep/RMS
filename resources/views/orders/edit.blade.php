@@ -69,16 +69,16 @@
                                     <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
                                     <div class="col-span-6">
                                         <label class="block text-sm font-medium text-gray-700">Artikel *</label>
-                                        <select name="items[{{ $index }}][inventory_item_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" {{ $item->is_packed ? 'disabled' : '' }}>
+                                        <select name="items[{{ $index }}][article_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" {{ $item->is_packed ? 'disabled' : '' }}>
                                             <option value="">-- Artikel wählen --</option>
-                                            @foreach($inventoryItems as $invItem)
-                                                <option value="{{ $invItem->id }}" {{ $item->inventory_item_id == $invItem->id ? 'selected' : '' }}>
+                                            @foreach($articles as $invItem)
+                                                <option value="{{ $invItem->id }}" {{ $item->article_id == $invItem->id ? 'selected' : '' }}>
                                                     {{ $invItem->name }} @if($invItem->sku)({{ $invItem->sku }})@endif
                                                 </option>
                                             @endforeach
                                         </select>
                                         @if($item->is_packed)
-                                            <input type="hidden" name="items[{{ $index }}][inventory_item_id]" value="{{ $item->inventory_item_id }}">
+                                            <input type="hidden" name="items[{{ $index }}][article_id]" value="{{ $item->article_id }}">
                                             <p class="text-xs text-green-600 mt-1">✓ Verpackt - kann nicht geändert werden</p>
                                         @endif
                                     </div>
@@ -121,7 +121,7 @@
 
     <script>
         let itemIndex = {{ $order->items->count() }};
-        const inventoryItems = @json($inventoryItems);
+        const articles = @json($articles);
 
         function addItem() {
             const container = document.getElementById('items-container');
@@ -129,14 +129,14 @@
             newRow.className = 'item-row grid grid-cols-12 gap-4 mb-4';
             
             let optionsHtml = '<option value="">-- Artikel wählen --</option>';
-            inventoryItems.forEach(item => {
+            articles.forEach(item => {
                 optionsHtml += `<option value="${item.id}">${item.name} ${item.sku ? '(' + item.sku + ')' : ''}</option>`;
             });
             
             newRow.innerHTML = `
                 <div class="col-span-6">
                     <label class="block text-sm font-medium text-gray-700">Artikel *</label>
-                    <select name="items[${itemIndex}][inventory_item_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <select name="items[${itemIndex}][article_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         ${optionsHtml}
                     </select>
                 </div>

@@ -73,10 +73,10 @@
                                             @endif
                                             <div>
                                                 <h4 class="font-semibold {{ $item->is_packed ? 'text-green-800' : 'text-gray-900' }}">
-                                                    {{ $item->item_name }}
+                                                    {{ $item->article_name }}
                                                 </h4>
                                                 <p class="text-sm {{ $item->is_packed ? 'text-green-600' : 'text-gray-500' }}">
-                                                    SKU: {{ $item->item_sku ?? 'N/A' }} | 
+                                                    SKU: {{ $item->article_sku ?? 'N/A' }} | 
                                                     Menge: {{ $item->quantity_packed }}/{{ $item->quantity_ordered }}
                                                 </p>
                                                 @if($item->notes)

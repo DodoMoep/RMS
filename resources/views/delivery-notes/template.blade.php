@@ -117,8 +117,8 @@
             @foreach($order->items as $index => $item)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->item_name }}</td>
-                    <td>{{ $item->item_sku ?? '-' }}</td>
+                    <td>{{ $item->article_name }}</td>
+                    <td>{{ $item->article_sku ?? '-' }}</td>
                     <td>{{ $item->quantity_ordered }}</td>
                     <td>{{ $item->notes ?? '-' }}</td>
                 </tr>
