@@ -9,6 +9,9 @@
     <x-nav-link :href="route('protocols.index')" :active="request()->routeIs('protocols.*')" icon="file-signature">Protokolle</x-nav-link>
     <li class="nav-divider"></li>
     <li class="nav-title">Bestellverwaltung</li>
+    @can('orders.create')
+        <x-nav-link :href="route('articles.index')" :active="request()->routeIs('articles.*')" icon="tags">Artikel</x-nav-link>
+    @endcan
     @can('orders.view')
         <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" icon="shopping-cart">Bestellungen</x-nav-link>
     @endcan

@@ -1,10 +1,21 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\OrderAnalyticsController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPackingController;
 use Illuminate\Support\Facades\Route;
+
+// Articles Management
+Route::prefix('articles')->middleware(['auth', 'permission:orders.create'])->group(function () {
+    Route::get('/', [ArticleController::class, 'index'])->name('articles.index');
+    Route::get('/create', [ArticleController::class, 'create'])->name('articles.create');
+    Route::post('/', [ArticleController::class, 'store'])->name('articles.store');
+    Route::get('/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
+    Route::put('/{article}', [ArticleController::class, 'update'])->name('articles.update');
+    Route::delete('/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+});
 
 // Order Management
 Route::prefix('orders')->middleware(['auth', 'permission:orders.view'])->group(function () {
