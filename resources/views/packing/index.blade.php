@@ -1,82 +1,60 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Verpackung - Offene Bestellungen
-        </h2>
-    </x-slot>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Verpackung - Offene Bestellungen</h4>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('ok'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('ok') }}
-                </div>
-            @endif
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bestellnummer</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kunde</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Artikel</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fortschritt</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Erstellt am</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aktion</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($orders as $order)
-                                    @php
-                                        $totalItems = $order->items->count();
-                                        $packedItems = $order->items->where('is_packed', true)->count();
-                                        $percentage = $totalItems > 0 ? ($packedItems / $totalItems) * 100 : 0;
-                                    @endphp
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <a href="{{ route('packing.show', $order) }}" class="text-blue-600 hover:text-blue-900 font-medium">
-                                                {{ $order->order_number }}
-                                            </a>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $order->customer_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $totalItems }} Artikel
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $percentage }}%"></div>
-                                                </div>
-                                                <span class="text-sm text-gray-600">{{ $packedItems }}/{{ $totalItems }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $order->created_at->format('d.m.Y H:i') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('packing.show', $order) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                                                Verpacken
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                            Keine Bestellungen zum Verpacken vorhanden.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-4">
-                        {{ $orders->links() }}
-                    </div>
-                </div>
-            </div>
+    @if(session('ok'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('ok') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    @endif
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Bestellnummer</th>
+                        <th>Kunde</th>
+                        <th>Artikel</th>
+                        <th>Fortschritt</th>
+                        <th>Erstellt am</th>
+                        <th class="text-end">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($orders as $order)
+                        @php
+                            $totalItems = $order->items->count();
+                            $packedItems = $order->items->where('is_packed', true)->count();
+                            $percentage = $totalItems > 0 ? ($packedItems / $totalItems) * 100 : 0;
+                        @endphp
+                        <tr>
+                            <td><a href="{{ route('packing.show', $order) }}" class="text-decoration-none fw-semibold">{{ $order->order_number }}</a></td>
+                            <td>{{ $order->customer_name }}</td>
+                            <td>{{ $totalItems }} Artikel</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100">{{ $packedItems }}/{{ $totalItems }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ $order->created_at->format('d.m.Y H:i') }}</td>
+                            <td class="text-end">
+                                <a href="{{ route('packing.show', $order) }}" class="btn btn-primary btn-sm">Verpacken</a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="text-muted">Keine Bestellungen zum Verpacken vorhanden.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        {{ $orders->links('pagination::bootstrap-5') }}
     </div>
 </x-app-layout>

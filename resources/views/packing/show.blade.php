@@ -1,132 +1,107 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Bestellung verpacken - {{ $order->order_number }}
-            </h2>
-            <a href="{{ route('packing.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                Zurück zur Übersicht
-            </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Bestellung verpacken - {{ $order->order_number }}</h4>
+        <a href="{{ route('packing.index') }}" class="btn btn-secondary btn-sm">Zurück zur Übersicht</a>
+    </div>
+
+    @if(session('ok'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('ok') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    </x-slot>
+    @endif
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('ok'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('ok') }}
+    @php
+        $totalItems = $order->items->count();
+        $packedItems = $order->items->where('is_packed', true)->count();
+        $percentage = $totalItems > 0 ? ($packedItems / $totalItems) * 100 : 0;
+    @endphp
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-1">Kunde: {{ $order->customer_name }}</h5>
+                    <p class="text-muted mb-0 small">Erstellt von: {{ $order->creator->name }}</p>
                 </div>
-            @endif
-
-            @if($errors->any())
-                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <ul>
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @php
-                $totalItems = $order->items->count();
-                $packedItems = $order->items->where('is_packed', true)->count();
-                $percentage = $totalItems > 0 ? ($packedItems / $totalItems) * 100 : 0;
-            @endphp
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <h3 class="text-lg font-semibold">Kunde: {{ $order->customer_name }}</h3>
-                            <p class="text-sm text-gray-500">Erstellt von: {{ $order->creator->name }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-500">Fortschritt</p>
-                            <p class="text-2xl font-bold text-blue-600">{{ $packedItems }} / {{ $totalItems }}</p>
-                        </div>
-                    </div>
-
-                    <div class="w-full bg-gray-200 rounded-full h-4">
-                        <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: {{ $percentage }}%"></div>
-                    </div>
+                <div class="col-md-6 text-end">
+                    <p class="text-muted mb-1 small">Fortschritt</p>
+                    <h3 class="mb-0 text-primary">{{ $packedItems }} / {{ $totalItems }}</h3>
                 </div>
             </div>
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Artikel-Checkliste</h3>
-                    <div class="space-y-4">
-                        @foreach($order->items as $item)
-                            <div class="border rounded-lg p-4 {{ $item->is_packed ? 'bg-green-50 border-green-300' : 'bg-white border-gray-300' }}">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex-1">
-                                        <div class="flex items-center">
-                                            @if($item->is_packed)
-                                                <svg class="w-6 h-6 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                </svg>
-                                            @else
-                                                <svg class="w-6 h-6 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/>
-                                                </svg>
-                                            @endif
-                                            <div>
-                                                <h4 class="font-semibold {{ $item->is_packed ? 'text-green-800' : 'text-gray-900' }}">
-                                                    {{ $item->article_name }}
-                                                </h4>
-                                                <p class="text-sm {{ $item->is_packed ? 'text-green-600' : 'text-gray-500' }}">
-                                                    SKU: {{ $item->article_sku ?? 'N/A' }} | 
-                                                    Menge: {{ $item->quantity_packed }}/{{ $item->quantity_ordered }}
-                                                </p>
-                                                @if($item->notes)
-                                                    <p class="text-sm text-gray-600 mt-1">
-                                                        <strong>Hinweis:</strong> {{ $item->notes }}
-                                                    </p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        @if(!$item->is_packed)
-                                            <form action="{{ route('packing.pack-item', $item) }}" method="POST" class="inline">
-                                                @csrf
-                                                @if($item->quantity_ordered > 1)
-                                                    <input type="number" name="quantity" min="1" max="{{ $item->remainingQuantity() }}" value="{{ $item->remainingQuantity() }}" class="w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 mr-2">
-                                                @endif
-                                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                                                    {{ $item->quantity_ordered > 1 ? 'Teilweise verpacken' : 'Verpackt' }}
-                                                </button>
-                                            </form>
-                                        @else
-                                            <form action="{{ route('packing.unpack-item', $item) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
-                                                    Rückgängig
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+            <div class="progress mt-3" style="height: 25px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100">{{ round($percentage) }}%</div>
             </div>
-
-            @if($order->isFullyPacked())
-                <div class="bg-green-50 border-2 border-green-500 rounded-lg p-6 text-center">
-                    <h3 class="text-xl font-bold text-green-800 mb-2">Alle Artikel verpackt!</h3>
-                    <p class="text-green-700 mb-4">Die Bestellung ist bereit zum Abschluss.</p>
-                    <form action="{{ route('packing.complete', $order) }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 text-lg font-semibold">
-                            Bestellung abschließen
-                        </button>
-                    </form>
-                </div>
-            @endif
         </div>
     </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Artikel-Checkliste</h5>
+            <div class="vstack gap-3">
+                @foreach($order->items as $item)
+                    <div class="card {{ $item->is_packed ? 'border-success bg-light' : '' }}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <div class="d-flex align-items-start">
+                                        @if($item->is_packed)
+                                            <i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
+                                        @else
+                                            <i class="bi bi-circle text-muted fs-4 me-2"></i>
+                                        @endif
+                                        <div>
+                                            <h6 class="mb-0 {{ $item->is_packed ? 'text-success' : '' }}">{{ $item->article_name }}</h6>
+                                            <small class="{{ $item->is_packed ? 'text-success' : 'text-muted' }}">
+                                                SKU: {{ $item->article_sku ?? 'N/A' }} | 
+                                                Menge: {{ $item->quantity_packed }}/{{ $item->quantity_ordered }}
+                                            </small>
+                                            @if($item->notes)
+                                                <div class="mt-1"><strong>Hinweis:</strong> {{ $item->notes }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 text-end">
+                                    @if(!$item->is_packed)
+                                        <form action="{{ route('packing.pack-item', $item) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @if($item->quantity_ordered > 1)
+                                                <input type="number" name="quantity" min="1" max="{{ $item->remainingQuantity() }}" value="{{ $item->remainingQuantity() }}" class="form-control form-control-sm d-inline-block me-2" style="width:80px;">
+                                            @endif
+                                            <button class="btn btn-success btn-sm">
+                                                {{ $item->quantity_ordered > 1 ? 'Teilweise verpacken' : 'Verpackt' }}
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form action="{{ route('packing.unpack-item', $item) }}" method="POST" class="d-inline">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-warning btn-sm">Rückgängig</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    @if($order->isFullyPacked())
+        <div class="card border-success shadow-sm">
+            <div class="card-body text-center">
+                <h4 class="text-success mb-2">✓ Alle Artikel verpackt!</h4>
+                <p class="text-muted mb-3">Die Bestellung ist bereit zum Abschluss.</p>
+                <form action="{{ route('packing.complete', $order) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button class="btn btn-success btn-lg">Bestellung abschließen</button>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    @push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    @endpush
 </x-app-layout>
