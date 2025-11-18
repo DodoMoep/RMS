@@ -91,18 +91,25 @@
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h6 class="card-title">Status ändern</h6>
-                    <form action="{{ route('orders.update-status', $order) }}" method="POST">
-                        @csrf @method('PATCH')
-                        <select name="status" class="form-select form-select-sm mb-2">
-                            <option value="new" {{ $order->status->value === 'new' ? 'selected' : '' }}>Neu</option>
-                            <option value="in_progress" {{ $order->status->value === 'in_progress' ? 'selected' : '' }}>In Bearbeitung</option>
-                            <option value="packed" {{ $order->status->value === 'packed' ? 'selected' : '' }}>Verpackt</option>
-                            <option value="in_delivery" {{ $order->status->value === 'in_delivery' ? 'selected' : '' }}>In Zustellung</option>
-                            <option value="delivered" {{ $order->status->value === 'delivered' ? 'selected' : '' }}>Zugestellt</option>
-                        </select>
-                        <button class="btn btn-primary btn-sm w-100">Status aktualisieren</button>
-                    </form>
+                    @can('orders.update-status')
+                        <h6 class="card-title">Status ändern</h6>
+                        <form action="{{ route('orders.update-status', $order) }}" method="POST">
+                            @csrf @method('PATCH')
+                            <select name="status" class="form-select form-select-sm mb-2">
+                                <option value="new" {{ $order->status->value === 'new' ? 'selected' : '' }}>Neu</option>
+                                <option value="in_progress" {{ $order->status->value === 'in_progress' ? 'selected' : '' }}>In Bearbeitung</option>
+                                <option value="packed" {{ $order->status->value === 'packed' ? 'selected' : '' }}>Verpackt</option>
+                                <option value="in_delivery" {{ $order->status->value === 'in_delivery' ? 'selected' : '' }}>In Zustellung</option>
+                                <option value="delivered" {{ $order->status->value === 'delivered' ? 'selected' : '' }}>Zugestellt</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm w-100">Status aktualisieren</button>
+                        </form>
+                    @else
+                        <h6 class="card-title">Status</h6>
+                        <div class="text-center py-3">
+                            <span class="badge {{ $order->status->color() }} fs-6">{{ $order->status->label() }}</span>
+                        </div>
+                    @endcan
                     @if($order->notes)
                         <div class="mt-3 small">
                             <strong>Notizen:</strong>

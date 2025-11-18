@@ -17,9 +17,9 @@ class OrderPermissionsSeeder extends Seeder
             'orders.create',
             'orders.edit',
             'orders.delete',
+            'orders.update-status',
             'orders.pack',
             'orders.print',
-            'orders.deliver',
             'orders.view-history',
             'analytics.view',
             'analytics.export',
@@ -31,7 +31,7 @@ class OrderPermissionsSeeder extends Seeder
 
         // Create Packer role if it doesn't exist
         $packerRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'packer']);
-        $packerRole->syncPermissions(['orders.view', 'orders.pack']);
+        $packerRole->syncPermissions(['orders.view', 'orders.pack', 'orders.update-status']);
 
         // Create Order Manager role
         $managerRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'order-manager']);
@@ -40,8 +40,8 @@ class OrderPermissionsSeeder extends Seeder
             'orders.create',
             'orders.edit',
             'orders.delete',
+            'orders.update-status',
             'orders.print',
-            'orders.deliver',
             'orders.view-history',
             'analytics.view',
             'analytics.export',

@@ -26,7 +26,7 @@ Route::prefix('orders')->middleware(['auth', 'permission:orders.view'])->group(f
     Route::get('/{order}/edit', [OrderController::class, 'edit'])->middleware('permission:orders.edit')->name('orders.edit');
     Route::put('/{order}', [OrderController::class, 'update'])->middleware('permission:orders.edit')->name('orders.update');
     Route::delete('/{order}', [OrderController::class, 'destroy'])->middleware('permission:orders.delete')->name('orders.destroy');
-    Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->middleware('permission:orders.update-status')->name('orders.update-status');
     Route::get('/{order}/history', [OrderController::class, 'history'])->middleware('permission:orders.view-history')->name('orders.history');
 });
 
