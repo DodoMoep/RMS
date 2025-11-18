@@ -17,11 +17,14 @@ class OrderObserver
     public function updated(Order $order): void
     {
         if ($order->wasChanged('status')) {
+            $oldStatus = $order->getOriginal('status');
+            $oldStatusValue = $oldStatus instanceof \App\Enums\OrderStatus ? $oldStatus->value : $oldStatus;
+            
             $order->logHistory(
                 'status_changed',
-                "Status changed from {$order->getOriginal('status')} to {$order->status->value}",
+                "Status changed from {$oldStatusValue} to {$order->status->value}",
                 [
-                    'old_status' => $order->getOriginal('status'),
+                    'old_status' => $oldStatusValue,
                     'new_status' => $order->status->value,
                 ]
             );
