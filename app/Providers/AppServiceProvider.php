@@ -24,5 +24,7 @@ class AppServiceProvider extends ServiceProvider
             // Wenn der User die Rolle 'super-admin' hat, alles erlauben
             return $user->hasRole('super-admin') ? true : null;
         });
+
+        \App\Models\Order::observe(\App\Observers\OrderObserver::class);
     }
 }

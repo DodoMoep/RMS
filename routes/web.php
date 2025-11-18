@@ -12,6 +12,7 @@ Route::middleware(['auth','verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     require __DIR__.'/rental_system.php';
+    require __DIR__.'/orders.php';
 
     Route::prefix('admin')->group(function () {
         // Benutzerverwaltung

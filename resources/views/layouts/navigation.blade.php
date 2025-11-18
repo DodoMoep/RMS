@@ -8,6 +8,17 @@
     <x-nav-link :href="route('rentals.index')" :active="request()->routeIs('rentals.*')" icon="calendar-check">Vermietungen</x-nav-link>
     <x-nav-link :href="route('protocols.index')" :active="request()->routeIs('protocols.*')" icon="file-signature">Protokolle</x-nav-link>
     <li class="nav-divider"></li>
+    <li class="nav-title">Bestellverwaltung</li>
+    @can('orders.view')
+        <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" icon="shopping-cart">Bestellungen</x-nav-link>
+    @endcan
+    @can('orders.pack')
+        <x-nav-link :href="route('packing.index')" :active="request()->routeIs('packing.*')" icon="box">Verpackung</x-nav-link>
+    @endcan
+    @can('analytics.view')
+        <x-nav-link :href="route('analytics.index')" :active="request()->routeIs('analytics.*')" icon="chart-line">Analytik</x-nav-link>
+    @endcan
+    <li class="nav-divider"></li>
     <li class="nav-title">Stammdatenverwaltung</li>
     @can('user.list')
         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" icon="users">Benutzer</x-nav-link>
