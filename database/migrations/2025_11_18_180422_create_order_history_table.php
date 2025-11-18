@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('order_history', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('order_id');
+            $table->char('order_id', 36);
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('event_type');
             $table->string('old_value')->nullable();

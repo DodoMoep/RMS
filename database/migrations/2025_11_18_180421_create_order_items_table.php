@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('order_id');
-            $table->uuid('inventory_item_id')->nullable();
+            $table->char('order_id', 36);
+            $table->char('inventory_item_id', 36)->nullable();
             $table->string('item_name');
             $table->string('item_sku')->nullable();
             $table->integer('quantity_ordered');
