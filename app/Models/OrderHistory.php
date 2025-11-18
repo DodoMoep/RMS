@@ -10,6 +10,8 @@ class OrderHistory extends Model
 {
     use HasUuids;
 
+    protected $table = 'order_history';
+
     protected $fillable = [
         'order_id',
         'user_id',
