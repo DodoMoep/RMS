@@ -29,10 +29,27 @@ class RentalController extends Controller
             'hall_id'=>'required|uuid|exists:halls,id',
             'start'=>'required|date',
             'end'=>'required|date|after:start',
-            'price'=>'nullable|numeric',
-            'deposit'=>'nullable|numeric',
+            'price'=>'nullable|numeric|min:0',
+            'deposit'=>'nullable|numeric|min:0',
             'status'=>'required|in:scheduled,active,closed,cancelled',
         ]);
+        
+        // Check for overlapping rentals
+        $overlap = Rental::where('hall_id', $data['hall_id'])
+            ->where('status', '!=', 'cancelled')
+            ->where(function($q) use ($data) {
+                $q->whereBetween('start', [$data['start'], $data['end']])
+                  ->orWhereBetween('end', [$data['start'], $data['end']])
+                  ->orWhere(function($q2) use ($data) {
+                      $q2->where('start', '<=', $data['start'])
+                         ->where('end', '>=', $data['end']);
+                  });
+            })->exists();
+            
+        if ($overlap) {
+            return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
+        }
+        
         Rental::create($data);
         return redirect()->route('rentals.index')->with('ok','Vermietung angelegt.');
     }
@@ -53,16 +70,38 @@ class RentalController extends Controller
             'hall_id'=>'required|uuid|exists:halls,id',
             'start'=>'required|date',
             'end'=>'required|date|after:start',
-            'price'=>'nullable|numeric',
-            'deposit'=>'nullable|numeric',
+            'price'=>'nullable|numeric|min:0',
+            'deposit'=>'nullable|numeric|min:0',
             'status'=>'required|in:scheduled,active,closed,cancelled',
         ]);
+        
+        // Check for overlapping rentals (excluding current rental)
+        $overlap = Rental::where('hall_id', $data['hall_id'])
+            ->where('id', '!=', $rental->id)
+            ->where('status', '!=', 'cancelled')
+            ->where(function($q) use ($data) {
+                $q->whereBetween('start', [$data['start'], $data['end']])
+                  ->orWhereBetween('end', [$data['start'], $data['end']])
+                  ->orWhere(function($q2) use ($data) {
+                      $q2->where('start', '<=', $data['start'])
+                         ->where('end', '>=', $data['end']);
+                  });
+            })->exists();
+            
+        if ($overlap) {
+            return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
+        }
+        
         $rental->update($data);
         return redirect()->route('rentals.index')->with('ok','Vermietung aktualisiert.');
     }
 
     public function destroy(Rental $rental)
     {
+        if ($rental->protocols()->exists()) {
+            return back()->withErrors(['Vermietung kann nicht gelöscht werden, da bereits Protokolle vorhanden sind.']);
+        }
+        
         $rental->delete();
         return back()->with('ok','Vermietung gelöscht.');
     }
@@ -71,41 +110,70 @@ class RentalController extends Controller
 
     public function createOrOpenHandover(Rental $rental)
     {
-        $proto = $rental->handover;
-        if (!$proto) {
-            $proto = Protocol::create([
-                'rental_id'=>$rental->id, 'type'=>'handover',
-                'checklist'=>['stromzaehler'=>null,'wasserzaehler'=>null],
-            ]);
-            // Halle-Inventar in Positionen übernehmen:
-            foreach ($rental->hall->inventory as $inv) {
-                $proto->items()->create([
-                    'inventory_item_id'=>$inv->id,
-                    'label'=>$inv->name.' (Soll: '.$inv->pivot->quantity.')',
-                    'state'=>'ok',
+        try {
+            \DB::beginTransaction();
+            
+            $proto = $rental->handover;
+            if (!$proto) {
+                $proto = Protocol::create([
+                    'rental_id'=>$rental->id, 'type'=>'handover',
+                    'checklist'=>['stromzaehler'=>null,'wasserzaehler'=>null],
                 ]);
+                
+                $rental->load('hall.inventory');
+                foreach ($rental->hall->inventory as $inv) {
+                    $proto->items()->create([
+                        'inventory_item_id'=>$inv->id,
+                        'label'=>$inv->name.' (Soll: '.$inv->pivot->quantity.')',
+                        'state'=>'ok',
+                    ]);
+                }
             }
+            
+            \DB::commit();
+            return redirect()->route('protocol.form', $proto);
+            
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error creating handover protocol', ['error' => $e->getMessage()]);
+            return back()->withErrors(['Fehler beim Erstellen des Übergabeprotokolls.']);
         }
-        return redirect()->route('protocol.form', $proto);
     }
 
     public function createOrOpenReturn(Rental $rental)
     {
-        $return = $rental->returnProtocol;
-        if (!$return) {
-            $source = $rental->handover ?? Protocol::create([
-                'rental_id'=>$rental->id,'type'=>'handover','checklist'=>[]
-            ]);
-            $return = Protocol::create([
-                'rental_id'=>$rental->id,'type'=>'return','checklist'=>$source->checklist
-            ]);
-            foreach ($source->items as $src) {
-                $return->items()->create([
-                    'inventory_item_id'=>$src->inventory_item_id,
-                    'label'=>$src->label, 'state'=>'ok'
+        try {
+            \DB::beginTransaction();
+            
+            $return = $rental->returnProtocol;
+            if (!$return) {
+                $source = $rental->handover;
+                if (!$source) {
+                    $source = Protocol::create([
+                        'rental_id'=>$rental->id,'type'=>'handover','checklist'=>[]
+                    ]);
+                }
+                
+                $return = Protocol::create([
+                    'rental_id'=>$rental->id,'type'=>'return','checklist'=>$source->checklist
                 ]);
+                
+                $source->load('items');
+                foreach ($source->items as $src) {
+                    $return->items()->create([
+                        'inventory_item_id'=>$src->inventory_item_id,
+                        'label'=>$src->label, 'state'=>'ok'
+                    ]);
+                }
             }
+            
+            \DB::commit();
+            return redirect()->route('protocol.form', $return);
+            
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error creating return protocol', ['error' => $e->getMessage()]);
+            return back()->withErrors(['Fehler beim Erstellen des Rückgabeprotokolls.']);
         }
-        return redirect()->route('protocol.form', $return);
     }
 }

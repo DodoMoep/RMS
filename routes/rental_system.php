@@ -34,6 +34,14 @@ Route::prefix('halls')->group(function () {
     Route::delete('/{hall}', [HallController::class, 'destroy'])->name('halls.destroy');
 });
 
+Route::prefix('protocols')->group(function () {
+    Route::get('/', [ProtocolController::class,'index'])->name('protocols.index');
+    Route::get('/{protocol}', [ProtocolController::class,'showForm'])->name('protocol.form');
+    Route::post('/{protocol}/save', [ProtocolController::class,'saveForm'])->name('protocol.save');
+    Route::post('/{protocol}/sign', [ProtocolController::class,'sign'])->name('protocol.sign');
+    Route::get('/{protocol}/pdf', [ProtocolController::class,'pdf'])->name('protocol.pdf');
+});
+
 Route::prefix('rentals')->group(function () {
     Route::get('/', [RentalController::class, 'index'])->name('rentals.index');
     Route::get('/create', [RentalController::class, 'create'])->name('rentals.create');
@@ -41,20 +49,8 @@ Route::prefix('rentals')->group(function () {
     Route::get('/{rental}/edit', [RentalController::class, 'edit'])->name('rentals.edit');
     Route::put('/{rental}', [RentalController::class, 'update'])->name('rentals.update');
     Route::delete('/{rental}', [RentalController::class, 'destroy'])->name('rentals.destroy');
-});
-
-Route::prefix('protocols')->group(function () {
-    // Protokolle: Listen/anzeigen (Erfassung/Signatur/Form/PDF hast du bereits)
-    Route::get('/', [ProtocolController::class,'index'])->name('protocols.index');
-
-    // Erfassung/Signatur/PDF (aus früherer Antwort)
-    Route::get('/{protocol}', [ProtocolController::class,'showForm'])->name('protocol.form');
-    Route::post('/{protocol}/save', [ProtocolController::class,'saveForm'])->name('protocol.save');
-    Route::post('/{protocol}/sign', [ProtocolController::class,'sign'])->name('protocol.sign');
-    Route::get('/{protocol}/pdf', [ProtocolController::class,'pdf'])->name('protocol.pdf');
-});
-
-Route::prefix('rentals')->group(function () {// Komfort: aus Vermietung direkt Protokoll anlegen/öffnen
+    
+    // Protokoll-Aktionen direkt aus Vermietung
     Route::post('/{rental}/handover', [RentalController::class,'createOrOpenHandover'])->name('rentals.handover');
     Route::post('/{rental}/return', [RentalController::class,'createOrOpenReturn'])->name('rentals.return');
 });

@@ -43,6 +43,10 @@ class InventoryItemController extends Controller
 
     public function destroy(InventoryItem $inventory_item)
     {
+        if ($inventory_item->halls()->exists()) {
+            return back()->withErrors(['Inventarposition kann nicht gelöscht werden, da sie noch Hallen zugeordnet ist.']);
+        }
+        
         $inventory_item->delete();
         return back()->with('ok','Inventar gelöscht.');
     }

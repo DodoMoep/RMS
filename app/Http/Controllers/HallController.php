@@ -69,7 +69,11 @@ class HallController extends Controller
     }
 
     public function destroy(Hall $hall){
-        $hall->inventory()->detach(); // optional sauber trennen
+        if ($hall->rentals()->exists()) {
+            return back()->withErrors(['Halle kann nicht gelöscht werden, da noch Vermietungen vorhanden sind.']);
+        }
+        
+        $hall->inventory()->detach();
         $hall->delete();
         return back()->with('ok','Halle gelöscht.');
     }

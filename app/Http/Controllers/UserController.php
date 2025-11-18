@@ -81,8 +81,10 @@ class UserController extends Controller
         ]);
 
         // Sich selbst nicht „aussperren“: optional Schutz
-        if (auth()->id() === $user->id) {
-            // z. B. verbieten, eigene delete-Permission zu entziehen (optional)
+        if (auth()->id() === $user->id && $user->hasRole('super-admin')) {
+            if (!in_array('super-admin', $data['roles'] ?? [])) {
+                return back()->withErrors(['Du kannst dir nicht selbst die Super-Admin Rolle entziehen.']);
+            }
         }
 
         $user->fill([

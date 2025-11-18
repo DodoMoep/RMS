@@ -47,6 +47,10 @@ class TenantController extends Controller
 
     public function destroy(Tenant $tenant)
     {
+        if ($tenant->rentals()->exists()) {
+            return back()->withErrors(['Mieter kann nicht gelöscht werden, da noch Vermietungen vorhanden sind.']);
+        }
+        
         $tenant->delete();
         return back()->with('ok','Mieter gelöscht.');
     }

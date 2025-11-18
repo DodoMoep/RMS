@@ -36,6 +36,9 @@ return new class extends Migration {
             $t->integer('quantity')->default(1);
             $t->timestamps();
             $t->unique(['hall_id','inventory_item_id']);
+            
+            $t->foreign('hall_id')->references('id')->on('halls')->onDelete('cascade');
+            $t->foreign('inventory_item_id')->references('id')->on('inventory_items')->onDelete('cascade');
         });
 
         Schema::create('rentals', function (Blueprint $t) {
@@ -48,6 +51,11 @@ return new class extends Migration {
             $t->decimal('deposit',10,2)->nullable();
             $t->string('status')->default('scheduled'); // scheduled|active|closed|cancelled
             $t->timestamps();
+            
+            $t->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            $t->foreign('hall_id')->references('id')->on('halls')->onDelete('cascade');
+            $t->index('status');
+            $t->index(['start', 'end']);
         });
 
         Schema::create('protocols', function (Blueprint $t) {
@@ -60,6 +68,10 @@ return new class extends Migration {
             $t->string('pdf_path')->nullable();
             $t->string('pdf_sha256')->nullable();
             $t->timestamps();
+            
+            $t->foreign('rental_id')->references('id')->on('rentals')->onDelete('cascade');
+            $t->unique(['rental_id', 'type']);
+            $t->index('type');
         });
 
         Schema::create('protocol_items', function (Blueprint $t) {
@@ -71,6 +83,9 @@ return new class extends Migration {
             $t->text('comment')->nullable();
             $t->decimal('charge',10,2)->nullable();
             $t->timestamps();
+            
+            $t->foreign('protocol_id')->references('id')->on('protocols')->onDelete('cascade');
+            $t->foreign('inventory_item_id')->references('id')->on('inventory_items')->onDelete('set null');
         });
 
         Schema::create('signatures', function (Blueprint $t) {
@@ -81,6 +96,9 @@ return new class extends Migration {
             $t->string('png_path');       // public disk
             $t->timestamp('signed_at');
             $t->timestamps();
+            
+            $t->foreign('protocol_id')->references('id')->on('protocols')->onDelete('cascade');
+            $t->index(['protocol_id', 'role']);
         });
 
         Schema::create('photos', function (Blueprint $t) {
@@ -89,6 +107,8 @@ return new class extends Migration {
             $t->string('path'); // public disk
             $t->text('caption')->nullable();
             $t->timestamps();
+            
+            $t->foreign('protocol_id')->references('id')->on('protocols')->onDelete('cascade');
         });
     }
 

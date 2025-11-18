@@ -11,6 +11,7 @@ class Rental extends Model {
 
     public function tenant(){ return $this->belongsTo(Tenant::class); }
     public function hall(){ return $this->belongsTo(Hall::class); }
-    public function handover(){ return $this->hasOne(Protocol::class)->where('type','handover'); }
-    public function returnProtocol(){ return $this->hasOne(Protocol::class)->where('type','return'); }
+    public function protocols(){ return $this->hasMany(Protocol::class); }
+    public function handover(){ return $this->hasOne(Protocol::class)->ofMany(['id' => 'max'], function($q){ $q->where('type','handover'); }); }
+    public function returnProtocol(){ return $this->hasOne(Protocol::class)->ofMany(['id' => 'max'], function($q){ $q->where('type','return'); }); }
 }
