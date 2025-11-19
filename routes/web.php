@@ -16,6 +16,7 @@ Route::middleware(['auth','verified'])->group(function () {
 
     require __DIR__.'/rental_system.php';
     require __DIR__.'/orders.php';
+    require __DIR__.'/customers.php';
 
     Route::prefix('admin')->group(function () {
         // Benutzerverwaltung

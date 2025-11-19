@@ -1,6 +1,6 @@
 <ul class="sidebar-nav" data-coreui="navigation" data-simplebar="">
     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="home">{{ __('common.navigation.dashboard') }}</x-nav-link>
-    
+
     @canany(['tenants.view', 'halls.view', 'inventory.view', 'rentals.view', 'protocols.view'])
         <li class="nav-divider"></li>
         <li class="nav-group {{ request()->routeIs(['tenants.*', 'halls.*', 'inventory-items.*', 'rentals.*', 'protocols.*']) ? 'show' : '' }}">
@@ -26,30 +26,33 @@
             </ul>
         </li>
     @endcanany
-    
-    @canany(['orders.view', 'orders.create', 'orders.pack', 'analytics.view'])
+
+    @canany(['orders.view', 'orders.create', 'orders.pack', 'analytics.view', 'customers.view'])
         <li class="nav-divider"></li>
-        <li class="nav-group {{ request()->routeIs(['articles.*', 'orders.*', 'packing.*', 'analytics.*']) ? 'show' : '' }}">
+        <li class="nav-group {{ request()->routeIs(['articles.*', 'orders.*', 'packing.*', 'analytics.*', 'customers.*']) ? 'show' : '' }}">
             <a class="nav-link nav-group-toggle" href="#">
                 <i class="nav-icon fas fa-shopping-cart"></i> {{ __('common.navigation.order_management') }}
             </a>
             <ul class="nav-group-items">
-                @can('orders.create')
-                    <x-nav-link :href="route('articles.index')" :active="request()->routeIs('articles.*')" icon="tags">{{ __('common.navigation.articles') }}</x-nav-link>
-                @endcan
                 @can('orders.view')
                     <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" icon="shopping-cart">{{ __('common.navigation.orders') }}</x-nav-link>
                 @endcan
                 @can('orders.pack')
                     <x-nav-link :href="route('packing.index')" :active="request()->routeIs('packing.*')" icon="box">{{ __('common.navigation.packing') }}</x-nav-link>
                 @endcan
+                    @can('orders.create')
+                        <x-nav-link :href="route('articles.index')" :active="request()->routeIs('articles.*')" icon="tags">{{ __('common.navigation.articles') }}</x-nav-link>
+                    @endcan
+                    @can('customers.view')
+                        <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')" icon="users">{{ __('common.navigation.customers') }}</x-nav-link>
+                    @endcan
                 @can('analytics.view')
                     <x-nav-link :href="route('analytics.index')" :active="request()->routeIs('analytics.*')" icon="chart-line">{{ __('common.navigation.analytics') }}</x-nav-link>
                 @endcan
             </ul>
         </li>
     @endcanany
-    
+
     @canany(['user.list', 'role.list', 'perm.list'])
         <li class="nav-divider"></li>
         <li class="nav-group {{ request()->routeIs(['users.*', 'roles.*', 'permissions.*']) ? 'show' : '' }}">

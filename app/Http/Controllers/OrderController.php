@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Models\Article;
+use App\Models\Customer;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
@@ -40,13 +41,16 @@ class OrderController extends Controller
     public function create()
     {
         $articles = Article::active()->orderBy('name')->get();
-        return view('orders.create', compact('articles'));
+        $customers = Customer::active()->orderBy('name')->get();
+        return view('orders.create', compact('articles', 'customers'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customer_name' => 'required|string|max:255',
+            'customer_type' => 'required|in:existing,individual',
+            'customer_id' => 'required_if:customer_type,existing|nullable|exists:customers,id',
+            'customer_name' => 'required_if:customer_type,individual|nullable|string|max:255',
             'customer_email' => 'nullable|email',
             'customer_phone' => 'nullable|string|max:50',
             'customer_address' => 'nullable|string',
@@ -57,15 +61,28 @@ class OrderController extends Controller
             'items.*.notes' => 'nullable|string',
         ]);
 
-        $order = Order::create([
-            'customer_name' => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'] ?? null,
-            'customer_phone' => $validated['customer_phone'] ?? null,
-            'customer_address' => $validated['customer_address'] ?? null,
-            'notes' => $validated['notes'] ?? null,
+        $orderData = [
             'status' => OrderStatus::NEW,
             'created_by' => auth()->id(),
-        ]);
+            'notes' => $validated['notes'] ?? null,
+        ];
+
+        if ($validated['customer_type'] === 'existing') {
+            $customer = Customer::find($validated['customer_id']);
+            $orderData['customer_id'] = $customer->id;
+            $orderData['customer_name'] = $customer->name;
+            $orderData['customer_email'] = $customer->email;
+            $orderData['customer_phone'] = $customer->phone;
+            $orderData['customer_address'] = $customer->address;
+        } else {
+            $orderData['customer_id'] = null;
+            $orderData['customer_name'] = $validated['customer_name'];
+            $orderData['customer_email'] = $validated['customer_email'] ?? null;
+            $orderData['customer_phone'] = $validated['customer_phone'] ?? null;
+            $orderData['customer_address'] = $validated['customer_address'] ?? null;
+        }
+
+        $order = Order::create($orderData);
 
         foreach ($validated['items'] as $item) {
             $article = Article::find($item['article_id']);
@@ -85,7 +102,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['creator', 'packer', 'items.article', 'history.user']);
+        $order->load(['creator', 'packer', 'items.article', 'history.user', 'customer']);
         return view('orders.show', compact('order'));
     }
 
@@ -96,7 +113,8 @@ class OrderController extends Controller
         }
 
         $articles = Article::active()->orderBy('name')->get();
-        return view('orders.edit', compact('order', 'articles'));
+        $customers = Customer::active()->orderBy('name')->get();
+        return view('orders.edit', compact('order', 'articles', 'customers'));
     }
 
     public function update(Request $request, Order $order)
@@ -109,7 +127,9 @@ class OrderController extends Controller
         }
 
         $validated = $request->validate([
-            'customer_name' => 'required|string|max:255',
+            'customer_type' => 'required|in:existing,individual',
+            'customer_id' => 'required_if:customer_type,existing|nullable|exists:customers,id',
+            'customer_name' => 'required_if:customer_type,individual|nullable|string|max:255',
             'customer_email' => 'nullable|email',
             'customer_phone' => 'nullable|string|max:50',
             'customer_address' => 'nullable|string',
@@ -128,13 +148,24 @@ class OrderController extends Controller
                 ->with('error', 'Die Bestellung wurde von einem anderen Benutzer geändert. Bitte überprüfen Sie die aktuelle Version.');
         }
 
-        $order->update([
-            'customer_name' => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'] ?? null,
-            'customer_phone' => $validated['customer_phone'] ?? null,
-            'customer_address' => $validated['customer_address'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        $updateData = ['notes' => $validated['notes'] ?? null];
+
+        if ($validated['customer_type'] === 'existing') {
+            $customer = Customer::find($validated['customer_id']);
+            $updateData['customer_id'] = $customer->id;
+            $updateData['customer_name'] = $customer->name;
+            $updateData['customer_email'] = $customer->email;
+            $updateData['customer_phone'] = $customer->phone;
+            $updateData['customer_address'] = $customer->address;
+        } else {
+            $updateData['customer_id'] = null;
+            $updateData['customer_name'] = $validated['customer_name'];
+            $updateData['customer_email'] = $validated['customer_email'] ?? null;
+            $updateData['customer_phone'] = $validated['customer_phone'] ?? null;
+            $updateData['customer_address'] = $validated['customer_address'] ?? null;
+        }
+
+        $order->update($updateData);
 
         // Update items
         $existingItemIds = [];

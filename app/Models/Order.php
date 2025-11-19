@@ -15,6 +15,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_number',
+        'customer_id',
         'customer_name',
         'customer_email',
         'customer_phone',
@@ -33,6 +34,11 @@ class Order extends Model
         'delivery_note_printed_at' => 'datetime',
         'delivered_at' => 'datetime',
     ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
     public function creator(): BelongsTo
     {

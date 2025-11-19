@@ -84,6 +84,10 @@
                 <div class="card-body">
                     <h6 class="card-title">{{ __('orders.customer_information') }}</h6>
                     <dl class="row mb-0 small">
+                        @if($order->customer_id)
+                            <dt class="col-sm-4">{{ __('orders.customer_number') }}:</dt>
+                            <dd class="col-sm-8">{{ $order->customer->customer_number }}</dd>
+                        @endif
                         <dt class="col-sm-4">{{ __('orders.customer_name') }}:</dt>
                         <dd class="col-sm-8">{{ $order->customer_name }}</dd>
                         @if($order->customer_email)

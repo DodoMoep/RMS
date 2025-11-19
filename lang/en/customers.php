@@ -1,0 +1,58 @@
+<?php
+
+return [
+    'customers' => 'Customers',
+    'customer' => 'Customer',
+    'create' => 'Create Customer',
+    'edit' => 'Edit Customer',
+    'show' => 'View Customer',
+    'delete' => 'Delete Customer',
+    
+    'customer_number' => 'Customer Number',
+    'name' => 'Name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'address' => 'Address',
+    'notes' => 'Notes',
+    'notes_help' => 'Internal notes about this customer',
+    'is_active' => 'Active',
+    'is_active_help' => 'Inactive customers cannot be selected for new orders',
+    'status' => 'Status',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'created_at' => 'Created At',
+    'updated_at' => 'Updated At',
+    
+    'customer_information' => 'Customer Information',
+    'statistics' => 'Statistics',
+    'total_orders' => 'Total Orders',
+    'delivered_orders' => 'Delivered',
+    'orders_count' => 'Orders',
+    'recent_orders' => 'Recent Orders',
+    'no_orders' => 'No orders yet',
+    'view_all_orders' => 'View All Orders',
+    'create_order' => 'Create Order',
+    
+    'no_customers' => 'No customers available',
+    'back_to_list' => 'Back to List',
+    'search_placeholder' => 'Search by name, number or email...',
+    'all_statuses' => 'All Statuses',
+    
+    'actions' => [
+        'view' => 'View',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'activate' => 'Activate',
+        'deactivate' => 'Deactivate',
+    ],
+    
+    'messages' => [
+        'created' => 'Customer created successfully.',
+        'updated' => 'Customer updated successfully.',
+        'deleted' => 'Customer deleted successfully.',
+        'activated' => 'Customer activated successfully.',
+        'deactivated' => 'Customer deactivated successfully.',
+        'confirm_delete' => 'Are you sure you want to delete this customer?',
+        'cannot_delete_has_orders' => 'Cannot delete customer because they have existing orders.',
+    ],
+];

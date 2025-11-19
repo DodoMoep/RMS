@@ -36,6 +36,7 @@ return [
         'order_management' => 'Bestellverwaltung',
         'orders' => 'Bestellungen',
         'articles' => 'Artikel',
+        'customers' => 'Kunden',
         'packing' => 'Verpackung',
         'analytics' => 'Analysen',
         'order_history' => 'Bestellhistorie',

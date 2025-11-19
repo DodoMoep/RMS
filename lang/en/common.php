@@ -36,6 +36,7 @@ return [
         'order_management' => 'Order Management',
         'orders' => 'Orders',
         'articles' => 'Articles',
+        'customers' => 'Customers',
         'packing' => 'Packing',
         'analytics' => 'Analytics',
         'order_history' => 'Order History',
