@@ -12,9 +12,9 @@ return [
     'created' => 'Bestellung erstellt',
     'updated' => 'Bestellung aktualisiert',
     'no_orders' => 'Keine Bestellungen verfügbar',
-    
+
     'order_number' => 'Bestellnummer',
-    'customer_number' => 'Kundennummer',
+    'customer_number' => 'Kunden-Nr.',
     'customer_name' => 'Kundenname',
     'customer_email' => 'Kunden-E-Mail',
     'customer_phone' => 'Kundentelefon',
@@ -31,19 +31,19 @@ return [
     'updated_at' => 'Aktualisiert am',
     'packed_by' => 'Verpackt von',
     'delivered_at' => 'Zugestellt am',
-    
+
     'order_information' => 'Bestellinformationen',
     'customer_information' => 'Kundeninformationen',
     'update_status' => 'Status aktualisieren',
     'order_completed' => 'Bestellung abgeschlossen',
-    
+
     'article' => 'Artikel',
     'sku' => 'SKU',
     'ordered' => 'Bestellt',
     'packed' => 'Verpackt',
     'item_packed' => 'Verpackt',
     'item_open' => 'Offen',
-    
+
     'items' => 'Artikel',
     'add_item' => 'Artikel hinzufügen',
     'item_added' => 'Artikel hinzugefügt',
@@ -52,7 +52,7 @@ return [
     'packed_quantity' => 'Verpackte Menge',
     'unit_price' => 'Einzelpreis',
     'total' => 'Gesamt',
-    
+
     'statuses' => [
         'all' => 'Alle Status',
         'new' => 'Neu',
@@ -61,7 +61,7 @@ return [
         'in_delivery' => 'In Zustellung',
         'delivered' => 'Geliefert',
     ],
-    
+
     'actions' => [
         'view' => 'Anzeigen',
         'edit' => 'Bearbeiten',
@@ -70,7 +70,7 @@ return [
         'print_delivery_note' => 'Lieferschein drucken',
         'change_status' => 'Status ändern',
     ],
-    
+
     'messages' => [
         'confirm_delete' => 'Möchten Sie diese Bestellung wirklich löschen?',
         'cannot_edit_packed' => 'Verpackte Bestellungen können nicht bearbeitet werden',
@@ -78,7 +78,7 @@ return [
         'all_items_must_be_packed' => 'Alle Artikel müssen vollständig verpackt sein, bevor der Status auf "Verpackt" gesetzt werden kann',
         'cannot_change_status_back' => 'Der Status kann nicht zurückgesetzt werden, sobald die Bestellung verpackt ist',
     ],
-    
+
     'history' => 'Bestellhistorie',
     'timeline' => 'Zeitverlauf',
     'user' => 'Benutzer',
@@ -89,7 +89,7 @@ return [
     'select_article' => 'Artikel wählen',
     'fully_packed' => 'Vollständig verpackt',
     'partially_packed' => 'Teilweise verpackt',
-    
+
     'history_event_types' => [
         'order_created' => 'Bestellung erstellt',
         'order_updated' => 'Bestellung aktualisiert',

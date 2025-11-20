@@ -100,7 +100,7 @@
                         @endif
                         @if($order->customer_address)
                             <dt class="col-sm-4">{{ __('orders.customer_address') }}:</dt>
-                            <dd class="col-sm-8">{{ $order->customer_address }}</dd>
+                            <dd class="col-sm-8">{!! nl2br(e($order->customer_address)) !!}</dd>
                         @endif
                     </dl>
                 </div>
