@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\HallController;
-use App\Http\Controllers\InventoryItemController;
-use App\Http\Controllers\ProtocolController;
-use App\Http\Controllers\RentalController;
-use App\Http\Controllers\TenantController;
+use App\Http\Controllers\Rental\HallController;
+use App\Http\Controllers\Inventory\InventoryItemController;
+use App\Http\Controllers\Logistics\ProtocolController;
+use App\Http\Controllers\Rental\RentalController;
+use App\Http\Controllers\Rental\TenantController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('inventory-items')->middleware(['auth', 'permission:inventory.view'])->group(function () {

@@ -28,6 +28,6 @@ class DashboardController extends Controller
             $openProtocols = Protocol::whereNull('pdf_path')->latest()->take(10)->get();
         }
 
-        return view('dashboard', compact('todayRentals','openProtocols'));
+        return view('dashboard.index', compact('todayRentals','openProtocols'));
     }
 }

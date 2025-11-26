@@ -13,9 +13,13 @@ class Customer extends Model
     protected $fillable = [
         'customer_number',
         'name',
+        'contact_person_name',
         'email',
         'phone',
-        'address',
+        'street',
+        'zip_code',
+        'city',
+        'address_notes',
         'notes',
         'is_active',
     ];
@@ -60,5 +64,17 @@ class Customer extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function getFormattedAddressAttribute(): string
+    {
+        $parts = array_filter([
+            $this->street,
+            trim(($this->zip_code ?? '') . ' ' . ($this->city ?? '')),
+        ]);
+        if ($this->address_notes) {
+            $parts[] = $this->address_notes;
+        }
+        return implode("\n", $parts);
     }
 }

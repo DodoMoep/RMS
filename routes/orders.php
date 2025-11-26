@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\ArticleController;
-use App\Http\Controllers\DeliveryNoteController;
-use App\Http\Controllers\OrderAnalyticsController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderPackingController;
+use App\Http\Controllers\Order\ArticleController;
+use App\Http\Controllers\Logistics\DeliveryNoteController;
+use App\Http\Controllers\Order\OrderAnalyticsController;
+use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Order\OrderPackingController;
 use Illuminate\Support\Facades\Route;
 
 // Articles Management

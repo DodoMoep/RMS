@@ -11,7 +11,7 @@ return [
     'description' => 'Beschreibung',
     'unit_price' => 'Einzelpreis',
     'total' => 'Gesamt',
-    'notes' => 'Notizen',
+    'notes' => 'Bemerkungen',
     'signature' => 'Unterschrift',
     'generated_at' => 'Erstellt am',
     'generate' => 'Lieferschein erstellen',

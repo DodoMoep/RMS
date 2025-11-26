@@ -16,10 +16,8 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
-        'customer_name',
-        'customer_email',
-        'customer_phone',
-        'customer_address',
+        'delivery_date',
+        'delivery_type',
         'status',
         'notes',
         'delivery_note_path',
@@ -31,6 +29,7 @@ class Order extends Model
 
     protected $casts = [
         'status' => OrderStatus::class,
+        'delivery_date' => 'date',
         'delivery_note_printed_at' => 'datetime',
         'delivered_at' => 'datetime',
     ];
