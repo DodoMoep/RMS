@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(find \"E:\\\\00_Git\\\\RMS\\\\resources\\\\views\\\\layouts\" -name \"*nav*\" -o -name \"*sidebar*\" -o -name \"*menu*\" 2>/dev/null | head -20)",
+      "Bash(find \"E:\\\\00_Git\\\\RMS\\\\resources\\\\views\\\\components\" -name \"*nav*\" -o -name \"*sidebar*\" -o -name \"*menu*\" 2>/dev/null | head -20)",
+      "Bash(ls /e/00_Git/RMS/database/migrations/2026_04_12* && ls /e/00_Git/RMS/app/Models/Contact.php /e/00_Git/RMS/app/Enums/ContactType.php /e/00_Git/RMS/app/Http/Controllers/Contact/ContactController.php /e/00_Git/RMS/routes/contacts.php /e/00_Git/RMS/resources/views/contacts/ /e/00_Git/RMS/lang/de/contacts.php /e/00_Git/RMS/lang/en/contacts.php)",
+      "Bash(ls E:/00_Git/RMS/app/Enums/ && ls E:/00_Git/RMS/app/Models/Contact.php && ls E:/00_Git/RMS/app/Http/Controllers/Contact/ && ls E:/00_Git/RMS/routes/contacts.php && ls E:/00_Git/RMS/resources/views/contacts/ && ls E:/00_Git/RMS/database/migrations/2026_04_12_*)",
+      "Bash(cd E:/00_Git/RMS && php artisan migrate --path=database/migrations/2026_04_12_000002_migrate_tenants_customers_to_contacts.php 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan migrate --path=database/migrations/2026_04_12_000003_add_contact_id_to_rentals.php 2>&1 && php artisan migrate --path=database/migrations/2026_04_12_000004_add_contact_id_to_orders.php 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan migrate --path=database/migrations/2026_04_12_000005_populate_contact_id_and_add_fks.php 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan tinker --execute=\"\nDB::statement\\('UPDATE rentals SET contact_id = tenant_id WHERE tenant_id IS NOT NULL AND contact_id IS NULL'\\);\nDB::statement\\('UPDATE orders SET contact_id = customer_id WHERE customer_id IS NOT NULL AND contact_id IS NULL'\\);\necho 'UPDATE done';\n\" 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan tinker --execute=\"\nSchema::table\\('orders', function\\(\\\\$table\\) {\n    \\\\$table->foreign\\('contact_id'\\)->references\\('id'\\)->on\\('contacts'\\)->nullOnDelete\\(\\);\n}\\);\necho 'orders FK added';\n\" 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan config:clear && php artisan route:clear && php artisan view:clear 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan tinker --execute=\"\nuse App\\\\Models\\\\Order;\nuse App\\\\Models\\\\Rental;\n\\\\$ordersWithContact = Order::whereNotNull\\('contact_id'\\)->count\\(\\);\n\\\\$ordersTotal = Order::count\\(\\);\n\\\\$rentalsWithContact = Rental::whereNotNull\\('contact_id'\\)->count\\(\\);\n\\\\$rentalsTotal = Rental::count\\(\\);\necho \\\\\"Orders: \\\\$ordersWithContact/\\\\$ordersTotal have contact_id, Rentals: \\\\$rentalsWithContact/\\\\$rentalsTotal have contact_id\\\\\";\n\" 2>&1)",
+      "Bash(rm -f \\\\\n  \"E:/00_Git/RMS/app/Models/Tenant.php\" \\\\\n  \"E:/00_Git/RMS/app/Models/Customer.php\" \\\\\n  \"E:/00_Git/RMS/app/Http/Controllers/Rental/TenantController.php\" \\\\\n  \"E:/00_Git/RMS/app/Http/Controllers/Customer/CustomerController.php\" \\\\\n  \"E:/00_Git/RMS/routes/customers.php\" \\\\\n  \"E:/00_Git/RMS/lang/de/tenants.php\" \\\\\n  \"E:/00_Git/RMS/lang/en/tenants.php\" \\\\\n  \"E:/00_Git/RMS/lang/de/customers.php\" \\\\\n  \"E:/00_Git/RMS/lang/en/customers.php\"\n\nrm -rf \\\\\n  \"E:/00_Git/RMS/resources/views/rental/tenants/\" \\\\\n  \"E:/00_Git/RMS/resources/views/customer/\"\n\necho \"Deleted.\")",
+      "Bash(cd E:/00_Git/RMS && php artisan view:clear && php artisan config:clear 2>&1)",
+      "Bash(cd E:/00_Git/RMS && php artisan tinker --execute=\"echo \\\\Spatie\\\\Activitylog\\\\Models\\\\Activity::count\\(\\) . ' entries';\" 2>&1)"
+    ]
+  }
+}

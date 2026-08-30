@@ -26,8 +26,8 @@
                 <tbody>
                     @forelse($orders as $order)
                         @php
-                            $totalItems = $order->items->count();
-                            $packedItems = $order->items->where('is_packed', true)->count();
+                            $totalItems = $order->items_count;
+                            $packedItems = $order->packed_items_count;
                             $percentage = $totalItems > 0 ? ($packedItems / $totalItems) * 100 : 0;
                             $progressBarClass = 'bg-primary';
                             if ($packedItems > 0 && $packedItems < $totalItems) {

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article;
+use App\Models\Order\Article;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
@@ -56,6 +56,10 @@ class ArticleController extends Controller
 
     public function destroy(Article $article)
     {
+        if ($article->orderItems()->exists()) {
+            return back()->withErrors(['Artikel kann nicht gelöscht werden, da er in bestehenden Bestellungen verwendet wird.']);
+        }
+
         $article->delete();
         return redirect()->route('articles.index')->with('ok', 'Artikel gelöscht.');
     }

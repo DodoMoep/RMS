@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Rental;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Rental, Tenant, Hall, Protocol};
+use App\Models\Rental\{Rental, Hall, Protocol};
+use App\Models\Contact;
 use Illuminate\Http\Request;
 
 class RentalController extends Controller
 {
     public function index()
     {
-        $rentals = Rental::with(['tenant','hall','handover','returnProtocol'])
+        $rentals = Rental::with(['contact','hall','handover','returnProtocol'])
             ->latest()->paginate(15);
         return view('rental.rentals.index', compact('rentals'));
     }
@@ -18,15 +19,15 @@ class RentalController extends Controller
     public function create()
     {
         return view('rental.rentals.create', [
-            'tenants' => Tenant::orderBy('name')->get(),
-            'halls'   => Hall::orderBy('name')->get(),
+            'contacts' => Contact::tenants()->orderBy('name')->get(),
+            'halls'    => Hall::orderBy('name')->get(),
         ]);
     }
 
     public function store(Request $r)
     {
         $data = $r->validate([
-            'tenant_id'=>'required|uuid|exists:tenants,id',
+            'contact_id'=>'required|uuid|exists:contacts,id',
             'hall_id'=>'required|uuid|exists:halls,id',
             'start'=>'required|date',
             'end'=>'required|date|after:start',
@@ -34,7 +35,7 @@ class RentalController extends Controller
             'deposit'=>'nullable|numeric|min:0',
             'status'=>'required|in:scheduled,active,closed,cancelled',
         ]);
-        
+
         // Check for overlapping rentals
         $overlap = Rental::where('hall_id', $data['hall_id'])
             ->where('status', '!=', 'cancelled')
@@ -46,11 +47,11 @@ class RentalController extends Controller
                          ->where('end', '>=', $data['end']);
                   });
             })->exists();
-            
+
         if ($overlap) {
             return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
         }
-        
+
         Rental::create($data);
         return redirect()->route('rentals.index')->with('ok','Vermietung angelegt.');
     }
@@ -58,16 +59,16 @@ class RentalController extends Controller
     public function edit(Rental $rental)
     {
         return view('rental.rentals.edit', [
-            'rental'=>$rental,
-            'tenants'=>Tenant::orderBy('name')->get(),
-            'halls'=>Hall::orderBy('name')->get(),
+            'rental'   => $rental,
+            'contacts' => Contact::tenants()->orderBy('name')->get(),
+            'halls'    => Hall::orderBy('name')->get(),
         ]);
     }
 
     public function update(Request $r, Rental $rental)
     {
         $data = $r->validate([
-            'tenant_id'=>'required|uuid|exists:tenants,id',
+            'contact_id'=>'required|uuid|exists:contacts,id',
             'hall_id'=>'required|uuid|exists:halls,id',
             'start'=>'required|date',
             'end'=>'required|date|after:start',
@@ -75,7 +76,7 @@ class RentalController extends Controller
             'deposit'=>'nullable|numeric|min:0',
             'status'=>'required|in:scheduled,active,closed,cancelled',
         ]);
-        
+
         // Check for overlapping rentals (excluding current rental)
         $overlap = Rental::where('hall_id', $data['hall_id'])
             ->where('id', '!=', $rental->id)
@@ -88,11 +89,11 @@ class RentalController extends Controller
                          ->where('end', '>=', $data['end']);
                   });
             })->exists();
-            
+
         if ($overlap) {
             return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
         }
-        
+
         $rental->update($data);
         return redirect()->route('rentals.index')->with('ok','Vermietung aktualisiert.');
     }
@@ -102,7 +103,7 @@ class RentalController extends Controller
         if ($rental->protocols()->exists()) {
             return back()->withErrors(['Vermietung kann nicht gelöscht werden, da bereits Protokolle vorhanden sind.']);
         }
-        
+
         $rental->delete();
         return back()->with('ok','Vermietung gelöscht.');
     }
@@ -113,14 +114,14 @@ class RentalController extends Controller
     {
         try {
             \DB::beginTransaction();
-            
+
             $proto = $rental->handover;
             if (!$proto) {
                 $proto = Protocol::create([
                     'rental_id'=>$rental->id, 'type'=>'handover',
                     'checklist'=>['stromzaehler'=>null,'wasserzaehler'=>null],
                 ]);
-                
+
                 $rental->load('hall.inventory');
                 foreach ($rental->hall->inventory as $inv) {
                     $proto->items()->create([
@@ -130,10 +131,10 @@ class RentalController extends Controller
                     ]);
                 }
             }
-            
+
             \DB::commit();
             return redirect()->route('protocol.form', $proto);
-            
+
         } catch (\Exception $e) {
             \DB::rollBack();
             \Log::error('Error creating handover protocol', ['error' => $e->getMessage()]);
@@ -145,7 +146,7 @@ class RentalController extends Controller
     {
         try {
             \DB::beginTransaction();
-            
+
             $return = $rental->returnProtocol;
             if (!$return) {
                 $source = $rental->handover;
@@ -154,11 +155,11 @@ class RentalController extends Controller
                         'rental_id'=>$rental->id,'type'=>'handover','checklist'=>[]
                     ]);
                 }
-                
+
                 $return = Protocol::create([
                     'rental_id'=>$rental->id,'type'=>'return','checklist'=>$source->checklist
                 ]);
-                
+
                 $source->load('items');
                 foreach ($source->items as $src) {
                     $return->items()->create([
@@ -167,10 +168,10 @@ class RentalController extends Controller
                     ]);
                 }
             }
-            
+
             \DB::commit();
             return redirect()->route('protocol.form', $return);
-            
+
         } catch (\Exception $e) {
             \DB::rollBack();
             \Log::error('Error creating return protocol', ['error' => $e->getMessage()]);
@@ -178,4 +179,3 @@ class RentalController extends Controller
         }
     }
 }
-

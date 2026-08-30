@@ -1,0 +1,63 @@
+<?php
+
+return [
+    'contacts' => 'Kontakte',
+    'contact' => 'Kontakt',
+    'create' => 'Neuen Kontakt anlegen',
+    'edit' => 'Kontakt bearbeiten',
+    'show' => 'Kontakt anzeigen',
+    'delete' => 'Kontakt löschen',
+
+    'type' => 'Typ',
+    'type_tenant' => 'Mieter',
+    'type_customer' => 'Kunde',
+    'type_both' => 'Mieter & Kunde',
+    'all_types' => 'Alle Typen',
+
+    'customer_number' => 'Kundennummer',
+    'name' => 'Name',
+    'contact_person_name' => 'Ansprechpartner',
+    'email' => 'E-Mail',
+    'phone' => 'Telefon',
+    'street' => 'Straße / Hausnummer',
+    'zip_code' => 'PLZ',
+    'city' => 'Stadt',
+    'address' => 'Adresse',
+    'address_notes' => 'Adresszusatz',
+    'notes' => 'Bemerkungen',
+    'is_active' => 'Aktiv',
+    'status' => 'Status',
+    'active' => 'Aktiv',
+    'inactive' => 'Inaktiv',
+    'all_statuses' => 'Alle Status',
+    'address_notes_help' => 'Zusätzliche Informationen (Stockwerk, Gebäude, etc.)',
+
+    'actions' => [
+        'view'       => 'Anzeigen',
+        'edit'       => 'Bearbeiten',
+        'delete'     => 'Löschen',
+        'activate'   => 'Aktivieren',
+        'deactivate' => 'Deaktivieren',
+    ],
+
+    'contact_information' => 'Kontaktinformationen',
+    'orders_count' => 'Bestellungen',
+    'rentals_count' => 'Vermietungen',
+    'recent_orders' => 'Letzte Bestellungen',
+    'recent_rentals' => 'Letzte Vermietungen',
+    'no_orders' => 'Noch keine Bestellungen',
+    'no_rentals' => 'Noch keine Vermietungen',
+    'no_contacts' => 'Keine Kontakte gefunden',
+    'back_to_list' => 'Zurück zur Liste',
+    'search_placeholder' => 'Nach Name, Nummer, E-Mail oder Stadt suchen...',
+
+    'messages' => [
+        'contact_created' => 'Kontakt erfolgreich erstellt.',
+        'contact_updated' => 'Kontakt erfolgreich aktualisiert.',
+        'contact_deleted' => 'Kontakt erfolgreich gelöscht.',
+        'activated' => 'Kontakt erfolgreich aktiviert.',
+        'deactivated' => 'Kontakt erfolgreich deaktiviert.',
+        'confirm_delete' => 'Möchten Sie diesen Kontakt wirklich löschen?',
+        'cannot_delete_has_relations' => 'Kontakt kann nicht gelöscht werden, da noch Bestellungen oder Vermietungen vorhanden sind.',
+    ],
+];

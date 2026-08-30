@@ -1,7 +1,7 @@
 <?php
 namespace App\Mail;
 
-use App\Models\Protocol;
+use App\Models\Rental\Protocol;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;

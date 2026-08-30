@@ -44,7 +44,7 @@
                     @forelse($orders as $order)
                         <tr>
                             <td><a href="{{ route('orders.show', $order) }}" class="text-decoration-none">{{ $order->order_number }}</a></td>
-                            <td>{{ $order->customer->name ?? 'N/A' }}</td>
+                            <td>{{ $order->contact->name ?? 'N/A' }}</td>
                             <td>{{ $order->delivery_date ? $order->delivery_date->format('d.m.Y') : 'N/A' }}</td>
                             <td>{{ $order->delivery_type ?? 'N/A' }}</td>
                             <td><span class="badge {{ $order->status->color() }}">{{ $order->status->label() }}</span></td>

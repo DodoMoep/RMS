@@ -51,6 +51,4 @@ return [
         'revenue_trend' => 'Umsatztrend',
         'top_articles' => 'Top-Artikel',
     ],
-    
-    'no_data' => 'Keine Daten verfügbar',
 ];

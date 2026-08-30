@@ -98,24 +98,24 @@
                     <h6 class="card-title">{{ __('orders.customer_information') }}</h6>
                     <dl class="row mb-0 small">
                         <dt class="col-sm-5">{{ __('orders.customer_number') }}:</dt>
-                        <dd class="col-sm-7">{{ $order->customer->customer_number }}</dd>
+                        <dd class="col-sm-7">{{ $order->contact->customer_number }}</dd>
                         <dt class="col-sm-5">{{ __('orders.customer_name') }}:</dt>
-                        <dd class="col-sm-7">{{ $order->customer->name }}</dd>
-                        @if($order->customer->contact_person_name)
-                            <dt class="col-sm-5">{{ __('customers.contact_person_name') }}:</dt>
-                            <dd class="col-sm-7">{{ $order->customer->contact_person_name }}</dd>
+                        <dd class="col-sm-7">{{ $order->contact->name }}</dd>
+                        @if($order->contact->contact_person_name)
+                            <dt class="col-sm-5">{{ __('contacts.contact_person_name') }}:</dt>
+                            <dd class="col-sm-7">{{ $order->contact->contact_person_name }}</dd>
                         @endif
-                        @if($order->customer->email)
+                        @if($order->contact->email)
                             <dt class="col-sm-5">{{ __('orders.customer_email') }}:</dt>
-                            <dd class="col-sm-7">{{ $order->customer->email }}</dd>
+                            <dd class="col-sm-7">{{ $order->contact->email }}</dd>
                         @endif
-                        @if($order->customer->phone)
+                        @if($order->contact->phone)
                             <dt class="col-sm-5">{{ __('orders.customer_phone') }}:</dt>
-                            <dd class="col-sm-7">{{ $order->customer->phone }}</dd>
+                            <dd class="col-sm-7">{{ $order->contact->phone }}</dd>
                         @endif
-                        @if($order->customer->formatted_address)
+                        @if($order->contact->formatted_address)
                             <dt class="col-sm-5">{{ __('orders.customer_address') }}:</dt>
-                            <dd class="col-sm-7">{!! nl2br(e($order->customer->formatted_address)) !!}</dd>
+                            <dd class="col-sm-7">{!! nl2br(e($order->contact->formatted_address)) !!}</dd>
                         @endif
                     </dl>
                 </div>

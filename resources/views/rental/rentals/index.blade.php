@@ -15,7 +15,7 @@
                 <tbody>
                 @forelse($rentals as $r)
                     <tr>
-                        <td>{{ $r->tenant->name }}</td>
+                        <td>{{ $r->contact->name }}</td>
                         <td>{{ $r->hall->name }}</td>
                         <td>{{ $r->start->format('d.m.Y H:i') }}</td>
                         <td>{{ $r->end->format('d.m.Y H:i') }}</td>

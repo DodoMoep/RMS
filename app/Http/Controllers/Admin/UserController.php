@@ -53,9 +53,19 @@ class UserController extends Controller
             'password' => Hash::make($data['password']),
         ]);
 
-        // Zuweisungen
         $user->syncRoles($data['roles'] ?? []);
         $user->syncPermissions($data['perms'] ?? []);
+
+        activity('admin')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties([
+                'roles' => $data['roles'] ?? [],
+                'perms' => $data['perms'] ?? [],
+                'ip'    => $request->ip(),
+            ])
+            ->event('user.created')
+            ->log('User angelegt');
 
         return redirect()->route('users.index')->with('status','User angelegt.');
     }
@@ -81,7 +91,7 @@ class UserController extends Controller
             'perms.*'    => ['string', Rule::exists('permissions','name')],
         ]);
 
-        // Sich selbst nicht „aussperren“: optional Schutz
+        // Sich selbst nicht „aussperren": optional Schutz
         if (auth()->id() === $user->id && $user->hasRole('super-admin')) {
             if (!in_array('super-admin', $data['roles'] ?? [])) {
                 return back()->withErrors(['Du kannst dir nicht selbst die Super-Admin Rolle entziehen.']);
@@ -100,6 +110,17 @@ class UserController extends Controller
         $user->syncRoles($data['roles'] ?? []);
         $user->syncPermissions($data['perms'] ?? []);
 
+        activity('admin')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties([
+                'roles' => $data['roles'] ?? [],
+                'perms' => $data['perms'] ?? [],
+                'ip'    => $request->ip(),
+            ])
+            ->event('user.updated')
+            ->log('User aktualisiert');
+
         return redirect()->route('users.index')->with('status','User aktualisiert.');
     }
 
@@ -108,8 +129,14 @@ class UserController extends Controller
         // Sich selbst nicht löschen
         abort_if(auth()->id() === $user->id, 403, 'Du kannst dich nicht selbst löschen.');
 
+        activity('admin')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties(['ip' => request()->ip()])
+            ->event('user.deleted')
+            ->log('User gelöscht');
+
         $user->delete();
         return back()->with('status','User gelöscht.');
     }
 }
-

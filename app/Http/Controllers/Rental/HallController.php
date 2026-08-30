@@ -2,8 +2,8 @@
 namespace App\Http\Controllers\Rental;
 
 use App\Http\Controllers\Controller;
-use App\Models\Hall;
-use App\Models\InventoryItem; // <-- wichtig
+use App\Models\Rental\Hall;
+use App\Models\Rental\InventoryItem; // <-- wichtig
 use Illuminate\Http\Request;
 
 class HallController extends Controller

@@ -6,14 +6,14 @@
 
 <div class="row g-3">
     <div class="col-md-6">
-        <x-input-label for="tenant_id" value="Mieter:in"/>
-        <select id="tenant_id" name="tenant_id" class="form-select" required>
+        <x-input-label for="contact_id" value="Mieter:in"/>
+        <select id="contact_id" name="contact_id" class="form-select" required>
             <option value="">{{ __('common.messages.please_select') }}</option>
-            @foreach($tenants as $t)
-                <option value="{{ $t->id }}" @selected(old('tenant_id', $rental->tenant_id ?? '')==$t->id)>{{ $t->name }}</option>
+            @foreach($contacts as $c)
+                <option value="{{ $c->id }}" @selected(old('contact_id', $rental->contact_id ?? '')==$c->id)>{{ $c->name }}</option>
             @endforeach
         </select>
-        <x-input-error :messages="$errors->get('tenant_id')" />
+        <x-input-error :messages="$errors->get('contact_id')" />
     </div>
 
     <div class="col-md-6">

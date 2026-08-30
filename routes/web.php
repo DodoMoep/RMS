@@ -1,22 +1,31 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WorkInstructionPublicController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+
+// Öffentliche Arbeitsanweisungen (keine Authentifizierung erforderlich)
+Route::get('/anweisungen/{category:slug}', [WorkInstructionPublicController::class, 'show'])
+    ->name('work-instructions.show');
+Route::get('/anweisungen/{category:slug}/{instruction}', [WorkInstructionPublicController::class, 'serve'])
+    ->name('work-instructions.serve');
 
 Route::middleware(['auth','verified'])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    require __DIR__.'/rental_system.php';
+    require __DIR__.'/rental.php';
     require __DIR__.'/orders.php';
-    require __DIR__.'/customers.php';
+    require __DIR__.'/contacts.php';
+    require __DIR__.'/work_instructions.php';
 
     Route::prefix('admin')->group(function () {
         // Benutzerverwaltung
@@ -42,6 +51,11 @@ Route::middleware(['auth','verified'])->group(function () {
 
             Route::delete('/{role}', 'destroy')->name('destroy')->middleware('permission:role.delete');
         });
+
+        // Aktivitätslog
+        Route::get('/activity-log', [ActivityLogController::class, 'index'])
+            ->name('activity-log.index')
+            ->middleware('permission:user.list');
 
         // Berechtigungsverwaltung
         Route::controller(PermissionController::class)->prefix('permissions')->name('permissions.')->group(function () {

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\Order\Order;
+use App\Models\Order\OrderItem;
 use Illuminate\Http\Request;
 
 class OrderPackingController extends Controller
@@ -12,41 +12,16 @@ class OrderPackingController extends Controller
     public function index()
     {
         $orders = Order::forPacker()
-            ->with(['creator', 'items', 'customer'])
-            ->get()
-            ->sort(function($a, $b) {
-                // First sort by delivery_date (ascending - earliest first)
-                $dateA = $a->delivery_date ? $a->delivery_date->timestamp : PHP_INT_MAX;
-                $dateB = $b->delivery_date ? $b->delivery_date->timestamp : PHP_INT_MAX;
-                
-                if ($dateA !== $dateB) {
-                    return $dateA <=> $dateB;
-                }
-                
-                // If delivery dates are equal, sort by packing progress (ascending - least packed first)
-                $totalItemsA = $a->items->count();
-                $packedItemsA = $a->items->where('is_packed', true)->count();
-                $progressA = $totalItemsA > 0 ? ($packedItemsA / $totalItemsA) : 0;
-                
-                $totalItemsB = $b->items->count();
-                $packedItemsB = $b->items->where('is_packed', true)->count();
-                $progressB = $totalItemsB > 0 ? ($packedItemsB / $totalItemsB) : 0;
-                
-                return $progressA <=> $progressB;
-            });
+            ->withCount([
+                'items',
+                'items as packed_items_count' => fn($q) => $q->where('is_packed', true),
+            ])
+            ->with(['creator', 'customer'])
+            ->orderByRaw('delivery_date IS NULL, delivery_date ASC')
+            ->orderByRaw('CASE WHEN items_count > 0 THEN packed_items_count / items_count ELSE 0 END ASC')
+            ->paginate(15);
 
-        // Paginate manually after sorting
-        $currentPage = request()->get('page', 1);
-        $perPage = 15;
-        $paginatedOrders = new \Illuminate\Pagination\LengthAwarePaginator(
-            $orders->forPage($currentPage, $perPage),
-            $orders->count(),
-            $perPage,
-            $currentPage,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
-
-        return view('order.packing.index', ['orders' => $paginatedOrders]);
+        return view('order.packing.index', ['orders' => $orders]);
     }
 
     public function show(Order $order)

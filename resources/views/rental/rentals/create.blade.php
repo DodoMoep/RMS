@@ -5,7 +5,7 @@
                 <div class="card-body">
                     <h1 class="h5 mb-3">Neue Vermietung</h1>
                     <form method="post" action="{{ route('rentals.store') }}">
-                        @include('rental.rentals._form', ['rental' => new \App\Models\Rental])
+                        @include('rental.rentals._form', ['rental' => new \App\Models\Rental\Rental])
                     </form>
                 </div>
             </div>

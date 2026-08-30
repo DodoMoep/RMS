@@ -1,0 +1,63 @@
+<?php
+
+return [
+    'contacts' => 'Contacts',
+    'contact' => 'Contact',
+    'create' => 'Create Contact',
+    'edit' => 'Edit Contact',
+    'show' => 'View Contact',
+    'delete' => 'Delete Contact',
+
+    'type' => 'Type',
+    'type_tenant' => 'Tenant',
+    'type_customer' => 'Customer',
+    'type_both' => 'Tenant & Customer',
+    'all_types' => 'All Types',
+
+    'customer_number' => 'Customer Number',
+    'name' => 'Name',
+    'contact_person_name' => 'Contact Person',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'street' => 'Street / Number',
+    'zip_code' => 'ZIP Code',
+    'city' => 'City',
+    'address' => 'Address',
+    'address_notes' => 'Address Notes',
+    'notes' => 'Remarks',
+    'is_active' => 'Active',
+    'status' => 'Status',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'all_statuses' => 'All Statuses',
+    'address_notes_help' => 'Additional information (floor, building, etc.)',
+
+    'actions' => [
+        'view'       => 'View',
+        'edit'       => 'Edit',
+        'delete'     => 'Delete',
+        'activate'   => 'Activate',
+        'deactivate' => 'Deactivate',
+    ],
+
+    'contact_information' => 'Contact Information',
+    'orders_count' => 'Orders',
+    'rentals_count' => 'Rentals',
+    'recent_orders' => 'Recent Orders',
+    'recent_rentals' => 'Recent Rentals',
+    'no_orders' => 'No orders yet',
+    'no_rentals' => 'No rentals yet',
+    'no_contacts' => 'No contacts found',
+    'back_to_list' => 'Back to List',
+    'search_placeholder' => 'Search by name, number, email or city...',
+
+    'messages' => [
+        'contact_created' => 'Contact created successfully.',
+        'contact_updated' => 'Contact updated successfully.',
+        'contact_deleted' => 'Contact deleted successfully.',
+        'activated' => 'Contact activated successfully.',
+        'deactivated' => 'Contact deactivated successfully.',
+        'confirm_delete' => 'Are you sure you want to delete this contact?',
+        'cannot_delete_has_relations' => 'Cannot delete contact because they have existing orders or rentals.',
+    ],
+];

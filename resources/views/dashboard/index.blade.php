@@ -15,7 +15,7 @@
                                 <tbody>
                                 @forelse($todayRentals as $r)
                                     <tr>
-                                        <td>{{ $r->tenant->name }}</td>
+                                        <td>{{ $r->contact->name }}</td>
                                         <td>{{ $r->hall->name }}</td>
                                         <td>{{ $r->start->format('d.m. H:i') }}</td>
                                         <td>{{ $r->end->format('d.m. H:i') }}</td>
@@ -52,7 +52,7 @@
                         <ul class="mb-0">
                             @forelse($openProtocols as $p)
                                 <li class="mb-1">
-                                    {{ $p->type==='handover'?'Übergabe':'Rücknahme' }} – {{ $p->rental->tenant->name }} / {{ $p->rental->hall->name }}
+                                    {{ $p->type==='handover'?'Übergabe':'Rücknahme' }} – {{ $p->rental->contact->name }} / {{ $p->rental->hall->name }}
                                     @can('protocols.create')
                                         <a class="ms-2" href="{{ route('protocol.form',$p) }}">öffnen</a>
                                     @endcan

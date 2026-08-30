@@ -92,6 +92,7 @@ return [
         'cannot_edit_delivered' => 'Abgeschlossene Bestellungen können nicht mehr geändert werden.',
         'cannot_change_status_back_delivery_note' => 'Der Status kann nicht zurückgesetzt werden, da bereits ein Lieferschein generiert wurde.',
         'cannot_change_status_back_in_delivery' => 'Der Status kann nicht zurückgesetzt werden.',
+        'invalid_status_transition' => 'Dieser Statuswechsel ist nicht zulässig.',
         'status_updated' => 'Status aktualisiert.',
     ],
 

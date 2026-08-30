@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Protocol;
-use App\Models\Rental;
+use App\Models\Rental\Protocol;
+use App\Models\Rental\Rental;
 
 class DashboardController extends Controller
 {
@@ -16,9 +16,8 @@ class DashboardController extends Controller
         if (auth()->user()->can('rentals.view')) {
             $today = now()->toDateString();
 
-            $todayRentals = Rental::with(['tenant','hall'])
-                ->whereDate('start', $today)
-                ->orWhereDate('end', $today)
+            $todayRentals = Rental::with(['contact','hall'])
+                ->where(fn($q) => $q->whereDate('start', $today)->orWhereDate('end', $today))
                 ->orderBy('start')
                 ->take(10)->get();
         }

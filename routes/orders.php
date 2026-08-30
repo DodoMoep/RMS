@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Order\ArticleController;
-use App\Http\Controllers\Logistics\DeliveryNoteController;
+use App\Http\Controllers\Order\DeliveryNoteController;
 use App\Http\Controllers\Order\OrderAnalyticsController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Order\OrderPackingController;
@@ -49,11 +49,16 @@ Route::prefix('delivery-notes')->middleware(['auth', 'permission:orders.print'])
 // Analytics Dashboard
 Route::prefix('analytics')->middleware(['auth', 'permission:analytics.view'])->group(function () {
     Route::get('/', [OrderAnalyticsController::class, 'index'])->name('analytics.index');
-    Route::get('/export', [OrderAnalyticsController::class, 'exportReport'])->middleware('permission:analytics.export')->name('analytics.export');
-    
-    // API endpoints for charts
-    Route::get('/api/orders-by-status', [OrderAnalyticsController::class, 'ordersByStatus'])->name('analytics.api.status');
-    Route::get('/api/orders-over-time', [OrderAnalyticsController::class, 'ordersOverTime'])->name('analytics.api.timeline');
-    Route::get('/api/top-items', [OrderAnalyticsController::class, 'topItems'])->name('analytics.api.items');
-    Route::get('/api/packer-performance', [OrderAnalyticsController::class, 'packerPerformance'])->name('analytics.api.packers');
+    // Export is throttled: max 10 PDF exports per minute per user
+    Route::get('/export', [OrderAnalyticsController::class, 'exportReport'])
+        ->middleware(['permission:analytics.export', 'throttle:10,1'])
+        ->name('analytics.export');
+
+    // API endpoints for charts — throttled to 60 req/min
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::get('/api/orders-by-status', [OrderAnalyticsController::class, 'ordersByStatus'])->name('analytics.api.status');
+        Route::get('/api/orders-over-time', [OrderAnalyticsController::class, 'ordersOverTime'])->name('analytics.api.timeline');
+        Route::get('/api/top-items', [OrderAnalyticsController::class, 'topItems'])->name('analytics.api.items');
+        Route::get('/api/packer-performance', [OrderAnalyticsController::class, 'packerPerformance'])->name('analytics.api.packers');
+    });
 });

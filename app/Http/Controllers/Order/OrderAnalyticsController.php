@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
-use App\Models\Order;
+use App\Models\Order\Order;
 use Illuminate\Http\Request;
 
 class OrderAnalyticsController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate(['period' => 'nullable|in:7,14,30,60,90,180,365,all']);
+
         $period = $request->get('period', 30);
         
         // Build base query with date filter
@@ -23,11 +25,13 @@ class OrderAnalyticsController extends Controller
         $activeOrders = (clone $query)->whereIn('status', [OrderStatus::NEW->value, OrderStatus::IN_PROGRESS->value])->count();
         
         // Items packed in the period
-        $itemsPacked = (clone $query)
-            ->whereIn('status', [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value])
-            ->withCount('items')
-            ->get()
-            ->sum('items_count');
+        $packedStatuses = [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value];
+        $itemsPacked = \App\Models\Order\OrderItem::whereHas('order', function($q) use ($period, $packedStatuses) {
+            $q->whereIn('status', $packedStatuses);
+            if ($period !== 'all') {
+                $q->where('created_at', '>=', now()->subDays((int)$period));
+            }
+        })->count();
 
         $statusData = Order::ordersByStatus($period);
         $timeSeriesData = Order::ordersOverTime('day', $period);
@@ -53,15 +57,24 @@ class OrderAnalyticsController extends Controller
 
     public function ordersOverTime(Request $request)
     {
+        $request->validate([
+            'period' => 'nullable|in:hour,day,week,month',
+            'days'   => 'nullable|integer|min:1|max:365',
+        ]);
+
         $period = $request->get('period', 'day');
-        $days = $request->get('days', 30);
+        $days   = (int) $request->get('days', 30);
 
         return response()->json(Order::ordersOverTime($period, $days));
     }
 
     public function topItems(Request $request)
     {
-        $limit = $request->get('limit', 10);
+        $request->validate([
+            'limit' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $limit = (int) $request->get('limit', 10);
         return response()->json(Order::topItems($limit));
     }
 
@@ -72,7 +85,11 @@ class OrderAnalyticsController extends Controller
 
     public function exportReport(Request $request)
     {
-        $period = $request->get('period', 30);
+        $request->validate([
+            'period' => 'nullable|integer|min:1|max:365',
+        ]);
+
+        $period = (int) $request->get('period', 30);
 
         $data = [
             'totalOrders' => Order::count(),

@@ -92,6 +92,7 @@ return [
         'cannot_edit_delivered' => 'Completed orders can no longer be changed.',
         'cannot_change_status_back_delivery_note' => 'The status cannot be reset because a delivery note has already been generated.',
         'cannot_change_status_back_in_delivery' => 'The status cannot be reset.',
+        'invalid_status_transition' => 'This status transition is not allowed.',
         'status_updated' => 'Status updated.',
     ],
     
