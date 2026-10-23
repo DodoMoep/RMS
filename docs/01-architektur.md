@@ -1,0 +1,127 @@
+# 01 Architektur
+
+## Technologie-Stack
+
+| Schicht | Technik | Quelle |
+|---|---|---|
+| Framework | Laravel 12 (installiert: 12.27.0), PHP ^8.2 (lokal 8.4) | `composer.json` |
+| Datenbank | MariaDB (`DB_CONNECTION=mariadb`); Tests: SQLite in-memory | `.env.example`, `phpunit.xml` |
+| Authentifizierung | Laravel Breeze (nur Login, Passwort-Reset, E-Mail-Verifizierung; keine Registrierung) | `routes/auth.php` |
+| Autorisierung | `spatie/laravel-permission` ^6.21 (Rollen und Rechte, Guard `web`) | `config/permission.php` |
+| Audit | `spatie/laravel-activitylog` ^4.12 (nur `User` ist geloggt, dazu manuelle Einträge) | `config/activitylog.php` |
+| PDF | `barryvdh/laravel-dompdf` ^3.1 (A4, Hochformat, Remote-Zugriff aus) | `config/dompdf.php` |
+| Bildverarbeitung | `intervention/image` ^3.11 (nur Avatar in `ProfileController`) | `ProfileController.php` |
+| Frontend-Build | Vite 7, `laravel-vite-plugin`, Sass | `vite.config.js`, `package.json` |
+| UI | CoreUI 5 (Bootstrap 5), Font Awesome 7 Free, Blade | `resources/scss/app.scss` |
+| Tests | Pest 3 (+ Laravel-Plugin) | `tests/Pest.php` |
+| Stil | Laravel Pint (Standardpreset, keine `pint.json`) | `composer.json` |
+
+Installiert, aber im Code nicht referenziert: `spatie/laravel-medialibrary`, `tuytoosh/active`. `barryvdh/laravel-debugbar`, `laravel/sail`, `laravel/pail` sind reine Entwicklungswerkzeuge.
+
+## Verzeichnisstruktur
+
+Organisation nach Fachdomäne (seit Commit `6787310`):
+
+```
+app/
+  Enums/                    ContactType, OrderStatus
+  Http/
+    Controllers/
+      Admin/                Benutzer, Rollen, Rechte, Aktivitätslog, Arbeitsanweisungen (Verwaltung)
+      Auth/                 Breeze-Controller
+      Contact/              ContactController
+      Order/                Article, Order, OrderPacking, DeliveryNote, OrderAnalytics
+      Rental/               Hall, InventoryItem, Rental, Protocol
+      DashboardController, ProfileController, LanguageController, WorkInstructionPublicController
+    Middleware/SetLocale.php
+    Requests/               Admin/ (PermissionRequest, RoleRequest), Auth/LoginRequest, ProfileUpdateRequest
+  Mail/ProtocolFinalizedMail.php
+  Models/
+    Contact.php, User.php, WorkInstruction.php, WorkInstructionCategory.php
+    Order/                  Article, Order, OrderItem, OrderHistory
+    Rental/                 Hall, InventoryItem, Rental, Protocol, ProtocolItem, Signature, Photo
+    Concerns/HasUuid.php
+  Observers/OrderObserver.php
+  Providers/AppServiceProvider.php
+  Services/NumberSequence.php   Fortlaufende Nummern ohne Doppelvergabe (Zählertabelle)
+  View/Components/          AppLayout, GuestLayout, PublicLayout
+bootstrap/app.php           Routing, Middleware-Aliase, Health-Check /up
+config/                     Standard plus activitylog, dompdf, permission
+database/
+  migrations/               35 Dateien (siehe 02-datenmodell.md)
+  seeders/                  Rechte und Rollen je Bereich (teilweise veraltet)
+lang/{de,en}/               22 Dateien je Sprache, identische Dateiliste
+resources/
+  views/                    admin, auth, contacts, dashboard, order, rental, public, pdf, emails, layouts, components
+  scss/, js/                CoreUI-Einbindung, Vite-Einstieg
+routes/                     web, auth, contacts, orders, rental, work_instructions, console
+tests/                      nur Breeze-Tests
+```
+
+## Request-Ablauf
+
+1. `bootstrap/app.php` registriert `routes/web.php`, die Middleware `SetLocale` (an die Gruppe `web` angehängt) und die Aliase `role`, `permission`, `role_or_permission` (Spatie).
+2. `routes/web.php` definiert zuerst die öffentlichen Routen (`/language/{locale}`, `/anweisungen/...`). Alle übrigen Fachrouten liegen in der Gruppe `auth` + `verified` und werden über `require` aus `rental.php`, `orders.php`, `contacts.php`, `work_instructions.php` eingebunden. Das Profil liegt in einer eigenen `auth`-Gruppe (ohne `verified`).
+3. Der Zugriff wird pro Route mit `permission:<name>` geschützt (nicht per Policy, nicht im Controller). Details in [04-rechte-und-rollen.md](04-rechte-und-rollen.md).
+4. `AppServiceProvider::boot()` setzt `Gate::before`: Wer die Rolle `super-admin` hat, besteht jede Prüfung. Zusätzlich wird `OrderObserver` an `Order` gehängt.
+5. Controller validieren überwiegend inline mit `$request->validate()`, rufen Eloquent direkt auf und geben Blade-Views oder Redirects mit Flash-Meldung zurück. Es gibt keine Service- oder Repository-Schicht; Fachlogik liegt zum Teil im Model (`Order`, `OrderItem`) und zum Teil im Controller (`ProtocolController`, `RentalController`).
+
+```mermaid
+flowchart LR
+    Browser --> Routes[routes/*.php]
+    Routes --> MW[auth, verified, permission, SetLocale]
+    MW --> Ctrl[Controller]
+    Ctrl --> Model[Eloquent Models]
+    Model --> DB[(MariaDB)]
+    Ctrl --> View[Blade + CoreUI]
+    Ctrl --> PDF[DomPDF]
+    PDF --> Disk[(Disk public)]
+    Model --> Obs[OrderObserver und logHistory]
+    Obs --> Hist[(order_history)]
+```
+
+## Konfiguration und Besonderheiten
+
+- Zeitzone ist `UTC` (`config/app.php`). Nummernkreise verwenden `date('Y')`; die Jahreszahl wechselt daher nach UTC, nicht nach deutscher Zeit. Angezeigte Zeiten sind UTC, sofern Views nicht umrechnen.
+- Sprachen: `de` (Standard) und `en` (Fallback), erlaubt laut `config('app.available_locales')`. Die Wahl liegt in der Session (`LanguageController`, Route `language.switch`); `SetLocale` setzt sie je Request. `LocaleController` ist nicht geroutet (toter Code).
+- Primärschlüssel: überall UUID (außer `users`). Zwei Mechanismen koexistieren: Laravels `HasUuids` (Contact, Order-Modelle, WorkInstruction*) und der eigene Trait `App\Models\Concerns\HasUuid` (alle Rental-Modelle).
+- Konfiguration über `.env` (nicht versioniert, siehe `.gitignore`). Vorlage: `.env.example`. Produktionsvorgaben in der Vorlage: `APP_ENV=production`, `SESSION_DRIVER=database`, `QUEUE_CONNECTION=database`, `CACHE_STORE=database`, `LOG_STACK=single,slack`.
+- Das Aktivitätslog speichert laut Konfiguration 365 Tage. Ein Zeitplan, der `activitylog:clean` ausführt, ist nicht eingerichtet (`routes/console.php` enthält nur `inspire`).
+
+## Dateispeicher
+
+Alle Uploads und erzeugten Dateien liegen auf der Disk `public` (`storage/app/public`, URL `/storage`):
+
+| Pfad | Inhalt | Erzeugt in |
+|---|---|---|
+| `delivery-notes/delivery-note-{order_number}.pdf` | Lieferschein | `Order::generateDeliveryNote()` |
+| `protocols/{protocol_id}/final.pdf` | Finales Protokoll | `ProtocolController::sign()` |
+| `protocols/{protocol_id}/sign-{uuid}.png` | Unterschriften | `ProtocolController::sign()` |
+| `protocols/{protocol_id}/photos/...` | Protokollfotos | `ProtocolController::saveForm()` |
+| `work-instructions/{category_id}/{uuid}.pdf` | Arbeitsanweisungen | `Admin\WorkInstructionController` |
+| `avatars/{user_id}/avatar-{uuid}.webp` | Benutzerbilder | `ProfileController` |
+
+Sicherheitsbezug: siehe Punkt S1 in [08-bekannte-probleme.md](08-bekannte-probleme.md).
+
+## PDF-Erzeugung
+
+| Dokument | Template | Auslöser |
+|---|---|---|
+| Lieferschein | `order/delivery-notes/template.blade.php` | `Order::generateDeliveryNote()`; Sprache wird für die Erzeugung auf `de` gesetzt |
+| Analyse-Report | `order/analytics/report-pdf.blade.php` | `OrderAnalyticsController::exportReport()` (Download, nicht gespeichert) |
+| Protokoll | `pdf/protocol.blade.php` | `ProtocolController::sign()`, sobald Mieter und Vermieter unterschrieben haben; Unterschriften und Fotos werden als Data-URI eingebettet, ein SHA-256 des PDFs wird gespeichert |
+
+## Mehrsprachigkeit
+
+- Sprachdateien liegen je Bereich in `lang/{de,en}/*.php` mit identischer Dateiliste.
+- Views nutzen durchgängig `__('datei.schluessel')`. Controller verwenden dagegen teilweise noch feste deutsche Texte (z. B. `ArticleController`, `DeliveryNoteController`, `OrderPackingController`, `HallController`, `ProtocolController`, `RentalController`). Neuere Controller (`ContactController`, `OrderController`, Arbeitsanweisungen) nutzen `__()`.
+- Der `OrderObserver` und `Order::logHistory()` schreiben englische Beschreibungstexte in `order_history`.
+
+## Frontend
+
+- Einstieg: `resources/js/app.js` importiert `bootstrap.js`, das CoreUI komplett lädt und als `window.coreui` bereitstellt. Styles: `resources/scss/app.scss` (CoreUI, Font Awesome, `_theme.scss`).
+- Layouts als Blade-Komponenten: `<x-app-layout>` (Sidebar-Navigation mit Rechteprüfung über `@can`), `<x-guest-layout>` (Login), `<x-public-layout>` (Arbeitsanweisungen ohne Login).
+- Navigation: `resources/views/layouts/navigation.blade.php`. Der Menüpunkt "Berechtigungen" ist auskommentiert; die Route bleibt erreichbar.
+- Inline-Skripte gibt es in vier Views (`admin/activity-log/index`, `order/orders/_form`, `rental/halls/_form`, `rental/protocol/form`). Die Unterschrift lädt `signature_pad@4.1.7` per CDN. Die Auswertungsseite rendert serverseitig; die JSON-Endpunkte `/analytics/api/*` werden von keiner View aufgerufen.
+- Alpine.js wird in `contacts/_form.blade.php`, `components/dropdown.blade.php` und `components/modal.blade.php` vorausgesetzt, aber nirgends geladen (siehe Punkt M3 in [08-bekannte-probleme.md](08-bekannte-probleme.md)).
+- Flash-Meldungen verwenden drei verschiedene Schlüssel: `ok`, `status`, `error`.

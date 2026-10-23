@@ -167,18 +167,18 @@
             </div>
             <div class="recipient-box">
                 <div class="recipient-label">Empfänger</div>
-                <div>{{ $order->customer->name }}</div>
-                @if($order->customer->street)
-                    <div>{{ $order->customer->street }}</div>
+                <div>{{ $order->contact->name }}</div>
+                @if($order->contact->street)
+                    <div>{{ $order->contact->street }}</div>
                 @endif
-                @if($order->customer->zip_code || $order->customer->city)
-                    <div>{{ $order->customer->zip_code }} {{ $order->customer->city }}</div>
+                @if($order->contact->zip_code || $order->contact->city)
+                    <div>{{ $order->contact->zip_code }} {{ $order->contact->city }}</div>
                 @endif
-                @if($order->customer->address_notes)
-                    <div>{{ $order->customer->address_notes }}</div>
+                @if($order->contact->address_notes)
+                    <div>{{ $order->contact->address_notes }}</div>
                 @endif
-                @if($order->customer->phone)
-                    <div>Tel: {{ $order->customer->phone }}</div>
+                @if($order->contact->phone)
+                    <div>Tel: {{ $order->contact->phone }}</div>
                 @endif
             </div>
         </div>

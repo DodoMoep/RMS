@@ -31,5 +31,6 @@ return [
         'item_unpacked' => 'Artikel als entpackt markiert',
         'packing_completed' => 'Verpackung abgeschlossen',
         'all_items_packed' => 'Alle Artikel sind verpackt',
+        'order_not_packable' => 'Diese Bestellung ist nicht in Bearbeitung. Verpacken, Entpacken und Abschließen sind nur für Bestellungen in Bearbeitung möglich.',
     ],
 ];

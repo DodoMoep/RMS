@@ -17,4 +17,8 @@ return [
     'generate' => 'Generate Delivery Note',
     'print' => 'Print Delivery Note',
     'download' => 'Download',
+
+    'messages' => [
+        'not_printable' => 'The delivery note can only be printed once the order has been packed.',
+    ],
 ];

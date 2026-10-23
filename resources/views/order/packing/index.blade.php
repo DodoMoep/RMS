@@ -38,7 +38,7 @@
                         @endphp
                         <tr>
                             <td><a href="{{ route('packing.show', $order) }}" class="text-decoration-none fw-semibold">{{ $order->order_number }}</a></td>
-                            <td>{{ $order->customer->name ?? 'N/A' }}</td>
+                            <td>{{ $order->contact->name ?? 'N/A' }}</td>
                             <td>{{ $totalItems }} {{ __('orders.items') }}</td>
                             <td>{{ $order->delivery_date ? $order->delivery_date->format('d.m.Y') : 'N/A' }}</td>
                             <td>

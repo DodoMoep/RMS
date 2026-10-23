@@ -6,17 +6,17 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class CustomerPermissionsSeeder extends Seeder
+class ContactPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
         // Create permissions
         $permissions = [
-            'customers.view',
-            'customers.create',
-            'customers.edit',
-            'customers.delete',
-            'customers.toggle-status',
+            'contacts.view',
+            'contacts.create',
+            'contacts.edit',
+            'contacts.delete',
+            'contacts.toggle-status',
         ];
 
         foreach ($permissions as $name) {
@@ -34,6 +34,6 @@ class CustomerPermissionsSeeder extends Seeder
 
         $orderManagerRole->givePermissionTo($permissions);
 
-        $this->command->info('Customer permissions created and assigned successfully!');
+        $this->command->info('Contact permissions created and assigned successfully!');
     }
 }

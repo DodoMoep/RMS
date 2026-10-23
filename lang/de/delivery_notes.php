@@ -17,4 +17,8 @@ return [
     'generate' => 'Lieferschein erstellen',
     'print' => 'Lieferschein drucken',
     'download' => 'Herunterladen',
+
+    'messages' => [
+        'not_printable' => 'Der Lieferschein kann erst gedruckt werden, wenn die Bestellung verpackt ist.',
+    ],
 ];

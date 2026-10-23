@@ -47,11 +47,15 @@ class UserController extends Controller
             'perms.*'    => ['string', Rule::exists('permissions','name')],
         ]);
 
-        $user = User::create([
+        $user = new User([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+        // Der Administrator legt das Konto an und bestaetigt damit die Adresse; ohne diesen
+        // Wert wuerde die Middleware "verified" den neuen Benutzer von allen Seiten aussperren.
+        $user->email_verified_at = now();
+        $user->save();
 
         $user->syncRoles($data['roles'] ?? []);
         $user->syncPermissions($data['perms'] ?? []);

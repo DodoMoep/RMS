@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Enums\ContactType;
+use App\Models\Order\Order;
+use App\Models\Rental\Rental;
+use App\Services\NumberSequence;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,12 +48,12 @@ class Contact extends Model
 
     public static function generateCustomerNumber(): string
     {
-        $year = date('Y');
-        $last = static::where('customer_number', 'like', "CUS-{$year}-%")
-            ->orderByDesc('created_at')
-            ->first();
+        $year = now()->format('Y');
 
-        $newNumber = $last ? ((int) substr($last->customer_number, -4)) + 1 : 1;
+        $newNumber = NumberSequence::next(
+            "customer-{$year}",
+            fn () => NumberSequence::highestSuffix('contacts', 'customer_number', "CUS-{$year}-")
+        );
 
         return sprintf('CUS-%s-%04d', $year, $newNumber);
     }
