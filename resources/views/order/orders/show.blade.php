@@ -78,10 +78,10 @@
                         <dt class="col-sm-5">{{ __('orders.created_at') }}:</dt>
                         <dd class="col-sm-7">{{ $order->created_at->format('d.m.Y H:i') }}</dd>
                         <dt class="col-sm-5">{{ __('orders.created_by') }}:</dt>
-                        <dd class="col-sm-7">{{ $order->creator->name }}</dd>
+                        <dd class="col-sm-7">{{ $order->creator?->name ?? __('orders.deleted_user') }}</dd>
                         @if($order->packed_by)
                             <dt class="col-sm-5">{{ __('orders.packed_by') }}:</dt>
-                            <dd class="col-sm-7">{{ $order->packer->name }}</dd>
+                            <dd class="col-sm-7">{{ $order->packer?->name ?? __('orders.deleted_user') }}</dd>
                         @endif
                         @if($order->delivered_at)
                             <dt class="col-sm-5">{{ __('orders.delivered_at') }}:</dt>

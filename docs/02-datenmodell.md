@@ -60,7 +60,7 @@ Scopes: `active()`, `tenants()` (tenant, both), `customers()` (customer, both). 
 | `status` | DB-Enum, Cast auf `OrderStatus` |
 | `notes` | text |
 | `delivery_note_path`, `delivery_note_printed_at` | Lieferschein |
-| `created_by` | FK `users`, `onDelete cascade` |
+| `created_by` | FK `users`, nullable, `nullOnDelete` (seit Migration `2026_10_23_000003`; früher `cascade`); bleibt leer, wenn der Ersteller gelöscht wurde |
 | `packed_by` | FK `users`, `set null` |
 | `delivered_at` | timestamp |
 | `deleted_at` | Soft Delete (seit Migration `2026_10_23_000001`); gelöschte Aufträge bleiben samt Positionen und Historie erhalten und sind in Listen, Detailseiten und Auswertungen nicht mehr sichtbar |
@@ -141,6 +141,6 @@ Vergabe: `App\Services\NumberSequence::next()` zählt den Eintrag in `number_seq
 | 2026-04-11 | Soft Deletes für Artikel, Activity-Log-Tabellen |
 | 2026-04-12 `000001`-`000007` | Zusammenführung zu `contacts`: Tabelle anlegen, Mieter und Kunden kopieren (gleiche UUIDs), `contact_id` ergänzen, befüllen und FKs setzen, Altspalten und Alttabellen löschen (nicht umkehrbar), Rechte `tenants.*`/`customers.*` auf `contacts.*` abbilden |
 | 2026-04-12 `200001`-`200003` | Arbeitsanweisungen, Recht `work-instructions.manage` |
-| 2026-10-23 `000001`-`000002` | Soft Delete für Aufträge, Tabelle `number_sequences` |
+| 2026-10-23 `000001`-`000003` | Soft Delete für Aufträge, Tabelle `number_sequences`, `orders.created_by` auf `nullOnDelete` |
 
 Hinweise zur Kontakt-Migration: Die Kopie der Kunden setzt voraus, dass keine UUID zwischen `tenants` und `customers` kollidiert (im Code nur als Kommentar vermerkt, nicht geprüft). Migration `000006` ist mit einer Exception als irreversibel markiert; vor dem Einspielen in Produktion ist ein Backup zwingend.

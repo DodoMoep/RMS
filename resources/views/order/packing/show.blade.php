@@ -22,7 +22,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <h5 class="mb-1">{{ __('orders.customer_name') }}: {{ $order->customer_name }}</h5>
-                    <p class="text-muted mb-0 small">{{ __('orders.created_by') }}: {{ $order->creator->name }}</p>
+                    <p class="text-muted mb-0 small">{{ __('orders.created_by') }}: {{ $order->creator?->name ?? __('orders.deleted_user') }}</p>
                 </div>
                 <div class="col-md-6 text-end">
                     <p class="text-muted mb-1 small">{{ __('packing.progress') }}</p>

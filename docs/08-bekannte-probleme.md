@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, M1, M2, M5 und M6 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, M1, M2, M5 und M6 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
 
 Nachweis:
 
@@ -22,7 +22,7 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | K7 | Behoben | Nummernvergabe nicht atomar | Code |
 | S1 | Behoben | PDFs, Unterschriften, Fotos öffentlich abrufbar | Code |
 | S2 | Mittel | Fehlermeldungen aus Ausnahmen werden Benutzern angezeigt | Code |
-| S3 | Mittel | Benutzer löschen entfernt per Kaskade deren Aufträge | Code |
+| S3 | Behoben | Benutzer löschen entfernt per Kaskade deren Aufträge | Code |
 | S4 | Niedrig | Lokale Werkzeugeinstellungen im Repository | Code |
 | S5 | Niedrig | Externes Skript ohne Integritätsprüfung | Code |
 | M1 | Behoben | Packen ohne Statusprüfung des Auftrags | Code |
@@ -123,7 +123,8 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 - Fundstelle: `orders.created_by` mit `onDelete('cascade')` (Migration `2025_11_18_180419`); `UserController::destroy` führt hartes `delete()` aus
 - Auswirkung: Das Löschen eines Benutzers entfernt alle von ihm angelegten Aufträge samt Positionen und Historie. Pack-Nachweise (`packed_by`) werden dagegen nur auf `null` gesetzt.
-- Korrektur: Fremdschlüssel auf `restrict` oder `set null` ändern (neue Migration), Benutzer deaktivieren statt löschen.
+- Status: behoben. Migration `2026_10_23_000003_set_orders_created_by_to_null_on_user_delete` macht `orders.created_by` nullable mit `nullOnDelete` (auf SQLite hoch, runter und wieder hoch geprüft). Aufträge, Positionen und Historie bleiben beim Löschen eines Benutzers erhalten; Auftragsdetail und Packansicht zeigen "Gelöschter Benutzer" (`orders.deleted_user`). Tests: `tests/Feature/Admin/UserDeletionTest.php`.
+- Entscheidung: `set null` statt `restrict`, damit Benutzer weiterhin gelöscht werden können (z. B. ausgeschiedene Mitarbeiter). Preis: Der Ersteller eines Auftrags geht dabei verloren, ebenso der Benutzer in der Historie (war bereits so). Wenn die Nachvollziehbarkeit Vorrang haben soll, wäre eine Deaktivierung von Benutzern (Flag statt Löschen) die Alternative; sie existiert bisher nicht.
 
 ### S4 Lokale Werkzeugeinstellungen im Repository
 
@@ -164,7 +165,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 ## Empfohlene Reihenfolge
 
 1. K1 bis K7, M1, M2, M5 und M6 sind erledigt.
-2. S1 ist erledigt (auf bestehenden Installationen `php artisan files:make-private` ausführen). S3 (Kaskade beim Löschen von Benutzern) planen.
+2. S1 und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Offen bleibt die Frage, ob Benutzer deaktiviert statt gelöscht werden sollen.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7); danach M3 und M7 (Frontend-Konsistenz).
 4. M4, M8 bis M10.
 5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.
