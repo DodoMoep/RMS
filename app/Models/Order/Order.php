@@ -5,15 +5,17 @@ namespace App\Models\Order;
 use App\Enums\OrderStatus;
 use App\Models\Contact;
 use App\Models\User;
+use App\Services\NumberSequence;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
 
     protected $fillable = [
         'order_number',
@@ -98,6 +100,10 @@ class Order extends Model
 
     public function lockOrder(): void
     {
+        if ($this->status !== OrderStatus::IN_PROGRESS) {
+            throw new \Exception('Cannot lock an order that is not in progress.');
+        }
+
         if (!$this->isFullyPacked()) {
             throw new \Exception('Cannot lock order. Not all items are packed.');
         }
@@ -137,6 +143,10 @@ class Order extends Model
 
     public function markAsInDelivery(): void
     {
+        if (!$this->status->canTransitionTo(OrderStatus::IN_DELIVERY)) {
+            throw new \Exception('Cannot mark an order as in delivery that is not packed.');
+        }
+
         $this->update([
             'status' => OrderStatus::IN_DELIVERY,
             'delivery_note_printed_at' => now(),
@@ -197,13 +207,14 @@ class Order extends Model
             DB::raw('SUM(quantity_ordered) as total_quantity'),
             DB::raw('COUNT(DISTINCT order_id) as order_count')
         );
-        
-        if ($period !== 'all') {
-            $query->whereHas('order', function($q) use ($period) {
+
+        // Immer ueber die Auftraege filtern, damit Positionen geloeschter Auftraege nicht zaehlen
+        $query->whereHas('order', function($q) use ($period) {
+            if ($period !== 'all') {
                 $q->where('created_at', '>=', now()->subDays((int)$period));
-            });
-        }
-        
+            }
+        });
+
         return $query->groupBy('article_id', 'article_name')
             ->orderByDesc('total_quantity')
             ->limit($limit)
@@ -241,16 +252,12 @@ class Order extends Model
 
     protected static function generateOrderNumber(): string
     {
-        $year = date('Y');
-        $lastOrder = static::where('created_at', '>=', now()->startOfYear())
-            ->orderBy('created_at', 'desc')
-            ->first();
+        $year = now()->format('Y');
 
-        if ($lastOrder && preg_match('/ORD-\d{4}-(\d+)/', $lastOrder->order_number, $matches)) {
-            $number = intval($matches[1]) + 1;
-        } else {
-            $number = 1;
-        }
+        $number = NumberSequence::next(
+            "order-{$year}",
+            fn () => NumberSequence::highestSuffix('orders', 'order_number', "ORD-{$year}-")
+        );
 
         return sprintf('ORD-%s-%04d', $year, $number);
     }

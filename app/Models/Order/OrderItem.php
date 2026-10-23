@@ -2,6 +2,7 @@
 
 namespace App\Models\Order;
 
+use App\Enums\OrderStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -67,6 +68,10 @@ class OrderItem extends Model
 
     public function markAsPacked(int $quantity = null): void
     {
+        if ($this->order->status !== OrderStatus::IN_PROGRESS) {
+            throw new \Exception('Cannot pack items of an order that is not in progress.');
+        }
+
         $packQuantity = $quantity ?? $this->quantity_ordered;
 
         if ($packQuantity > $this->remainingQuantity()) {
@@ -93,7 +98,7 @@ class OrderItem extends Model
 
     public function unpack(): void
     {
-        if (!$this->order->canBeModified()) {
+        if ($this->order->status !== OrderStatus::IN_PROGRESS) {
             throw new \Exception('Cannot unpack items from a locked order.');
         }
 

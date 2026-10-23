@@ -26,29 +26,29 @@ class InventoryItemController extends Controller
         return redirect()->route('inventory-items.index')->with('ok','Inventarposition angelegt.');
     }
 
-    public function edit(InventoryItem $inventory_item)
+    public function edit(InventoryItem $inventoryItem)
     {
-        return view('rental.inventory.edit', ['item'=>$inventory_item]);
+        return view('rental.inventory.edit', ['item'=>$inventoryItem]);
     }
 
-    public function update(Request $r, InventoryItem $inventory_item)
+    public function update(Request $r, InventoryItem $inventoryItem)
     {
         $data = $r->validate([
             'name'=>'required|string|min:2',
             'sku'=>'nullable|string|max:100',
             'description'=>'nullable|string'
         ]);
-        $inventory_item->update($data);
+        $inventoryItem->update($data);
         return redirect()->route('inventory-items.index')->with('ok','Inventar aktualisiert.');
     }
 
-    public function destroy(InventoryItem $inventory_item)
+    public function destroy(InventoryItem $inventoryItem)
     {
-        if ($inventory_item->halls()->exists()) {
+        if ($inventoryItem->halls()->exists()) {
             return back()->withErrors(['Inventarposition kann nicht gelöscht werden, da sie noch Hallen zugeordnet ist.']);
         }
         
-        $inventory_item->delete();
+        $inventoryItem->delete();
         return back()->with('ok','Inventar gelöscht.');
     }
 }

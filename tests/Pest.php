@@ -45,3 +45,62 @@ function something()
 {
     // ..
 }
+
+/**
+ * Legt einen verifizierten Benutzer mit genau den genannten Rechten an.
+ *
+ * @param  list<string>  $permissions
+ */
+function userWithPermissions(array $permissions): App\Models\User
+{
+    $user = App\Models\User::factory()->create();
+
+    foreach ($permissions as $name) {
+        Spatie\Permission\Models\Permission::findOrCreate($name, 'web');
+    }
+
+    $user->givePermissionTo($permissions);
+
+    return $user;
+}
+
+/**
+ * Legt einen Kunden mit Lieferadresse an (erfundene Testdaten).
+ *
+ * @param  array<string, mixed>  $overrides
+ */
+function makeContact(array $overrides = []): App\Models\Contact
+{
+    return App\Models\Contact::create(array_merge([
+        'type' => App\Enums\ContactType::Customer,
+        'name' => 'Muster GmbH',
+        'email' => 'kontakt@example.test',
+        'street' => 'Teststrasse 1',
+        'zip_code' => '12345',
+        'city' => 'Testhausen',
+        'is_active' => true,
+    ], $overrides));
+}
+
+/**
+ * Legt einen Auftrag mit einer Position an.
+ *
+ * @param  array<string, mixed>  $overrides
+ */
+function makeOrder(App\Models\Contact $contact, App\Models\User $creator, array $overrides = []): App\Models\Order\Order
+{
+    $order = App\Models\Order\Order::create(array_merge([
+        'contact_id' => $contact->id,
+        'delivery_date' => now()->addDays(3)->toDateString(),
+        'delivery_type' => 'delivery',
+        'status' => App\Enums\OrderStatus::IN_PROGRESS,
+        'created_by' => $creator->id,
+    ], $overrides));
+
+    $order->items()->create([
+        'article_name' => 'Testartikel',
+        'quantity_ordered' => 2,
+    ]);
+
+    return $order;
+}

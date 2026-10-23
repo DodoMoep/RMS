@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Order;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
 use App\Models\Order\OrderItem;
@@ -16,7 +17,7 @@ class OrderPackingController extends Controller
                 'items',
                 'items as packed_items_count' => fn($q) => $q->where('is_packed', true),
             ])
-            ->with(['creator', 'customer'])
+            ->with(['creator', 'contact'])
             ->orderByRaw('delivery_date IS NULL, delivery_date ASC')
             ->orderByRaw('CASE WHEN items_count > 0 THEN packed_items_count / items_count ELSE 0 END ASC')
             ->paginate(15);
@@ -38,6 +39,13 @@ class OrderPackingController extends Controller
 
     public function packItem(Request $request, OrderItem $orderItem)
     {
+        // Positionen geloeschter Auftraege (Soft Delete) sind nicht mehr erreichbar
+        abort_unless($orderItem->order, 404);
+
+        if ($orderItem->order->status !== OrderStatus::IN_PROGRESS) {
+            return back()->withErrors([__('packing.messages.order_not_packable')]);
+        }
+
         $validated = $request->validate([
             'quantity' => 'nullable|integer|min:1',
         ]);
@@ -54,6 +62,12 @@ class OrderPackingController extends Controller
 
     public function unpackItem(OrderItem $orderItem)
     {
+        abort_unless($orderItem->order, 404);
+
+        if ($orderItem->order->status !== OrderStatus::IN_PROGRESS) {
+            return back()->withErrors([__('packing.messages.order_not_packable')]);
+        }
+
         try {
             $orderItem->unpack();
             return back()->with('ok', 'Artikel entpackt.');
@@ -64,6 +78,10 @@ class OrderPackingController extends Controller
 
     public function completeOrder(Order $order)
     {
+        if ($order->status !== OrderStatus::IN_PROGRESS) {
+            return back()->withErrors([__('packing.messages.order_not_packable')]);
+        }
+
         try {
             $order->lockOrder();
             

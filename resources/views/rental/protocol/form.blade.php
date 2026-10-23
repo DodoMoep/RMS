@@ -5,7 +5,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ $protocol->type==='handover'?'Übergabe':'Rücknahme' }} – {{ $protocol->rental->hall->name }}</h5>
                     <p class="text-muted mb-0">
-                        Mieter: {{ $protocol->rental->tenant->name }} –
+                        Mieter: {{ $protocol->rental->contact->name }} –
                         Zeitraum: {{ $protocol->rental->start->format('d.m.Y H:i') }}–{{ $protocol->rental->end->format('d.m.Y H:i') }}
                     </p>
                 </div>

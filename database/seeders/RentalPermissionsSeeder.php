@@ -17,11 +17,11 @@ class RentalPermissionsSeeder extends Seeder
             'inventory.edit',
             'inventory.delete',
 
-            // Tenants
-            'tenants.view',
-            'tenants.create',
-            'tenants.edit',
-            'tenants.delete',
+            // Contacts (tenants are contacts of type tenant or both)
+            'contacts.view',
+            'contacts.create',
+            'contacts.edit',
+            'contacts.delete',
 
             // Halls
             'halls.view',
@@ -56,10 +56,10 @@ class RentalPermissionsSeeder extends Seeder
             'inventory.create',
             'inventory.edit',
             'inventory.delete',
-            'tenants.view',
-            'tenants.create',
-            'tenants.edit',
-            'tenants.delete',
+            'contacts.view',
+            'contacts.create',
+            'contacts.edit',
+            'contacts.delete',
             'halls.view',
             'halls.create',
             'halls.edit',
@@ -81,9 +81,9 @@ class RentalPermissionsSeeder extends Seeder
         $rentalStaff = Role::firstOrCreate(['name' => 'rental-staff']);
         $rentalStaff->syncPermissions([
             'inventory.view',
-            'tenants.view',
-            'tenants.create',
-            'tenants.edit',
+            'contacts.view',
+            'contacts.create',
+            'contacts.edit',
             'halls.view',
             'rentals.view',
             'rentals.create',

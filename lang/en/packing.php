@@ -31,5 +31,6 @@ return [
         'item_unpacked' => 'Item marked as unpacked',
         'packing_completed' => 'Packing completed',
         'all_items_packed' => 'All items are packed',
+        'order_not_packable' => 'This order is not in progress. Packing, unpacking and completing are only possible for orders in progress.',
     ],
 ];

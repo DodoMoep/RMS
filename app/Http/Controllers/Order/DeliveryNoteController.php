@@ -26,12 +26,21 @@ class DeliveryNoteController extends Controller
 
     public function print(Order $order)
     {
+        // Gedruckt wird erst ab dem Status "verpackt"
+        if (!in_array($order->status, [OrderStatus::PACKED, OrderStatus::IN_DELIVERY, OrderStatus::DELIVERED], true)) {
+            return back()->withErrors([__('delivery_notes.messages.not_printable')]);
+        }
+
         if (!$order->delivery_note_path) {
             $order->generateDeliveryNote();
         }
 
         $this->validateStoragePath($order->delivery_note_path);
-        $order->markAsInDelivery();
+
+        // Der Statuswechsel erfolgt nur beim ersten Druck; ein erneuter Druck aendert nichts
+        if ($order->status === OrderStatus::PACKED) {
+            $order->markAsInDelivery();
+        }
 
         return Storage::disk('public')->download($order->delivery_note_path);
     }

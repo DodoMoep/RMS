@@ -12,7 +12,7 @@
 </head><body>
 <h1>{{ $protocol->type==='handover'?'Übergabeprotokoll':'Rücknahmeprotokoll' }}</h1>
 <p><strong>Halle:</strong> {{ $protocol->rental->hall->name }} ({{ $protocol->rental->hall->address }})<br>
-    <strong>Mieter:</strong> {{ $protocol->rental->tenant->name }} – {{ $protocol->rental->tenant->email }}<br>
+    <strong>Mieter:</strong> {{ $protocol->rental->contact->name }} – {{ $protocol->rental->contact->email }}<br>
     <strong>Zeitraum:</strong> {{ $protocol->rental->start->format('d.m.Y H:i') }} – {{ $protocol->rental->end->format('d.m.Y H:i') }}</p>
 
 <table>

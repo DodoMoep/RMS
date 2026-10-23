@@ -12,12 +12,12 @@ use Illuminate\Support\Str;
 class ProtocolController extends Controller
 {
     public function index(){
-        $protocols = Protocol::with(['rental.tenant','rental.hall','signatures'])->latest()->paginate(15);
+        $protocols = Protocol::with(['rental.contact','rental.hall','signatures'])->latest()->paginate(15);
         return view('rental.protocol.index', compact('protocols'));
     }
 
     public function showForm(Protocol $protocol) {
-        $protocol->load('rental.tenant','rental.hall','items','signatures');
+        $protocol->load('rental.contact','rental.hall','items','signatures');
         return view('rental.protocol.form', compact('protocol'));
     }
 
@@ -124,7 +124,7 @@ class ProtocolController extends Controller
             $hasLandlord = $protocol->signatures->contains('role', 'landlord');
 
             if ($hasTenant && $hasLandlord) {
-                $protocol->load(['rental.tenant','rental.hall','items','photos']);
+                $protocol->load(['rental.contact','rental.hall','items','photos']);
                 
                 $signDataUris = [];
                 foreach ($protocol->signatures as $sig) {
@@ -177,7 +177,7 @@ class ProtocolController extends Controller
                 // Send email after commit
                 \DB::commit();
 
-                $tenantEmail = $protocol->rental?->tenant?->email;
+                $tenantEmail = $protocol->rental?->contact?->email;
                 if ($tenantEmail) {
                     try {
                         Mail::to($tenantEmail)->send(new ProtocolFinalizedMail($protocol));

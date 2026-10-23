@@ -9,7 +9,7 @@
                 @forelse($protocols as $p)
                     <tr>
                         <td>{{ $p->type==='handover'?'Übergabe':'Rücknahme' }}</td>
-                        <td>{{ $p->rental->tenant->name }}</td>
+                        <td>{{ $p->rental->contact->name }}</td>
                         <td>{{ $p->rental->hall->name }}</td>
                         <td>{{ $p->created_at->format('d.m.Y H:i') }}</td>
                         <td>{!! $p->pdf_path ? '<span class="text-success">vorhanden</span>' : '<span class="text-muted">—</span>' !!}</td>
