@@ -38,9 +38,9 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 
 ### Lieferschein (`Order\DeliveryNoteController`, Präfix `/delivery-notes`, Recht `orders.print`)
 
-- `generate`: nur für Status `packed`; erzeugt das PDF in deutscher Sprache und speichert den Pfad am Auftrag.
+- `generate`: nur für Status `packed`; erzeugt das PDF in deutscher Sprache und speichert es auf der privaten Disk (`local`), der Pfad steht am Auftrag.
 - `print`: nur für Status `packed`, `in_delivery` und `delivered` (sonst Fehlermeldung `delivery_notes.messages.not_printable`, früherer Befund M2). Erzeugt das PDF bei Bedarf. Beim ersten Druck eines Auftrags im Status `packed` wird er auf `in_delivery` gesetzt (`delivery_note_printed_at`, Historieneintrag); `Order::markAsInDelivery` prüft dafür `canTransitionTo`. Ein erneuter Druck bei `in_delivery` oder `delivered` liefert nur den Download und ändert weder Status noch Druckzeitpunkt.
-- `download`: liefert die vorhandene Datei. Vor jedem Zugriff wird per `realpath` geprüft, dass der Pfad innerhalb der Disk liegt.
+- `download`: liefert die vorhandene Datei von der privaten Disk. Vor jedem Zugriff wird per `realpath` geprüft, dass der Pfad innerhalb der Disk liegt. Der Zugriff erfordert Anmeldung und `orders.print`; eine direkte URL zur Datei gibt es nicht.
 - Früherer Fehler K3 (Template las `$order->customer`) ist behoben; das Template liest `$order->contact`.
 
 ### Auswertungen (`Order\OrderAnalyticsController`, Präfix `/analytics`)

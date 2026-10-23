@@ -35,6 +35,7 @@ app/
       DashboardController, ProfileController, LanguageController, WorkInstructionPublicController
     Middleware/SetLocale.php
     Requests/               Admin/ (PermissionRequest, RoleRequest), Auth/LoginRequest, ProfileUpdateRequest
+  Console/Commands/MakeFilesPrivate.php   Befehl files:make-private (Dateien auf die private Disk verschieben)
   Mail/ProtocolFinalizedMail.php
   Models/
     Contact.php, User.php, WorkInstruction.php, WorkInstructionCategory.php
@@ -75,7 +76,7 @@ flowchart LR
     Model --> DB[(MariaDB)]
     Ctrl --> View[Blade + CoreUI]
     Ctrl --> PDF[DomPDF]
-    PDF --> Disk[(Disk public)]
+    PDF --> Disk[(Disk local, privat)]
     Model --> Obs[OrderObserver und logHistory]
     Obs --> Hist[(order_history)]
 ```
@@ -90,18 +91,18 @@ flowchart LR
 
 ## Dateispeicher
 
-Alle Uploads und erzeugten Dateien liegen auf der Disk `public` (`storage/app/public`, URL `/storage`):
+Dateien mit Personenbezug (Lieferscheine, Protokolle, Unterschriften, Fotos) liegen auf der privaten Disk `local` (`storage/app/private`) und sind nicht über `/storage` erreichbar. Sie werden ausschließlich über Routen mit Anmeldung und Berechtigung ausgeliefert. Nur bewusst öffentliche Inhalte liegen auf der Disk `public` (`storage/app/public`, URL `/storage`):
 
-| Pfad | Inhalt | Erzeugt in |
-|---|---|---|
-| `delivery-notes/delivery-note-{order_number}.pdf` | Lieferschein | `Order::generateDeliveryNote()` |
-| `protocols/{protocol_id}/final.pdf` | Finales Protokoll | `ProtocolController::sign()` |
-| `protocols/{protocol_id}/sign-{uuid}.png` | Unterschriften | `ProtocolController::sign()` |
-| `protocols/{protocol_id}/photos/...` | Protokollfotos | `ProtocolController::saveForm()` |
-| `work-instructions/{category_id}/{uuid}.pdf` | Arbeitsanweisungen | `Admin\WorkInstructionController` |
-| `avatars/{user_id}/avatar-{uuid}.webp` | Benutzerbilder | `ProfileController` |
+| Disk | Pfad | Inhalt | Erzeugt in | Auslieferung |
+|---|---|---|---|---|
+| `local` (privat) | `delivery-notes/delivery-note-{order_number}.pdf` | Lieferschein | `Order::generateDeliveryNote()` | `delivery-notes.download`/`print`, Recht `orders.print` |
+| `local` (privat) | `protocols/{protocol_id}/final.pdf` | Finales Protokoll | `ProtocolController::sign()` | `protocol.pdf`, Recht `protocols.pdf`; Mailanhang |
+| `local` (privat) | `protocols/{protocol_id}/sign-{uuid}.png` | Unterschriften | `ProtocolController::sign()` | nur eingebettet im Protokoll-PDF |
+| `local` (privat) | `protocols/{protocol_id}/photos/...` | Protokollfotos | `ProtocolController::saveForm()` | nur eingebettet im Protokoll-PDF |
+| `public` | `work-instructions/{category_id}/{uuid}.pdf` | Arbeitsanweisungen | `Admin\WorkInstructionController` | Route `/anweisungen/...` (bewusst öffentlich) |
+| `public` | `avatars/{user_id}/avatar-{uuid}.webp` | Benutzerbilder | `ProfileController` | direkte URL, wird in der Oberfläche angezeigt |
 
-Sicherheitsbezug: siehe Punkt S1 in [08-bekannte-probleme.md](08-bekannte-probleme.md).
+Die Pfade in der Datenbank sind relativ und gelten unabhängig von der Disk. Bestehende Dateien werden mit `php artisan files:make-private` von `public` nach `local` verschoben (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Befund S1 in [08-bekannte-probleme.md](08-bekannte-probleme.md) ist damit behoben. Die Arbeitsanweisungen liegen weiter auf `public`; ein deaktivierter Eintrag ist dort über die direkte `/storage`-URL erreichbar, wenn deren UUID-Pfad bekannt ist.
 
 ## PDF-Erzeugung
 

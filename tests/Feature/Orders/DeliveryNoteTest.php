@@ -25,7 +25,7 @@ test('delivery note template renders the contact data', function () {
 });
 
 test('delivery note can be generated for a packed order', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     $user = userWithPermissions(['orders.print']);
     $order = makeOrder(makeContact(), $user, ['status' => OrderStatus::PACKED]);
 
@@ -36,11 +36,11 @@ test('delivery note can be generated for a packed order', function () {
     $order->refresh();
 
     expect($order->delivery_note_path)->not->toBeNull();
-    Storage::disk('public')->assertExists($order->delivery_note_path);
+    Storage::disk('local')->assertExists($order->delivery_note_path);
 });
 
 test('delivery note is not generated for an order that is not packed', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     $user = userWithPermissions(['orders.print']);
     $order = makeOrder(makeContact(), $user, ['status' => OrderStatus::IN_PROGRESS]);
 
@@ -52,7 +52,7 @@ test('delivery note is not generated for an order that is not packed', function 
 });
 
 test('printing the delivery note marks the order as in delivery', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     $user = userWithPermissions(['orders.print']);
     $order = makeOrder(makeContact(), $user, ['status' => OrderStatus::PACKED]);
 
@@ -65,7 +65,7 @@ test('printing the delivery note marks the order as in delivery', function () {
 });
 
 test('the delivery note cannot be printed before the order is packed', function (OrderStatus $status) {
-    Storage::fake('public');
+    Storage::fake('local');
     $user = userWithPermissions(['orders.print']);
     $order = makeOrder(makeContact(), $user, ['status' => $status]);
 
@@ -86,7 +86,7 @@ test('the delivery note cannot be printed before the order is packed', function 
 ]);
 
 test('printing the delivery note again does not change a shipped order', function (OrderStatus $status) {
-    Storage::fake('public');
+    Storage::fake('local');
     $user = userWithPermissions(['orders.print']);
     $order = makeOrder(makeContact(), $user, ['status' => $status]);
     $order->generateDeliveryNote();

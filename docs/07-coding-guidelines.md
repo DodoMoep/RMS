@@ -91,7 +91,7 @@ Quelle: `.editorconfig` und Laravel Pint.
 
 ## 8. Sicherheit
 
-- Dateien mit personenbezogenem oder geschäftlichem Inhalt (Lieferscheine, Protokolle, Unterschriften, Fotos) auf einer privaten Disk speichern und nur über eine berechtigte Route ausliefern. Die Disk `public` ist für Inhalte, die ohnehin öffentlich sein sollen (S1). **MUSS** für neuen Code
+- Dateien mit personenbezogenem oder geschäftlichem Inhalt (Lieferscheine, Protokolle, Unterschriften, Fotos) auf einer privaten Disk speichern und nur über eine berechtigte Route ausliefern. Dafür dient die Disk `local` (`Storage::disk('local')`); die Disk `public` ist nur für Inhalte, die ohnehin öffentlich sein sollen (Avatare, Arbeitsanweisungen). Tests faken beide Disks (`Storage::fake('local')`) und prüfen, dass nichts auf `public` landet (S1). **MUSS** für neuen Code
 - Uploads immer validieren (Typ, Größe, Anzahl); Dateinamen serverseitig erzeugen (UUID), nie vom Client übernehmen. Pfade vor dem Ausliefern gegen Verzeichniswechsel prüfen (Vorbild: `DeliveryNoteController::validateStoragePath`).
 - Mass Assignment nur über validierte Daten (`$request->validate()` oder Form Request), nie `$request->all()`.
 - Rohe SQL-Fragmente nur mit Parameterbindung oder fester Whitelist (Vorbild: `Order::ordersOverTime`).

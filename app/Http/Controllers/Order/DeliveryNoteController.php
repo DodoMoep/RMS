@@ -42,7 +42,7 @@ class DeliveryNoteController extends Controller
             $order->markAsInDelivery();
         }
 
-        return Storage::disk('public')->download($order->delivery_note_path);
+        return Storage::disk('local')->download($order->delivery_note_path);
     }
 
     public function download(Order $order)
@@ -53,7 +53,7 @@ class DeliveryNoteController extends Controller
 
         $this->validateStoragePath($order->delivery_note_path);
 
-        return Storage::disk('public')->download($order->delivery_note_path);
+        return Storage::disk('local')->download($order->delivery_note_path);
     }
 
     /**
@@ -61,14 +61,14 @@ class DeliveryNoteController extends Controller
      */
     private function validateStoragePath(string $path): void
     {
-        $diskRoot = realpath(Storage::disk('public')->path(''));
-        $candidate = realpath(Storage::disk('public')->path($path));
+        $diskRoot = realpath(Storage::disk('local')->path(''));
+        $candidate = realpath(Storage::disk('local')->path($path));
 
         if ($candidate === false || $diskRoot === false || !str_starts_with($candidate, $diskRoot . DIRECTORY_SEPARATOR)) {
             abort(403, 'Ungültiger Dateipfad.');
         }
 
-        if (!Storage::disk('public')->exists($path)) {
+        if (!Storage::disk('local')->exists($path)) {
             abort(404, 'Datei nicht gefunden.');
         }
     }

@@ -132,7 +132,7 @@ class Order extends Model
         $filename = "delivery-note-{$this->order_number}.pdf";
         $path = "delivery-notes/{$filename}";
         
-        \Storage::disk('public')->put($path, $pdf->output());
+        \Storage::disk('local')->put($path, $pdf->output());
         
         $this->update(['delivery_note_path' => $path]);
         

@@ -56,7 +56,7 @@ test('protocol form shows the tenant name', function () {
 });
 
 test('protocol is finalized after both parties signed', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     Mail::fake();
     $user = userWithPermissions(['protocols.view', 'protocols.sign']);
     $protocol = makeProtocol('handover', 'scheduled');
@@ -86,12 +86,12 @@ test('protocol is finalized after both parties signed', function () {
     expect($protocol->pdf_path)->not->toBeNull()
         ->and($protocol->pdf_sha256)->toHaveLength(64)
         ->and($protocol->rental->status)->toBe('active');
-    Storage::disk('public')->assertExists($protocol->pdf_path);
+    Storage::disk('local')->assertExists($protocol->pdf_path);
     Mail::assertSent(ProtocolFinalizedMail::class, fn ($mail) => $mail->hasTo('mieter@example.test'));
 });
 
 test('return protocol closes the rental when finalized', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     Mail::fake();
     $user = userWithPermissions(['protocols.view', 'protocols.sign']);
     $protocol = makeProtocol('return', 'active');
@@ -109,7 +109,7 @@ test('return protocol closes the rental when finalized', function () {
 });
 
 test('finalized protocol cannot be signed again', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     $user = userWithPermissions(['protocols.view', 'protocols.sign']);
     $protocol = makeProtocol();
     $protocol->update(['pdf_path' => 'protocols/fertig.pdf']);

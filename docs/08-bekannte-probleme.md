@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, M1, M2, M5 und M6 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, M1, M2, M5 und M6 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
 
 Nachweis:
 
@@ -20,7 +20,7 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | K5 | Behoben | Protokolle nutzen entfernte Relation `tenant`, Finalisierung schlägt fehl | Skript und Code |
 | K6 | Behoben | Auftrag löschen schreibt Historie nach dem Löschen | Code |
 | K7 | Behoben | Nummernvergabe nicht atomar | Code |
-| S1 | Hoch | PDFs, Unterschriften, Fotos öffentlich abrufbar | Code |
+| S1 | Behoben | PDFs, Unterschriften, Fotos öffentlich abrufbar | Code |
 | S2 | Mittel | Fehlermeldungen aus Ausnahmen werden Benutzern angezeigt | Code |
 | S3 | Mittel | Benutzer löschen entfernt per Kaskade deren Aufträge | Code |
 | S4 | Niedrig | Lokale Werkzeugeinstellungen im Repository | Code |
@@ -108,7 +108,10 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 - Fundstelle: Alle Dateien liegen auf der Disk `public`; das Verzeichnis `public/storage` ist in der lokalen Umgebung vorhanden (Ergebnis von `storage:link`)
 - Auswirkung: Ohne Anmeldung abrufbar, wenn der Pfad bekannt ist. Besonders kritisch ist der Lieferschein: Pfad `storage/delivery-notes/delivery-note-ORD-JJJJ-NNNN.pdf` ist vorhersagbar (laufende Nummer) und enthält Name, Adresse und Telefon des Empfängers. Protokoll-PDFs, Unterschriften und Fotos nutzen UUIDs im Pfad, sind aber ebenfalls ohne Anmeldung lesbar, sobald die URL bekannt ist (z. B. aus dem E-Mail-Anhang oder Browserverlauf).
-- Korrektur: Private Disk (`local`) verwenden und Dateien nur über Routen mit Rechteprüfung ausliefern (`Storage::download`). Bestehende Dateien migrieren. Nur die Arbeitsanweisungen bleiben bewusst öffentlich (und werden über die kontrollierte Route `serve` ausgeliefert, nicht über `/storage`).
+- Status: behoben. Lieferscheine, Protokoll-PDFs, Unterschriften und Fotos werden auf der privaten Disk `local` gespeichert (`Order::generateDeliveryNote`, `ProtocolController`, `ProtocolFinalizedMail`, `DeliveryNoteController`) und nur über Routen mit Anmeldung und Berechtigung ausgeliefert (`orders.print`, `protocols.pdf`). Fotos und Unterschriften werden nirgends direkt angezeigt, sondern nur ins Protokoll-PDF eingebettet; neue Auslieferungsrouten waren daher nicht nötig. `protocol.pdf` liefert 404, wenn die Datei fehlt.
+- Bestehende Daten: `php artisan files:make-private` (mit `--dry-run` als Probelauf) verschiebt vorhandene Dateien von `public` nach `local`, ohne die Pfade in der Datenbank zu ändern. Er muss auf bestehenden Installationen einmalig ausgeführt werden (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Bis dahin sind alte Dateien über die Anwendung nicht abrufbar (404) und zugleich weiter über `/storage` erreichbar.
+- Bewusst unverändert: Avatare und Arbeitsanweisungen bleiben auf `public`. Rest-Risiko: Eine deaktivierte Arbeitsanweisung ist über ihre direkte `/storage`-URL (UUID-Pfad) weiter abrufbar. Wer das ausschließen will, verschiebt `work-instructions/` ebenfalls auf die private Disk und liefert sie nur über `WorkInstructionPublicController::serve` aus.
+- Tests: `tests/Feature/Files/PrivateFilesTest.php`.
 
 ### S2 Ausgabe von Ausnahmetexten
 
@@ -161,7 +164,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 ## Empfohlene Reihenfolge
 
 1. K1 bis K7, M1, M2, M5 und M6 sind erledigt.
-2. S1 (private Speicherung) und S3 (Kaskade) planen; benötigt Migration vorhandener Dateien und Daten.
+2. S1 ist erledigt (auf bestehenden Installationen `php artisan files:make-private` ausführen). S3 (Kaskade beim Löschen von Benutzern) planen.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7); danach M3 und M7 (Frontend-Konsistenz).
 4. M4, M8 bis M10.
 5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.

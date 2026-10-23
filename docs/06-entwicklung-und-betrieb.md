@@ -42,14 +42,15 @@ php artisan db:seed --class=ContactPermissionsSeeder
 | Caches leeren | `php artisan optimize:clear` (bei Rechteproblemen zusätzlich `php artisan permission:cache-reset`) |
 | Stil prüfen | `vendor/bin/pint --test` bzw. `vendor/bin/pint` zum Korrigieren |
 | Tests | `composer test` (leert die Config, dann `php artisan test`) |
+| Dateien auf die private Disk verschieben | `php artisan files:make-private` (zuvor `--dry-run` zur Kontrolle; wiederholbar) |
 | Aktivitätslog bereinigen | `php artisan activitylog:clean` (nicht automatisiert, siehe unten) |
 
 ## Tests
 
 - Framework: Pest 3 mit `RefreshDatabase` für `tests/Feature` (`tests/Pest.php`); `phpunit.xml` setzt SQLite in-memory, Mail `array`, Queue `sync`, Cache und Session `array`.
-- Vorhanden sind die Breeze-Standardtests (Login, Registrierung, Passwort, E-Mail-Verifizierung, Profil), zwei Beispieltests und Feature-Tests für Kontakte (`Contacts/`), Packübersicht, Packstatus, Lieferschein und Auftragslöschung (`Orders/`), Inventar und Protokolle (`Rental/`), Seeder und Nummernkreise (`Database/`) sowie Benutzerverwaltung (`Admin/`). Ohne Tests sind Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung und Arbeitsanweisungen.
+- Vorhanden sind die Breeze-Standardtests (Login, Registrierung, Passwort, E-Mail-Verifizierung, Profil), zwei Beispieltests und Feature-Tests für Kontakte (`Contacts/`), Packübersicht, Packstatus, Lieferschein und Auftragslöschung (`Orders/`), Inventar und Protokolle (`Rental/`), Seeder und Nummernkreise (`Database/`), Benutzerverwaltung (`Admin/`) sowie private Dateispeicherung und der Verschiebe-Befehl (`Files/`). Ohne Tests sind Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung und Arbeitsanweisungen.
 - Hilfsfunktionen in `tests/Pest.php`: `userWithPermissions([...])` (verifizierter Benutzer mit genau diesen Rechten), `makeContact()` und `makeOrder()` (erfundene Testdaten).
-- Stand 2026-10-23: 97 Tests grün, 3 rot. Die roten Tests waren schon vorher rot und sind nicht Teil der Fachänderungen: `RegistrationTest` (zwei Tests; die Route `/register` existiert nicht) und `ExampleTest` (`/` leitet nicht angemeldete Besucher auf den Login um, erwartet wird 200).
+- Stand 2026-10-23: 110 Tests grün, 3 rot. Die roten Tests waren schon vorher rot und sind nicht Teil der Fachänderungen: `RegistrationTest` (zwei Tests; die Route `/register` existiert nicht) und `ExampleTest` (`/` leitet nicht angemeldete Besucher auf den Login um, erwartet wird 200).
 - Hinweis: Fehlte im lokalen `vendor/` `spatie/laravel-activitylog` (steht in `composer.json` und `composer.lock`), bricht der Lauf mit `Trait "Spatie\Activitylog\Traits\LogsActivity" not found` ab. Abhilfe: `composer install`.
 - Einschränkung für künftige Tests: `Order::ordersOverTime()` nutzt `DATE_FORMAT` (MySQL/MariaDB) und läuft nicht auf SQLite. Auswertungstests brauchen eine MariaDB-Testdatenbank oder eine portable Abfrage.
 
@@ -76,12 +77,12 @@ Der Slack-Webhook ist ein Geheimnis: nur in `.env` oder einem Secret-Store ableg
 
 ## Betriebshinweise
 
-- Dateispeicher: Nach dem Deployment `php artisan storage:link` ausführen. Die Verzeichnisse `storage/` und `bootstrap/cache/` müssen für den Webserver-Benutzer beschreibbar sein.
+- Dateispeicher: Nach dem Deployment `php artisan storage:link` ausführen (für Avatare und Arbeitsanweisungen auf der Disk `public`). Die Verzeichnisse `storage/` und `bootstrap/cache/` müssen für den Webserver-Benutzer beschreibbar sein.
 - Queue: Mails (`ProtocolFinalizedMail`) werden synchron versendet, es werden keine Jobs eingestellt. Ein Queue-Worker ist für den aktuellen Funktionsumfang nicht nötig, `QUEUE_CONNECTION=database` ist daher unkritisch.
 - Aktivitätslog: Aufbewahrung laut Konfiguration 365 Tage, aber ohne Zeitplan. Entweder `activitylog:clean` über den Scheduler (`Schedule::command(...)->daily()` in `routes/console.php`) oder manuell betreiben.
 - PDF-Erzeugung läuft im Request (DomPDF); Protokolle mit vielen Fotos erhöhen Speicher- und Laufzeitbedarf, da Bilder als Data-URI eingebettet werden.
 - Datenmigration Kontakte: Vor `php artisan migrate` auf einer bestehenden Installation ein vollständiges Datenbank-Backup erstellen. Migration `2026_04_12_000006` ist nicht umkehrbar.
 - Neue Migrationen vom 2026-10-23 (`add_soft_deletes_to_orders_table`, `create_number_sequences_table`): vor dem Deployment `php artisan migrate` ausführen. Die Zähler für Auftrags- und Kundennummern werden beim ersten Zugriff aus den vorhandenen Nummern abgeleitet, eine Datenübernahme ist nicht nötig. Gelöschte Aufträge bleiben als Soft Delete in der Tabelle `orders`.
 - Health-Check: `GET /up`.
-- Sicherheit: Dateien auf der Disk `public` sind bei vorhandenem `storage:link` ohne Anmeldung abrufbar, wenn der Pfad bekannt ist (S1). Für den Betrieb mit personenbezogenen Lieferscheinen und Protokollen sollte das behoben werden.
+- Private Dateien (S1): Lieferscheine, Protokoll-PDFs, Unterschriften und Fotos liegen auf der Disk `local` (`storage/app/private`). Bei einer bestehenden Installation nach dem Deployment einmalig `php artisan files:make-private --dry-run` und danach `php artisan files:make-private` ausführen; ohne diesen Schritt liefern Protokoll-PDFs und Lieferscheine, die noch auf `public` liegen, 404, und der Mailanhang fehlt. Vorher ein Backup von `storage/app` anlegen. Der Befehl behält die Pfade bei, entfernt die öffentliche Kopie erst nach erfolgreichem Kopieren, fasst `avatars/` und `work-instructions/` nicht an und meldet Konflikte (gleicher Pfad, andere Größe) mit Fehlercode. `storage/app/private` gehört in die Datensicherung und darf nicht per Webserver freigegeben werden.
 - Versionsverwaltung: Branch `dev` ist der einzige Branch und zugleich Hauptzweig; es gibt keine CI-Konfiguration im Repository. Datei `.claude/settings.local.json` ist versioniert, enthält lokale Pfade (`E:\00_Git\RMS`) und gehört in `.gitignore`.

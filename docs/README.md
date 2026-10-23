@@ -29,8 +29,8 @@ Dazu kommen Benutzer-, Rollen- und Rechteverwaltung (Spatie Permission), ein Akt
 ## Wichtigste Erkenntnisse vorab
 
 1. Der Umbau vom 2026-04-12 (Zusammenführung von `tenants` und `customers` zu `contacts`) war nicht vollständig nachgezogen. Die dadurch verursachten Fehler K1 bis K5 sowie M6 (Seeder, Rechte) sind behoben. Ebenfalls behoben und getestet: K6 (Auftrag löschen, jetzt Soft Delete), K7 (atomare Nummernvergabe), M1 (Packen nur in Bearbeitung), M2 (Lieferscheindruck erst ab "verpackt") und M5 (Admin-Benutzer sind verifiziert). Offen sind die übrigen Punkte in [08-bekannte-probleme.md](08-bekannte-probleme.md).
-2. Automatisierte Tests gibt es für Kontakte, Packübersicht, Lieferschein, Inventar, Protokolle, Seeder, Auftragslöschung, Packstatus, Nummernkreise und Benutzerverwaltung (75 Tests, gesamt 97 grün). Auftragsanlage und -bearbeitung, Vermietungen und Auswertung sind weiterhin ungetestet.
-3. Erzeugte PDFs (Lieferscheine, Protokolle) liegen auf der öffentlichen Disk und sind bei vorhandenem `storage:link` ohne Anmeldung abrufbar, sofern der Pfad bekannt ist.
+2. Automatisierte Tests gibt es für Kontakte, Packübersicht, Lieferschein, Inventar, Protokolle, Seeder, Auftragslöschung, Packstatus, Nummernkreise, Benutzerverwaltung und private Dateispeicherung (88 Tests, gesamt 110 grün). Auftragsanlage und -bearbeitung, Vermietungen und Auswertung sind weiterhin ungetestet.
+3. Lieferscheine, Protokoll-PDFs, Unterschriften und Fotos liegen auf der privaten Disk und werden nur über berechtigte Routen ausgeliefert (S1 behoben). Auf bestehenden Installationen muss einmalig `php artisan files:make-private` ausgeführt werden.
 4. Der Code-Stil ist uneinheitlich: Das Laravel-Pint-Standardpreset beanstandet 54 von 118 PHP-Dateien.
 
 ## Wie diese Dokumentation entstanden ist

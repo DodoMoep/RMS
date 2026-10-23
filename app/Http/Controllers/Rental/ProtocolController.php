@@ -59,7 +59,7 @@ class ProtocolController extends Controller
                 }
 
                 foreach ($newPhotos as $file) {
-                    $path = $file->store("protocols/{$protocol->id}/photos",'public');
+                    $path = $file->store("protocols/{$protocol->id}/photos",'local');
                     $protocol->photos()->create(['path'=>$path,'caption'=>null]);
                 }
             }
@@ -111,7 +111,7 @@ class ProtocolController extends Controller
             }
             
             $path = "protocols/{$protocol->id}/sign-".Str::uuid().".png";
-            Storage::disk('public')->put($path, $png);
+            Storage::disk('local')->put($path, $png);
 
             $protocol->signatures()->create([
                 'role'=>$r->role,'signer_name'=>$r->signer,
@@ -128,16 +128,16 @@ class ProtocolController extends Controller
                 
                 $signDataUris = [];
                 foreach ($protocol->signatures as $sig) {
-                    if (Storage::disk('public')->exists($sig->png_path)) {
-                        $bin = Storage::disk('public')->get($sig->png_path);
+                    if (Storage::disk('local')->exists($sig->png_path)) {
+                        $bin = Storage::disk('local')->get($sig->png_path);
                         $signDataUris[$sig->id] = 'data:image/png;base64,'.base64_encode($bin);
                     }
                 }
 
                 $photoDataUris = [];
                 foreach ($protocol->photos as $ph) {
-                    if (Storage::disk('public')->exists($ph->path)) {
-                        $bin = Storage::disk('public')->get($ph->path);
+                    if (Storage::disk('local')->exists($ph->path)) {
+                        $bin = Storage::disk('local')->get($ph->path);
                         $mime = str_ends_with(strtolower($ph->path), '.jpg') || str_ends_with(strtolower($ph->path), '.jpeg')
                             ? 'image/jpeg'
                             : 'image/png';
@@ -152,7 +152,7 @@ class ProtocolController extends Controller
                 ]);
                 $pdfBytes = $pdf->output();
                 $pdfPath = "protocols/{$protocol->id}/final.pdf";
-                Storage::disk('public')->put($pdfPath, $pdfBytes);
+                Storage::disk('local')->put($pdfPath, $pdfBytes);
 
                 if ($protocol->type === 'handover') {
                     $rental = $protocol->rental;
@@ -206,8 +206,8 @@ class ProtocolController extends Controller
     }
 
     public function pdf(Protocol $protocol) {
-        abort_unless($protocol->pdf_path, 404);
-        return response()->file(Storage::disk('public')->path($protocol->pdf_path));
+        abort_unless($protocol->pdf_path && Storage::disk('local')->exists($protocol->pdf_path), 404);
+        return response()->file(Storage::disk('local')->path($protocol->pdf_path));
     }
 }
 
