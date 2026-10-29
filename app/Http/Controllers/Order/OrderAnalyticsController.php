@@ -85,17 +85,29 @@ class OrderAnalyticsController extends Controller
 
     public function exportReport(Request $request)
     {
+        // Dieselben Zeitraeume wie die Auswertungsseite, deren Export-Link sie uebergibt
         $request->validate([
-            'period' => 'nullable|integer|min:1|max:365',
+            'period' => 'nullable|in:7,14,30,60,90,180,365,all',
         ]);
 
-        $period = (int) $request->get('period', 30);
+        $period = (string) $request->get('period', 30);
+
+        $totalOrders = Order::query()
+            ->when($period !== 'all', fn ($q) => $q->where('created_at', '>=', now()->subDays((int) $period)))
+            ->count();
+
+        // Die Vorlage ist deutsch, daher auch die Beschriftung des Zeitraums
+        $periodLabel = $period === 'all'
+            ? __('analytics.periods.all_time', [], 'de')
+            : __('analytics.periods.last_n_days', ['days' => $period], 'de');
 
         $data = [
-            'totalOrders' => Order::count(),
-            'statusData' => Order::ordersByStatus(),
-            'topItems' => Order::topItems(10),
-            'packerPerformance' => Order::packerPerformance(),
+            'totalOrders' => $totalOrders,
+            'statusData' => Order::ordersByStatus($period),
+            'topItems' => Order::topItems(10, $period),
+            'packerPerformance' => Order::packerPerformance($period),
+            'period' => $period,
+            'periodLabel' => $periodLabel,
             'generatedAt' => now(),
         ];
 

@@ -47,7 +47,7 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 
 - Seite (`analytics.view`): Zeitraum 7, 14, 30, 60, 90, 180, 365 Tage oder alle. Kennzahlen: Aufträge gesamt, aktive Aufträge (`new`, `in_progress`), gepackte Positionen; dazu Aufträge nach Status, Verlauf pro Tag, Top-10-Artikel und Packleistung je Mitarbeiter.
 - JSON-Endpunkte `/analytics/api/*` (60 Anfragen/Minute) sind vorhanden, werden aber von keiner View genutzt.
-- PDF-Export (`analytics.export`, 10 pro Minute): Lücke M4, der Parameter `period` wird validiert, aber nicht verwendet; der Report enthält immer alle Daten.
+- PDF-Export (`analytics.export`, 10 pro Minute): Der Report berücksichtigt den gewählten Zeitraum (7, 14, 30, 60, 90, 180, 365 Tage oder `all`, Standard 30; früherer Befund M4) für Gesamtzahl, Aufträge nach Status, Top-Artikel und Packleistung und nennt ihn im Kopf ("Zeitraum: ..."). Vorher wurde der Parameter ignoriert, und "alle Zeit" scheiterte schon an der Validierung, obwohl der Export-Link es übergibt.
 - Die Zeitreihen-Abfrage nutzt `DATE_FORMAT` (MySQL/MariaDB). Sie läuft nicht unter SQLite, was Feature-Tests der Auswertung auf der Test-Datenbank verhindert.
 
 ## Vermietung
@@ -60,7 +60,7 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 ### Vermietungen (`Rental\RentalController`, `/rentals`)
 
 - Pflichtfelder: Mieter (Kontakt vom Typ `tenant` oder `both`), Halle, Beginn, Ende (nach Beginn); optional Preis und Kaution; Status `scheduled`, `active`, `closed`, `cancelled`.
-- Überschneidungsprüfung je Halle (außer Status `cancelled`): Zeiträume gelten auch bei bloßer Berührung (Ende gleich Beginn der nächsten Buchung) als Überschneidung, weil `whereBetween` inklusiv arbeitet.
+- Überschneidungsprüfung je Halle (außer Status `cancelled`, früherer Befund M9): Die Zeiträume sind halboffen (`Rental::scopeOverlapping`: bestehender Beginn < neues Ende und bestehendes Ende > neuer Beginn). Endet eine Vermietung genau, wenn die nächste beginnt, ist das erlaubt. Die Prüfung steht an einer Stelle (`RentalController::hallIsBooked`) und gilt für Anlegen und Ändern; beim Ändern wird die Vermietung selbst ausgenommen. Die Eingaben werden zu Carbon geparst, damit Formulareingaben wie `2026-11-10T10:00` auf jeder Datenbank gleich verglichen werden.
 - Löschen ist gesperrt, sobald Protokolle existieren.
 - Aktionen `handover` und `return` öffnen das zugehörige Protokoll oder legen es an. Beim Übergabeprotokoll werden die Positionen aus dem Hallen-Inventar übernommen (Beschriftung `Name (Soll: n)`). Das Rückgabeprotokoll kopiert Checkliste und Positionen des Übergabeprotokolls (legt dieses an, falls es fehlt). Je Vermietung gibt es maximal ein Protokoll je Typ (Unique-Index).
 

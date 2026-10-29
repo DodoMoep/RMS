@@ -84,11 +84,11 @@ flowchart LR
 
 ## Konfiguration und Besonderheiten
 
-- Zeitzone ist `UTC` (`config/app.php`). Nummernkreise verwenden `date('Y')`; die Jahreszahl wechselt daher nach UTC, nicht nach deutscher Zeit. Angezeigte Zeiten sind UTC, sofern Views nicht umrechnen.
+- Zeitzone ist `Europe/Berlin` (`config/app.php`, überschreibbar über `APP_TIMEZONE`, früherer Befund M8). Nummernkreise, Tagesgrenzen (Dashboard "heute", Auswertungen) und alle neu geschriebenen Zeitstempel (`created_at`, `delivered_at`, ...) richten sich nach deutscher Zeit; der Jahreswechsel der Nummernkreise erfolgt um Mitternacht deutscher Zeit. Laravel speichert Zeitstempel ohne Umrechnung in der Anwendungszeitzone. Datensätze, die vor der Umstellung entstanden sind, wurden in UTC geschrieben und zeigen weiterhin dieselbe Uhrzeit wie zuvor (1 bis 2 Stunden vor der deutschen Ortszeit); sie wurden nicht umgerechnet. Vom Benutzer eingegebene Zeiten (`rentals.start`, `rentals.end`) und Datumsfelder (`delivery_date`) sind Ortszeit und von der Umstellung nicht betroffen.
 - Sprachen: `de` (Standard) und `en` (Fallback), erlaubt laut `config('app.available_locales')`. Die Wahl liegt in der Session (`LanguageController`, Route `language.switch`); `SetLocale` setzt sie je Request. `LocaleController` ist nicht geroutet (toter Code).
 - Primärschlüssel: überall UUID (außer `users`). Zwei Mechanismen koexistieren: Laravels `HasUuids` (Contact, Order-Modelle, WorkInstruction*) und der eigene Trait `App\Models\Concerns\HasUuid` (alle Rental-Modelle).
 - Konfiguration über `.env` (nicht versioniert, siehe `.gitignore`). Vorlage: `.env.example`. Produktionsvorgaben in der Vorlage: `APP_ENV=production`, `SESSION_DRIVER=database`, `QUEUE_CONNECTION=database`, `CACHE_STORE=database`, `LOG_STACK=single,slack`.
-- Das Aktivitätslog speichert laut Konfiguration 365 Tage. Ein Zeitplan, der `activitylog:clean` ausführt, ist nicht eingerichtet (`routes/console.php` enthält nur `inspire`).
+- Das Aktivitätslog speichert laut Konfiguration 365 Tage. Der Scheduler führt täglich `activitylog:clean` aus (`routes/console.php`, früherer Befund M10); dafür muss auf dem Server der Cronjob `* * * * * php artisan schedule:run` laufen (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Die Tabelle `order_history` wird nicht bereinigt.
 
 ## Dateispeicher
 

@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, M1, M2, M3, M5, M6 und M7 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3 und M1 bis M10 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
 
 Nachweis:
 
@@ -28,13 +28,13 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | M1 | Behoben | Packen ohne Statusprüfung des Auftrags | Code |
 | M2 | Behoben | Lieferschein-Druck umgeht die Statusübergänge | Code |
 | M3 | Behoben | Alpine.js wird verwendet, aber nicht geladen | Code |
-| M4 | Niedrig | PDF-Export ignoriert den Zeitraum | Code |
+| M4 | Behoben | PDF-Export ignoriert den Zeitraum | Code |
 | M5 | Behoben | Im Admin angelegte Benutzer sind nicht verifiziert | Code |
 | M6 | Behoben | Seeder und Rechte nach Kontaktumbau veraltet | Code |
 | M7 | Behoben | Meldungen mit `data-bs-dismiss` schließen nicht | Skript (CoreUI-Quelltext) |
-| M8 | Niedrig | Zeitzone UTC, Jahreswechsel und Anzeige | Code |
-| M9 | Niedrig | Aneinandergrenzende Vermietungen gelten als Überschneidung | Code |
-| M10 | Niedrig | Aktivitätslog ohne Bereinigung | Code |
+| M8 | Behoben | Zeitzone UTC, Jahreswechsel und Anzeige | Code |
+| M9 | Behoben | Aneinandergrenzende Vermietungen gelten als Überschneidung | Code |
+| M10 | Behoben | Aktivitätslog ohne Bereinigung | Code |
 | T1 | Mittel | Tests für Fachmodule nur teilweise vorhanden (Aufträge, Vermietungen, Auswertung fehlen) | Code |
 | T2 | Mittel | Stilabweichungen in 54 von 118 PHP-Dateien | Skript (Pint) |
 | T3 | Niedrig | Toter Code, ungenutzte Pakete | Code |
@@ -100,7 +100,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 - Auswirkung: Gleichzeitiges Anlegen erzeugt doppelte Nummern; die Unique-Constraint führt zu einem Fehler. Wird der zuletzt angelegte Auftrag gelöscht, wird seine Nummer erneut vergeben.
 - Status: behoben. Neuer Dienst `App\Services\NumberSequence` mit Zählertabelle `number_sequences` (Migration `2026_10_23_000002`): Hochzählen in einer Transaktion mit `lockForUpdate`; der Zähler wird beim ersten Zugriff aus der höchsten vorhandenen Nummer abgeleitet (auch bei mehr als 9999 Nummern und unter Einschluss gelöschter Aufträge). `Order::generateOrderNumber` und `Contact::generateCustomerNumber` nutzen ihn. Gelöschte Nummern werden nicht erneut vergeben. Tests: `tests/Feature/Database/NumberSequenceTest.php`, `ContactTest`.
 - Einschränkung: Die echte Gleichzeitigkeit lässt sich in der Testumgebung (SQLite, ein Prozess) nicht nachstellen; die Sperre wirkt auf MariaDB. Vor dem Produktivbetrieb ist ein Test mit parallelen Anfragen auf MariaDB sinnvoll.
-- Hinweis: Fehlschlagende Anlegevorgänge können Lücken in der Nummernfolge hinterlassen. Der Jahreswechsel richtet sich nach der Zeitzone UTC (M8).
+- Hinweis: Fehlschlagende Anlegevorgänge können Lücken in der Nummernfolge hinterlassen. Der Jahreswechsel richtet sich nach der Zeitzone `Europe/Berlin` (M8).
 
 ## S Sicherheit und Datenschutz
 
@@ -146,17 +146,17 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 | M1 | Behoben: Packen, Entpacken und Abschließen prüften den Status des Auftrags nicht; u. a. konnte der Abschluss einen ausgelieferten Auftrag wieder auf `packed` setzen. Jetzt nur im Status `in_progress`, im Controller mit übersetzter Meldung und zusätzlich als Regel in `OrderItem::markAsPacked`, `OrderItem::unpack` und `Order::lockOrder`. Tests: `tests/Feature/Orders/PackingStatusTest.php`. | `OrderPackingController`, `OrderItem`, `Order` | erledigt |
 | M2 | Behoben: `delivery-notes/{order}/print` setzte den Auftrag ohne Statusprüfung auf `in_delivery`, auch aus `new`. Jetzt ist der Druck erst ab `packed` möglich; der Statuswechsel erfolgt nur beim ersten Druck und wird in `Order::markAsInDelivery` über `canTransitionTo` abgesichert. Erneuter Druck ändert nichts. Tests: `DeliveryNoteTest`. | `DeliveryNoteController::print`, `Order::markAsInDelivery` | erledigt |
 | M3 | Behoben: Das Kontaktformular verwendete Alpine.js (`x-data`, `x-show`), das nicht geladen wurde; das Ein- und Ausblenden der Adressfelder je Kontakttyp griff nicht. Jetzt ist `alpinejs` eine npm-Abhängigkeit, `resources/js/app.js` startet Alpine, die ausgeblendeten Elemente haben `x-cloak` (Regel in `app.scss`). Im Browser geprüft (Wechsel auf Mieter blendet Ansprechpartner und Adresse aus, zurück auf Kunde blendet sie ein). Die Breeze-Komponenten `dropdown` und `modal` nutzen ebenfalls Alpine, werden aber nirgends verwendet (T3). Tests: `tests/Feature/Frontend/FrontendConsistencyTest.php`. | `resources/js/app.js`, `contacts/_form.blade.php` | erledigt |
-| M4 | Der Parameter `period` des PDF-Exports wird validiert und dann nicht verwendet; Export enthält immer alle Daten. | `OrderAnalyticsController::exportReport` | Zeitraum an die Abfragen durchreichen |
+| M4 | Behoben: Der Parameter `period` des PDF-Exports wurde validiert, aber nicht verwendet; der Report enthielt immer alle Daten. Außerdem scheiterte "alle Zeit" an der Validierung (`integer|min:1|max:365`), obwohl der Export-Link `all` übergibt. Jetzt gelten dieselben Zeiträume wie auf der Auswertungsseite, der Zeitraum wirkt auf Gesamtzahl, Status, Top-Artikel und Packleistung und steht im Kopf des Reports. Tests: `tests/Feature/Orders/AnalyticsExportTest.php`. | `OrderAnalyticsController::exportReport`, `report-pdf.blade.php` | erledigt |
 | M5 | Behoben: Im Admin angelegte Benutzer hatten kein `email_verified_at` und waren durch `verified` ausgesperrt. Jetzt setzt `UserController::store` den Wert beim Anlegen. Bewusst unverändert: Ändert ein Benutzer seine eigene E-Mail im Profil, wird die Verifizierung zurückgesetzt (Breeze-Standard, setzt funktionierenden Mailversand voraus). Bereits angelegte, nicht verifizierte Benutzer bleiben unverändert und müssen einmalig verifiziert werden (`email_verified_at` setzen, z. B. über Tinker). Tests: `tests/Feature/Admin/UserAdministrationTest.php`. | `UserController::store`, `ProfileController::update` | erledigt |
 | M6 | Behoben: Seeder erzeugten `tenants.*`/`customers.*` statt `contacts.*`, auf frischer Installation gehörte `contacts.*` keiner Rolle; `TestCustomerSeeder` verwendete das entfernte Model. Jetzt `contacts.*` in `RentalPermissionsSeeder` und `ContactPermissionsSeeder`, `TestContactSeeder` über `Contact`. Tests: `tests/Feature/Database/PermissionSeedersTest.php`. | `database/seeders/*` | erledigt, siehe [04-rechte-und-rollen.md](04-rechte-und-rollen.md) |
 | M7 | Behoben: Die Schließen-Schaltflächen der Meldungen nutzten `data-bs-dismiss`; CoreUI wertet nur `data-coreui-dismiss` aus. In allen 8 Views umgestellt und im Browser geprüft (Klick auf das X schließt die Meldung). Ein Test verhindert, dass `data-bs-` wieder in eine View gelangt. | 8 Views in `resources/views` | erledigt |
-| M8 | `config/app.php` setzt `timezone` auf `UTC`. Nummernkreise (`date('Y')`) und Tagesgrenzen (Dashboard "heute", Auswertungen) laufen nach UTC, Anzeigen erfolgen ohne Umrechnung. | `config/app.php`, `Order`, `Contact`, `DashboardController` | `Europe/Berlin` setzen (nach Prüfung bestehender Datumsdaten) |
-| M9 | Die Überschneidungsprüfung ist inklusiv: Endet eine Vermietung genau, wenn die nächste beginnt, wird sie abgelehnt. Logik ist in `store` und `update` doppelt. | `RentalController` | Halboffene Intervalle (`start < ende` und `end > beginn`), Methode auslagern |
-| M10 | Aufbewahrung des Aktivitätslogs ist mit 365 Tagen konfiguriert, `activitylog:clean` ist nicht eingeplant. | `routes/console.php` | Scheduler-Eintrag ergänzen |
+| M8 | Behoben: `config/app.php` setzte `timezone` auf `UTC`; Nummernkreise, Tagesgrenzen (Dashboard "heute") und alle Zeitstempel richteten sich nach UTC, also 1 bis 2 Stunden hinter der Ortszeit. Jetzt `env('APP_TIMEZONE', 'Europe/Berlin')`, `APP_TIMEZONE=Europe/Berlin` steht in `.env.example`. Tests: `tests/Feature/Database/TimezoneAndScheduleTest.php` (Jahreswechsel der Nummern, Dashboard kurz nach Mitternacht, Zeitstempel in deutscher Zeit). **Daten:** Vorhandene Zeitstempel wurden nicht umgerechnet. Sie zeigen dieselbe Uhrzeit wie zuvor (UTC, 1 bis 2 Stunden vor Ortszeit), neue Einträge sind korrekt; Vermietungszeiten und Lieferdaten sind Ortszeit und unverändert. Eine Umrechnung wurde bewusst nicht gemacht, weil sie die Zeitzone der Datenbanksitzung voraussetzt (TIMESTAMP-Spalten in MariaDB) und nicht ohne Blick auf die Produktivdatenbank sicher ist. Vor dem Produktivbetrieb prüfen: `SELECT @@global.time_zone, @@session.time_zone`, und bei Bedarf `APP_TIMEZONE` setzen. | `config/app.php`, `.env.example` | erledigt |
+| M9 | Behoben: Die Überschneidungsprüfung war inklusiv, eine Vermietung, die genau beim Ende der vorigen begann, wurde abgelehnt; die Logik stand doppelt in `store` und `update`. Jetzt halboffene Intervalle in `Rental::scopeOverlapping` und eine gemeinsame Methode `RentalController::hallIsBooked`. Die Eingaben werden zu Carbon geparst, weil SQLite und MariaDB Datumsangaben sonst unterschiedlich vergleichen (Text gegen Zahl). Tests: `tests/Feature/Rental/RentalOverlapTest.php`. | `RentalController`, `Rental` | erledigt |
+| M10 | Behoben: Die Aufbewahrung ist mit 365 Tagen konfiguriert, `activitylog:clean` lief aber nie. Jetzt plant `routes/console.php` den Befehl täglich ein. Der Server braucht den Cronjob `* * * * * php artisan schedule:run`, sonst wird nichts gelöscht. Tests: `TimezoneAndScheduleTest` (Eintrag im Plan, alte Einträge werden gelöscht, `order_history` bleibt unberührt). | `routes/console.php` | erledigt |
 
 ## T Technische Schulden
 
-- **T1 Tests:** Die Suite ist vollständig grün (141 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
+- **T1 Tests:** Die Suite ist vollständig grün (172 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
 - **T2 Stil:** Pint (Standardpreset) meldet 54 von 118 Dateien. Siehe [07-coding-guidelines.md](07-coding-guidelines.md), Abschnitt 13.
 - **T3 Toter Code:** `LocaleController` (nicht geroutet, doppelt zu `LanguageController`), `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` ohne Verwendung, Breeze-Komponenten `dropdown`, `modal` und weitere ohne Verwendung (nicht einzeln geprüft), auskommentierter Menüpunkt "Berechtigungen".
 - **T4 Übersetzungen:** Controller mit festen deutschen Texten (siehe Abschnitt 13 der Guidelines); `order_history`-Beschreibungen sind englisch und fest.
@@ -165,8 +165,8 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## Empfohlene Reihenfolge
 
-1. K1 bis K7, M1, M2, M5 und M6 sind erledigt.
+1. K1 bis K7, S1, S3 und M1 bis M10 sind erledigt.
 2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Offen bleibt die Frage, ob Benutzer deaktiviert statt gelöscht werden sollen.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
-4. M4, M8 bis M10.
+4. Vor dem Produktivbetrieb: Zeitzone der Datenbank prüfen (M8) und den Cronjob für `schedule:run` einrichten (M10).
 5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.

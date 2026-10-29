@@ -43,20 +43,22 @@ php artisan db:seed --class=ContactPermissionsSeeder
 | Stil prüfen | `vendor/bin/pint --test` bzw. `vendor/bin/pint` zum Korrigieren |
 | Tests | `composer test` (leert die Config, dann `php artisan test`) |
 | Dateien auf die private Disk verschieben | `php artisan files:make-private` (zuvor `--dry-run` zur Kontrolle; wiederholbar) |
-| Aktivitätslog bereinigen | `php artisan activitylog:clean` (nicht automatisiert, siehe unten) |
+| Aktivitätslog bereinigen | `php artisan activitylog:clean` (läuft täglich über den Scheduler, siehe Betriebshinweise) |
 
 ## Tests
 
 - Framework: Pest 3 mit `RefreshDatabase` für `tests/Feature` (`tests/Pest.php`); `phpunit.xml` setzt SQLite in-memory, Mail `array`, Queue `sync`, Cache und Session `array`.
 - Vorhanden sind die Breeze-Standardtests (Login, Passwort, E-Mail-Verifizierung, Profil), ein Platzhaltertest in `tests/Unit`, Tests zum Dashboard-Zugriff (`DashboardAccessTest`) und zur nicht vorhandenen Selbstregistrierung (`Auth/RegistrationDisabledTest`) sowie Feature-Tests für Kontakte (`Contacts/`), Packübersicht, Packstatus, Lieferschein und Auftragslöschung (`Orders/`), Inventar und Protokolle (`Rental/`), Seeder und Nummernkreise (`Database/`), Benutzerverwaltung und Benutzer löschen (`Admin/`), private Dateispeicherung und den Verschiebe-Befehl (`Files/`), Arbeitsanweisungen (`WorkInstructions/`) sowie statische Frontend-Prüfungen (`Frontend/`: keine `data-bs-*`-Attribute, Alpine eingebunden, `x-cloak`). Ohne Tests sind Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
-- JavaScript-Verhalten (Alpine, Schließen von Meldungen) lässt sich mit Pest nicht prüfen. Es wurde einmalig im Browser gegen eine Wegwerf-SQLite-Datenbank verifiziert: Typwechsel im Kontaktformular blendet die Adressfelder ein und aus, das X einer Meldung schließt sie. Für den lokalen Start ohne Herd hat sich bewährt: im Verzeichnis `public` `php -S 127.0.0.1:8765 -t . ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php` (`php artisan serve` brach in der Prüfumgebung mit "Failed to listen" ab). Die Datenbank per `DB_CONNECTION` und `DB_DATABASE` in der Shell umleiten, nicht die `.env` ändern. `userWithPermissions([...])` (verifizierter Benutzer mit genau diesen Rechten), `makeContact()` und `makeOrder()` (erfundene Testdaten).
-- Stand 2026-10-29: 141 Tests grün, keiner rot. Zuvor waren drei Tests rot, weil sie Breeze-Verhalten prüften, das es im Projekt nicht gibt: `RegistrationTest` (Selbstregistrierung, die Route `/register` existiert bewusst nicht) und `ExampleTest` (erwartete 200 auf `/`, obwohl Gäste auf den Login umgeleitet werden). Sie wurden durch `RegistrationDisabledTest` (404, kein Benutzer entsteht, kein Registrierungslink) und `DashboardAccessTest` (Gast wird zum Login geleitet, verifizierter Benutzer sieht das Dashboard, unverifizierter wird zur Verifizierung geleitet) ersetzt.
+- JavaScript-Verhalten (Alpine, Schließen von Meldungen) lässt sich mit Pest nicht prüfen. Es wurde einmalig im Browser gegen eine Wegwerf-SQLite-Datenbank verifiziert: Typwechsel im Kontaktformular blendet die Adressfelder ein und aus, das X einer Meldung schließt sie. Für den lokalen Start ohne Herd hat sich bewährt: im Verzeichnis `public` `php -S 127.0.0.1:8765 -t . ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php` (`php artisan serve` brach in der Prüfumgebung mit "Failed to listen" ab). Die Datenbank per `DB_CONNECTION` und `DB_DATABASE` in der Shell umleiten, nicht die `.env` ändern.
+- Hinweis zur Zeitzone und zu Datumsvergleichen: Die Tests laufen in `Europe/Berlin` (Standard der Konfiguration). SQLite vergleicht Datumsangaben als Text, MariaDB numerisch. Abfragen mit Zeiträumen deshalb immer mit Carbon-Werten oder einheitlich formatierten Strings binden, nie mit Roh-Eingaben wie `2026-11-10T10:00` (M9).
+- Hilfsfunktionen in `tests/Pest.php`: `userWithPermissions([...])` (verifizierter Benutzer mit genau diesen Rechten), `makeContact()` und `makeOrder()` (erfundene Testdaten).
+- Stand 2026-10-29: 172 Tests grün, keiner rot. Zuvor waren drei Tests rot, weil sie Breeze-Verhalten prüften, das es im Projekt nicht gibt (`RegistrationTest`, `ExampleTest`); sie wurden durch `Auth/RegistrationDisabledTest` und `DashboardAccessTest` ersetzt.
 - Hinweis: Fehlte im lokalen `vendor/` `spatie/laravel-activitylog` (steht in `composer.json` und `composer.lock`), bricht der Lauf mit `Trait "Spatie\Activitylog\Traits\LogsActivity" not found` ab. Abhilfe: `composer install`.
 - Einschränkung für künftige Tests: `Order::ordersOverTime()` nutzt `DATE_FORMAT` (MySQL/MariaDB) und läuft nicht auf SQLite. Auswertungstests brauchen eine MariaDB-Testdatenbank oder eine portable Abfrage.
 
 Hinweis zu den Nummernkreis-Tests (`tests/Feature/Database/NumberSequenceTest.php`): SQLite läuft in einem Prozess und kann gleichzeitige Anfragen nicht nachstellen. Die Tests sichern das Verhalten (fortlaufend, keine Wiederverwendung, Weiterzählen, Jahreswechsel), die Sperre über `lockForUpdate` wirkt erst auf MariaDB.
 
-Empfohlene nächste Tests (nach Risiko): Auftragsanlage und Statusübergänge, Packen und Abschluss, Überschneidungsprüfung bei Vermietungen, Berechtigungsprüfung je Rolle.
+Empfohlene nächste Tests (nach Risiko): Auftragsanlage und Statusübergänge, Berechtigungsprüfung je Rolle.
 
 ## Umgebungsvariablen (Auswahl)
 
@@ -65,6 +67,7 @@ Die Werte stehen in `.env` und dürfen nicht ins Repository (`.env` ist in `.git
 | Variable | Bedeutung | Vorgabe in der Vorlage |
 |---|---|---|
 | `APP_NAME` | Anwendungsname | `Rosenau Management System` |
+| `APP_TIMEZONE` | Zeitzone der Anwendung (Nummernkreise, Tagesgrenzen, Zeitstempel) | `Europe/Berlin` |
 | `APP_ENV`, `APP_DEBUG`, `APP_URL` | Umgebung, Debug, Basis-URL (auch für `/storage`-URLs) | `production`, `false`, `http://localhost` |
 | `APP_LOCALE`, `APP_FALLBACK_LOCALE` | Sprachen | `de`, `en` |
 | `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Datenbank | `mariadb`, `127.0.0.1`, `3306` |
@@ -79,7 +82,7 @@ Der Slack-Webhook ist ein Geheimnis: nur in `.env` oder einem Secret-Store ableg
 
 - Dateispeicher: Nach dem Deployment `php artisan storage:link` ausführen (für Avatare auf der Disk `public`). Die Verzeichnisse `storage/` und `bootstrap/cache/` müssen für den Webserver-Benutzer beschreibbar sein.
 - Queue: Mails (`ProtocolFinalizedMail`) werden synchron versendet, es werden keine Jobs eingestellt. Ein Queue-Worker ist für den aktuellen Funktionsumfang nicht nötig, `QUEUE_CONNECTION=database` ist daher unkritisch.
-- Aktivitätslog: Aufbewahrung laut Konfiguration 365 Tage, aber ohne Zeitplan. Entweder `activitylog:clean` über den Scheduler (`Schedule::command(...)->daily()` in `routes/console.php`) oder manuell betreiben.
+- Aktivitätslog: Aufbewahrung laut Konfiguration 365 Tage; `activitylog:clean` läuft täglich über den Scheduler (`routes/console.php`). Voraussetzung auf dem Server ist der übliche Cronjob `* * * * * cd /pfad/zur/anwendung && php artisan schedule:run >> /dev/null 2>&1`. Ohne ihn wird nichts gelöscht. `php artisan schedule:list` zeigt die geplanten Aufgaben. Die Aufbewahrungsdauer steht in `config/activitylog.php` (`delete_records_older_than_days`); danach sind Einträge unwiderruflich weg. `order_history` ist davon nicht betroffen.
 - PDF-Erzeugung läuft im Request (DomPDF); Protokolle mit vielen Fotos erhöhen Speicher- und Laufzeitbedarf, da Bilder als Data-URI eingebettet werden.
 - Datenmigration Kontakte: Vor `php artisan migrate` auf einer bestehenden Installation ein vollständiges Datenbank-Backup erstellen. Migration `2026_04_12_000006` ist nicht umkehrbar.
 - Neue Migrationen vom 2026-10-23 (`add_soft_deletes_to_orders_table`, `create_number_sequences_table`, `set_orders_created_by_to_null_on_user_delete`): vor dem Deployment `php artisan migrate` ausführen. Die Zähler für Auftrags- und Kundennummern werden beim ersten Zugriff aus den vorhandenen Nummern abgeleitet, eine Datenübernahme ist nicht nötig. Gelöschte Aufträge bleiben als Soft Delete in der Tabelle `orders`. Die Migration `000003` ändert `orders.created_by` auf nullable; ihr `down()` bricht ab, wenn es bereits Aufträge ohne Ersteller gibt.

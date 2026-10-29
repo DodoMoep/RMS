@@ -80,7 +80,7 @@ Quelle: `.editorconfig` und Laravel Pint.
 - Alpine.js ist über Vite eingebunden (`resources/js/app.js`) und für kleine Oberflächenlogik in Formularen erlaubt. Elemente, die Alpine ein- oder ausblendet (`x-show`), bekommen `x-cloak`. Größere Logik gehört nicht in Alpine-Attribute, sondern in ein Skript über `@push('scripts')` (M3). **SOLL**
 - Skripte: `@push('scripts')` statt `<script>` mitten im Markup; keine externen CDN-Skripte, sondern über npm und Vite einbinden (Bestand: `signature_pad` per CDN). **SOLL**
 - Ausgabe mit `{{ }}`; `{!! !!}` nur für nachweislich vertrauenswürdige Inhalte. **MUSS**
-- Datumsformat in der Oberfläche `d.m.Y` bzw. `d.m.Y H:i`; Zeitzone der Anzeige beachten (Anwendungszeitzone ist UTC). **SOLL**
+- Datumsformat in der Oberfläche `d.m.Y` bzw. `d.m.Y H:i`; Die Anwendungszeitzone ist `Europe/Berlin`; Zeitstempel werden ohne Umrechnung in dieser Zeit gespeichert und angezeigt. Zeiträume in Abfragen immer mit `Carbon::parse(...)` binden, damit SQLite und MariaDB gleich vergleichen. **SOLL**
 - Formulare: `@csrf`, bei PUT/PATCH/DELETE `@method`, Fehlerausgabe je Feld, `old()` für Eingabewerte; zerstörerische Aktionen mit Bestätigung.
 
 ## 7. Mehrsprachigkeit
@@ -170,7 +170,7 @@ Weitere inhaltliche Abweichungen von den Regeln oben:
 | Ungenutzte Breeze-Komponenten | `components/dropdown`, `components/modal` (Tailwind-Klassen, Alpine) werden nirgends verwendet | `resources/views/components` |
 | Keine toten Codeteile | `LocaleController`, `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` | siehe [08-bekannte-probleme.md](08-bekannte-probleme.md) |
 | Fachlogik nicht im Controller | `ProtocolController::sign` (PDF, Mail, Statuswechsel, Transaktion in einer Methode) | `ProtocolController` |
-| Doppelter Code | Überschneidungsprüfung in `store` und `update`, Validierungsregeln je in `store` und `update` doppelt | `RentalController`, `ContactController` |
+| Doppelter Code | Validierungsregeln je in `store` und `update` doppelt | `ContactController`, `RentalController` |
 | Doppelter Cache-Reset | `Artisan::call('permission:cache-reset')` und `forgetCachedPermissions()` hintereinander | Admin-Controller |
 
 Vorgehen: Keine flächige Formatierungsrunde. Beim Ändern einer Datei werden deren Verstöße in einem getrennten Commit (`refactor: Stil angleichen`) behoben, damit Diff und Verhaltensänderung nachvollziehbar bleiben.

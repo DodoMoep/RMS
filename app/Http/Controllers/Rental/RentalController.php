@@ -36,19 +36,7 @@ class RentalController extends Controller
             'status'=>'required|in:scheduled,active,closed,cancelled',
         ]);
 
-        // Check for overlapping rentals
-        $overlap = Rental::where('hall_id', $data['hall_id'])
-            ->where('status', '!=', 'cancelled')
-            ->where(function($q) use ($data) {
-                $q->whereBetween('start', [$data['start'], $data['end']])
-                  ->orWhereBetween('end', [$data['start'], $data['end']])
-                  ->orWhere(function($q2) use ($data) {
-                      $q2->where('start', '<=', $data['start'])
-                         ->where('end', '>=', $data['end']);
-                  });
-            })->exists();
-
-        if ($overlap) {
+        if ($this->hallIsBooked($data)) {
             return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
         }
 
@@ -77,25 +65,24 @@ class RentalController extends Controller
             'status'=>'required|in:scheduled,active,closed,cancelled',
         ]);
 
-        // Check for overlapping rentals (excluding current rental)
-        $overlap = Rental::where('hall_id', $data['hall_id'])
-            ->where('id', '!=', $rental->id)
-            ->where('status', '!=', 'cancelled')
-            ->where(function($q) use ($data) {
-                $q->whereBetween('start', [$data['start'], $data['end']])
-                  ->orWhereBetween('end', [$data['start'], $data['end']])
-                  ->orWhere(function($q2) use ($data) {
-                      $q2->where('start', '<=', $data['start'])
-                         ->where('end', '>=', $data['end']);
-                  });
-            })->exists();
-
-        if ($overlap) {
+        if ($this->hallIsBooked($data, $rental)) {
             return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
         }
 
         $rental->update($data);
         return redirect()->route('rentals.index')->with('ok','Vermietung aktualisiert.');
+    }
+
+    /**
+     * Ist die Halle im Zeitraum bereits durch eine andere, nicht stornierte Vermietung belegt?
+     */
+    private function hallIsBooked(array $data, ?Rental $ignore = null): bool
+    {
+        return Rental::where('hall_id', $data['hall_id'])
+            ->where('status', '!=', 'cancelled')
+            ->when($ignore, fn ($q) => $q->where('id', '!=', $ignore->id))
+            ->overlapping($data['start'], $data['end'])
+            ->exists();
     }
 
     public function destroy(Rental $rental)
