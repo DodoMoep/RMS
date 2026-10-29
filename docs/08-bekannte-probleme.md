@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, M1, M2, M5 und M6 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, M1, M2, M3, M5, M6 und M7 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
 
 Nachweis:
 
@@ -27,11 +27,11 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | S5 | Niedrig | Externes Skript ohne Integritätsprüfung | Code |
 | M1 | Behoben | Packen ohne Statusprüfung des Auftrags | Code |
 | M2 | Behoben | Lieferschein-Druck umgeht die Statusübergänge | Code |
-| M3 | Mittel | Alpine.js wird verwendet, aber nicht geladen | Code |
+| M3 | Behoben | Alpine.js wird verwendet, aber nicht geladen | Code |
 | M4 | Niedrig | PDF-Export ignoriert den Zeitraum | Code |
 | M5 | Behoben | Im Admin angelegte Benutzer sind nicht verifiziert | Code |
 | M6 | Behoben | Seeder und Rechte nach Kontaktumbau veraltet | Code |
-| M7 | Niedrig | Meldungen mit `data-bs-dismiss` schließen nicht | Skript (CoreUI-Quelltext) |
+| M7 | Behoben | Meldungen mit `data-bs-dismiss` schließen nicht | Skript (CoreUI-Quelltext) |
 | M8 | Niedrig | Zeitzone UTC, Jahreswechsel und Anzeige | Code |
 | M9 | Niedrig | Aneinandergrenzende Vermietungen gelten als Überschneidung | Code |
 | M10 | Niedrig | Aktivitätslog ohne Bereinigung | Code |
@@ -144,11 +144,11 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 |---|---|---|---|
 | M1 | Behoben: Packen, Entpacken und Abschließen prüften den Status des Auftrags nicht; u. a. konnte der Abschluss einen ausgelieferten Auftrag wieder auf `packed` setzen. Jetzt nur im Status `in_progress`, im Controller mit übersetzter Meldung und zusätzlich als Regel in `OrderItem::markAsPacked`, `OrderItem::unpack` und `Order::lockOrder`. Tests: `tests/Feature/Orders/PackingStatusTest.php`. | `OrderPackingController`, `OrderItem`, `Order` | erledigt |
 | M2 | Behoben: `delivery-notes/{order}/print` setzte den Auftrag ohne Statusprüfung auf `in_delivery`, auch aus `new`. Jetzt ist der Druck erst ab `packed` möglich; der Statuswechsel erfolgt nur beim ersten Druck und wird in `Order::markAsInDelivery` über `canTransitionTo` abgesichert. Erneuter Druck ändert nichts. Tests: `DeliveryNoteTest`. | `DeliveryNoteController::print`, `Order::markAsInDelivery` | erledigt |
-| M3 | `contacts/_form.blade.php`, `components/dropdown`, `components/modal` verwenden Alpine.js (`x-data`, `x-show`), Alpine ist weder in `package.json` noch per CDN eingebunden. Das Typ-abhängige Ein- und Ausblenden der Adressfelder im Kontaktformular greift nicht. | Views | Alpine einbinden oder Logik mit Vanilla-JS umsetzen |
+| M3 | Behoben: Das Kontaktformular verwendete Alpine.js (`x-data`, `x-show`), das nicht geladen wurde; das Ein- und Ausblenden der Adressfelder je Kontakttyp griff nicht. Jetzt ist `alpinejs` eine npm-Abhängigkeit, `resources/js/app.js` startet Alpine, die ausgeblendeten Elemente haben `x-cloak` (Regel in `app.scss`). Im Browser geprüft (Wechsel auf Mieter blendet Ansprechpartner und Adresse aus, zurück auf Kunde blendet sie ein). Die Breeze-Komponenten `dropdown` und `modal` nutzen ebenfalls Alpine, werden aber nirgends verwendet (T3). Tests: `tests/Feature/Frontend/FrontendConsistencyTest.php`. | `resources/js/app.js`, `contacts/_form.blade.php` | erledigt |
 | M4 | Der Parameter `period` des PDF-Exports wird validiert und dann nicht verwendet; Export enthält immer alle Daten. | `OrderAnalyticsController::exportReport` | Zeitraum an die Abfragen durchreichen |
 | M5 | Behoben: Im Admin angelegte Benutzer hatten kein `email_verified_at` und waren durch `verified` ausgesperrt. Jetzt setzt `UserController::store` den Wert beim Anlegen. Bewusst unverändert: Ändert ein Benutzer seine eigene E-Mail im Profil, wird die Verifizierung zurückgesetzt (Breeze-Standard, setzt funktionierenden Mailversand voraus). Bereits angelegte, nicht verifizierte Benutzer bleiben unverändert und müssen einmalig verifiziert werden (`email_verified_at` setzen, z. B. über Tinker). Tests: `tests/Feature/Admin/UserAdministrationTest.php`. | `UserController::store`, `ProfileController::update` | erledigt |
 | M6 | Behoben: Seeder erzeugten `tenants.*`/`customers.*` statt `contacts.*`, auf frischer Installation gehörte `contacts.*` keiner Rolle; `TestCustomerSeeder` verwendete das entfernte Model. Jetzt `contacts.*` in `RentalPermissionsSeeder` und `ContactPermissionsSeeder`, `TestContactSeeder` über `Contact`. Tests: `tests/Feature/Database/PermissionSeedersTest.php`. | `database/seeders/*` | erledigt, siehe [04-rechte-und-rollen.md](04-rechte-und-rollen.md) |
-| M7 | Alert-Schließen-Schaltflächen nutzen `data-bs-dismiss`; CoreUI wertet nur `data-coreui-dismiss` aus (im CoreUI-Quelltext kein `data-bs-` vorhanden). | 8 Stellen in `resources/views` | Attribute umstellen |
+| M7 | Behoben: Die Schließen-Schaltflächen der Meldungen nutzten `data-bs-dismiss`; CoreUI wertet nur `data-coreui-dismiss` aus. In allen 8 Views umgestellt und im Browser geprüft (Klick auf das X schließt die Meldung). Ein Test verhindert, dass `data-bs-` wieder in eine View gelangt. | 8 Views in `resources/views` | erledigt |
 | M8 | `config/app.php` setzt `timezone` auf `UTC`. Nummernkreise (`date('Y')`) und Tagesgrenzen (Dashboard "heute", Auswertungen) laufen nach UTC, Anzeigen erfolgen ohne Umrechnung. | `config/app.php`, `Order`, `Contact`, `DashboardController` | `Europe/Berlin` setzen (nach Prüfung bestehender Datumsdaten) |
 | M9 | Die Überschneidungsprüfung ist inklusiv: Endet eine Vermietung genau, wenn die nächste beginnt, wird sie abgelehnt. Logik ist in `store` und `update` doppelt. | `RentalController` | Halboffene Intervalle (`start < ende` und `end > beginn`), Methode auslagern |
 | M10 | Aufbewahrung des Aktivitätslogs ist mit 365 Tagen konfiguriert, `activitylog:clean` ist nicht eingeplant. | `routes/console.php` | Scheduler-Eintrag ergänzen |
@@ -166,6 +166,6 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 1. K1 bis K7, M1, M2, M5 und M6 sind erledigt.
 2. S1 und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Offen bleibt die Frage, ob Benutzer deaktiviert statt gelöscht werden sollen.
-3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7); danach M3 und M7 (Frontend-Konsistenz).
+3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. M4, M8 bis M10.
 5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.

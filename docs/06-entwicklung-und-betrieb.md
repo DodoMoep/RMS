@@ -36,7 +36,7 @@ php artisan db:seed --class=ContactPermissionsSeeder
 |---|---|
 | Entwicklungsserver mit Queue und Vite | `composer dev` (startet `php artisan serve`, `queue:listen --tries=1`, `npm run dev`) |
 | Nur Frontend (Hot Reload) | `npm run dev` |
-| Frontend-Build | `npm run build` |
+| Frontend-Build | `npm run build` (nach Änderungen an `resources/js`, `resources/scss` oder Abhängigkeiten; die Feature-Tests rendern Views und brauchen `public/build/manifest.json`) |
 | Migrationen | `php artisan migrate` |
 | Routen prüfen | `php artisan route:list --except-vendor` |
 | Caches leeren | `php artisan optimize:clear` (bei Rechteproblemen zusätzlich `php artisan permission:cache-reset`) |
@@ -48,9 +48,9 @@ php artisan db:seed --class=ContactPermissionsSeeder
 ## Tests
 
 - Framework: Pest 3 mit `RefreshDatabase` für `tests/Feature` (`tests/Pest.php`); `phpunit.xml` setzt SQLite in-memory, Mail `array`, Queue `sync`, Cache und Session `array`.
-- Vorhanden sind die Breeze-Standardtests (Login, Registrierung, Passwort, E-Mail-Verifizierung, Profil), zwei Beispieltests und Feature-Tests für Kontakte (`Contacts/`), Packübersicht, Packstatus, Lieferschein und Auftragslöschung (`Orders/`), Inventar und Protokolle (`Rental/`), Seeder und Nummernkreise (`Database/`), Benutzerverwaltung und Benutzer löschen (`Admin/`) sowie private Dateispeicherung und der Verschiebe-Befehl (`Files/`). Ohne Tests sind Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung und Arbeitsanweisungen.
-- Hilfsfunktionen in `tests/Pest.php`: `userWithPermissions([...])` (verifizierter Benutzer mit genau diesen Rechten), `makeContact()` und `makeOrder()` (erfundene Testdaten).
-- Stand 2026-10-23: 117 Tests grün, 3 rot. Die roten Tests waren schon vorher rot und sind nicht Teil der Fachänderungen: `RegistrationTest` (zwei Tests; die Route `/register` existiert nicht) und `ExampleTest` (`/` leitet nicht angemeldete Besucher auf den Login um, erwartet wird 200).
+- Vorhanden sind die Breeze-Standardtests (Login, Registrierung, Passwort, E-Mail-Verifizierung, Profil), zwei Beispieltests und Feature-Tests für Kontakte (`Contacts/`), Packübersicht, Packstatus, Lieferschein und Auftragslöschung (`Orders/`), Inventar und Protokolle (`Rental/`), Seeder und Nummernkreise (`Database/`), Benutzerverwaltung und Benutzer löschen (`Admin/`) private Dateispeicherung und der Verschiebe-Befehl (`Files/`) sowie statische Frontend-Prüfungen (`Frontend/`: keine `data-bs-*`-Attribute, Alpine eingebunden, `x-cloak`). Ohne Tests sind Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung und Arbeitsanweisungen.
+- JavaScript-Verhalten (Alpine, Schließen von Meldungen) lässt sich mit Pest nicht prüfen. Es wurde einmalig im Browser gegen eine Wegwerf-SQLite-Datenbank verifiziert: Typwechsel im Kontaktformular blendet die Adressfelder ein und aus, das X einer Meldung schließt sie. Für den lokalen Start ohne Herd hat sich bewährt: im Verzeichnis `public` `php -S 127.0.0.1:8765 -t . ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php` (`php artisan serve` brach in der Prüfumgebung mit "Failed to listen" ab). Die Datenbank per `DB_CONNECTION` und `DB_DATABASE` in der Shell umleiten, nicht die `.env` ändern. `userWithPermissions([...])` (verifizierter Benutzer mit genau diesen Rechten), `makeContact()` und `makeOrder()` (erfundene Testdaten).
+- Stand 2026-10-23: 122 Tests grün, 3 rot. Die roten Tests waren schon vorher rot und sind nicht Teil der Fachänderungen: `RegistrationTest` (zwei Tests; die Route `/register` existiert nicht) und `ExampleTest` (`/` leitet nicht angemeldete Besucher auf den Login um, erwartet wird 200).
 - Hinweis: Fehlte im lokalen `vendor/` `spatie/laravel-activitylog` (steht in `composer.json` und `composer.lock`), bricht der Lauf mit `Trait "Spatie\Activitylog\Traits\LogsActivity" not found` ab. Abhilfe: `composer install`.
 - Einschränkung für künftige Tests: `Order::ordersOverTime()` nutzt `DATE_FORMAT` (MySQL/MariaDB) und läuft nicht auf SQLite. Auswertungstests brauchen eine MariaDB-Testdatenbank oder eine portable Abfrage.
 

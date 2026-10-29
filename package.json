@@ -16,6 +16,7 @@
     "dependencies": {
         "@coreui/coreui": "^5.4.2",
         "@fortawesome/fontawesome-free": "^7.0.0",
-        "@popperjs/core": "^2.11.8"
+        "@popperjs/core": "^2.11.8",
+        "alpinejs": "^3.17.5"
     }
 }

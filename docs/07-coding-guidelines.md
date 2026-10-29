@@ -74,10 +74,10 @@ Quelle: `.editorconfig` und Laravel Pint.
 ## 6. Views und Frontend
 
 - UI ausschließlich mit CoreUI 5 / Bootstrap 5 und Font Awesome (`fas fa-...`); keine zusätzlichen UI-Bibliotheken ohne Abstimmung. **SOLL**
-- CoreUI-Komponenten verwenden `data-coreui-*`-Attribute. `data-bs-*` (im Bestand an 8 Stellen) funktioniert mit CoreUI nicht, weil dessen Skripte nur die eigenen Attribute auswerten; neue Views nutzen `data-coreui-*`. **SOLL**
+- CoreUI-Komponenten verwenden `data-coreui-*`-Attribute (z. B. `data-coreui-dismiss="alert"`). `data-bs-*` funktioniert mit CoreUI nicht, weil dessen Skripte nur die eigenen Attribute auswerten; `tests/Feature/Frontend/FrontendConsistencyTest.php` schlägt bei `data-bs-` in einer View fehl (M7). **MUSS**
 - Texte nie fest in Views oder Controllern, immer `__('bereich.schluessel')`. Gilt auch für Flash-Meldungen und Validierungsnachrichten. **MUSS** für neuen Code
 - Layout über `<x-app-layout>`; öffentliche Seiten über `<x-public-layout>`. Navigation und Aktionsschaltflächen mit `@can`. **SOLL**
-- Alpine.js wird nicht ausgeliefert. `x-data`/`x-show` nur verwenden, wenn Alpine ordentlich über Vite eingebunden wird (M3). **MUSS**
+- Alpine.js ist über Vite eingebunden (`resources/js/app.js`) und für kleine Oberflächenlogik in Formularen erlaubt. Elemente, die Alpine ein- oder ausblendet (`x-show`), bekommen `x-cloak`. Größere Logik gehört nicht in Alpine-Attribute, sondern in ein Skript über `@push('scripts')` (M3). **SOLL**
 - Skripte: `@push('scripts')` statt `<script>` mitten im Markup; keine externen CDN-Skripte, sondern über npm und Vite einbinden (Bestand: `signature_pad` per CDN). **SOLL**
 - Ausgabe mit `{{ }}`; `{!! !!}` nur für nachweislich vertrauenswürdige Inhalte. **MUSS**
 - Datumsformat in der Oberfläche `d.m.Y` bzw. `d.m.Y H:i`; Zeitzone der Anzeige beachten (Anwendungszeitzone ist UTC). **SOLL**
@@ -167,7 +167,7 @@ Weitere inhaltliche Abweichungen von den Regeln oben:
 | Form Requests | Fachcontroller validieren inline; Form Requests gibt es nur für Rollen, Rechte, Login, Profil | alle Fach-Controller |
 | Eine UUID-Variante | Zwei Mechanismen (`HasUuids` und `HasUuid`) | Rental-Models |
 | Einheitliche Flash-Schlüssel | `ok`, `status`, `error` gemischt | Controller und Views |
-| `data-coreui-*` | `data-bs-dismiss` in 8 Stellen | Views |
+| Ungenutzte Breeze-Komponenten | `components/dropdown`, `components/modal` (Tailwind-Klassen, Alpine) werden nirgends verwendet | `resources/views/components` |
 | Keine toten Codeteile | `LocaleController`, `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` | siehe [08-bekannte-probleme.md](08-bekannte-probleme.md) |
 | Fachlogik nicht im Controller | `ProtocolController::sign` (PDF, Mail, Statuswechsel, Transaktion in einer Methode) | `ProtocolController` |
 | Doppelter Code | Überschneidungsprüfung in `store` und `update`, Validierungsregeln je in `store` und `update` doppelt | `RentalController`, `ContactController` |

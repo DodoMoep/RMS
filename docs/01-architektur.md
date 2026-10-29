@@ -13,6 +13,7 @@
 | Bildverarbeitung | `intervention/image` ^3.11 (nur Avatar in `ProfileController`) | `ProfileController.php` |
 | Frontend-Build | Vite 7, `laravel-vite-plugin`, Sass | `vite.config.js`, `package.json` |
 | UI | CoreUI 5 (Bootstrap 5), Font Awesome 7 Free, Blade | `resources/scss/app.scss` |
+| Frontend-Interaktion | Alpine.js 3 (nur für das Kontaktformular), CoreUI-JavaScript | `resources/js/app.js` |
 | Tests | Pest 3 (+ Laravel-Plugin) | `tests/Pest.php` |
 | Stil | Laravel Pint (Standardpreset, keine `pint.json`) | `composer.json` |
 
@@ -124,5 +125,5 @@ Die Pfade in der Datenbank sind relativ und gelten unabhängig von der Disk. Bes
 - Layouts als Blade-Komponenten: `<x-app-layout>` (Sidebar-Navigation mit Rechteprüfung über `@can`), `<x-guest-layout>` (Login), `<x-public-layout>` (Arbeitsanweisungen ohne Login).
 - Navigation: `resources/views/layouts/navigation.blade.php`. Der Menüpunkt "Berechtigungen" ist auskommentiert; die Route bleibt erreichbar.
 - Inline-Skripte gibt es in vier Views (`admin/activity-log/index`, `order/orders/_form`, `rental/halls/_form`, `rental/protocol/form`). Die Unterschrift lädt `signature_pad@4.1.7` per CDN. Die Auswertungsseite rendert serverseitig; die JSON-Endpunkte `/analytics/api/*` werden von keiner View aufgerufen.
-- Alpine.js wird in `contacts/_form.blade.php`, `components/dropdown.blade.php` und `components/modal.blade.php` vorausgesetzt, aber nirgends geladen (siehe Punkt M3 in [08-bekannte-probleme.md](08-bekannte-probleme.md)).
+- Alpine.js ist über npm (`alpinejs`) und Vite eingebunden: `resources/js/app.js` importiert es und ruft `Alpine.start()` auf (früherer Befund M3). Tatsächlich genutzt wird es nur in `contacts/_form.blade.php` (Ein- und Ausblenden von Ansprechpartner und Adresse je nach Kontakttyp). Ausgeblendete Elemente tragen `x-cloak`, die Regel `[x-cloak]` steht in `resources/scss/app.scss`, damit sie vor dem Start von Alpine nicht aufblitzen. `components/dropdown.blade.php` und `components/modal.blade.php` (Breeze-Reste mit Tailwind-Klassen) enthalten ebenfalls Alpine-Direktiven, werden aber nirgends verwendet.
 - Flash-Meldungen verwenden drei verschiedene Schlüssel: `ok`, `status`, `error`.
