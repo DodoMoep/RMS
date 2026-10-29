@@ -8,7 +8,7 @@ Zugriffsstufen:
 - `Login`: nur `auth`
 - `oeffentlich`: ohne Anmeldung erreichbar. Das sind die Arbeitsanweisungen, der Sprachwechsel und die Gast-Routen von Breeze (`/login`, `/forgot-password`, `/reset-password`, die nur für nicht angemeldete Benutzer gedacht sind)
 
-Eine Registrierungsroute gibt es nicht. `Auth\RegisteredUserController` ist nicht eingebunden; die Breeze-Tests für `/register` laufen deshalb ins Leere. Der Health-Check liegt unter `/up`.
+Eine Registrierungsroute gibt es nicht. `Auth\RegisteredUserController` ist nicht eingebunden; `tests/Feature/Auth/RegistrationDisabledTest.php` hält fest, dass `/register` mit 404 antwortet und sich niemand selbst registrieren kann. Der Health-Check liegt unter `/up`.
 
 Zusätzlich zur Routen-Berechtigung blenden die Views Menüpunkte und Schaltflächen per `@can` aus.
 

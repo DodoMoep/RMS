@@ -156,7 +156,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## T Technische Schulden
 
-- **T1 Tests:** Nur Breeze-Standardtests. Die Registrierungstests rufen eine nicht vorhandene Route auf. Fachmodule vollständig ungetestet; Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
+- **T1 Tests:** Die Suite ist vollständig grün (141 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
 - **T2 Stil:** Pint (Standardpreset) meldet 54 von 118 Dateien. Siehe [07-coding-guidelines.md](07-coding-guidelines.md), Abschnitt 13.
 - **T3 Toter Code:** `LocaleController` (nicht geroutet, doppelt zu `LanguageController`), `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` ohne Verwendung, Breeze-Komponenten `dropdown`, `modal` und weitere ohne Verwendung (nicht einzeln geprüft), auskommentierter Menüpunkt "Berechtigungen".
 - **T4 Übersetzungen:** Controller mit festen deutschen Texten (siehe Abschnitt 13 der Guidelines); `order_history`-Beschreibungen sind englisch und fest.
