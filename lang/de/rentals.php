@@ -14,9 +14,13 @@ return [
     'total_price' => 'Gesamtpreis',
     
     'messages' => [
-        'created' => 'Vermietung erfolgreich erstellt',
-        'updated' => 'Vermietung erfolgreich aktualisiert',
-        'deleted' => 'Vermietung erfolgreich gelöscht',
+        'created' => 'Vermietung angelegt.',
+        'updated' => 'Vermietung aktualisiert.',
+        'deleted' => 'Vermietung gelöscht.',
+        'has_protocols' => 'Vermietung kann nicht gelöscht werden, da bereits Protokolle vorhanden sind.',
+        'hall_booked' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.',
+        'handover_error' => 'Fehler beim Erstellen des Übergabeprotokolls.',
+        'return_error' => 'Fehler beim Erstellen des Rückgabeprotokolls.',
         'confirm_delete' => 'Möchten Sie diese Vermietung wirklich löschen?',
     ],
 ];

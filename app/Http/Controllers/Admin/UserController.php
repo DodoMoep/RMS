@@ -71,7 +71,7 @@ class UserController extends Controller
             ->event('user.created')
             ->log('User angelegt');
 
-        return redirect()->route('users.index')->with('status','User angelegt.');
+        return redirect()->route('users.index')->with('status', __('users.messages.created'));
     }
 
     public function edit(User $user)
@@ -98,7 +98,7 @@ class UserController extends Controller
         // Sich selbst nicht „aussperren": optional Schutz
         if (auth()->id() === $user->id && $user->hasRole('super-admin')) {
             if (!in_array('super-admin', $data['roles'] ?? [])) {
-                return back()->withErrors(['Du kannst dir nicht selbst die Super-Admin Rolle entziehen.']);
+                return back()->withErrors([__('users.messages.cannot_remove_own_super_admin')]);
             }
         }
 
@@ -125,7 +125,7 @@ class UserController extends Controller
             ->event('user.updated')
             ->log('User aktualisiert');
 
-        return redirect()->route('users.index')->with('status','User aktualisiert.');
+        return redirect()->route('users.index')->with('status', __('users.messages.updated'));
     }
 
     /**
@@ -175,7 +175,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         // Sich selbst nicht löschen
-        abort_if(auth()->id() === $user->id, 403, 'Du kannst dich nicht selbst löschen.');
+        abort_if(auth()->id() === $user->id, 403, __('users.messages.cannot_delete_self'));
 
         activity('admin')
             ->causedBy(auth()->user())
@@ -185,6 +185,6 @@ class UserController extends Controller
             ->log('User gelöscht');
 
         $user->delete();
-        return back()->with('status','User gelöscht.');
+        return back()->with('status', __('users.messages.deleted'));
     }
 }

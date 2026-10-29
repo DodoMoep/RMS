@@ -27,7 +27,6 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['name' => 'perm.add']);
         Permission::create(['name' => 'perm.edit']);
         Permission::create(['name' => 'perm.delete']);
-		Permission::create(['name' => 'app.settings']);
 
         // update cache to know about the newly created permissions (required if using WithoutModelEvents in seeders)
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

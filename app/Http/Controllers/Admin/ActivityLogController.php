@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
 
@@ -26,12 +27,12 @@ class ActivityLogController extends Controller
 
         if ($request->filled('causer_id')) {
             $query->where('causer_id', $request->causer_id)
-                  ->where('causer_type', \App\Models\User::class);
+                  ->where('causer_type', User::class);
         }
 
         $logs    = $query->paginate(50)->withQueryString();
         $logNames = Activity::distinct()->orderBy('log_name')->pluck('log_name');
-        $users   = \App\Models\User::orderBy('name')->get(['id', 'name']);
+        $users   = User::orderBy('name')->get(['id', 'name']);
 
         return view('admin.activity-log.index', compact('logs', 'logNames', 'users'));
     }

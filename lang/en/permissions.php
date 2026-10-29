@@ -12,9 +12,9 @@ return [
     'no_permissions' => 'No permissions available.',
     
     'messages' => [
-        'created' => 'Permission successfully created',
-        'updated' => 'Permission successfully updated',
-        'deleted' => 'Permission successfully deleted',
+        'created' => 'Permission created.',
+        'updated' => 'Permission updated.',
+        'deleted' => 'Permission deleted.',
         'confirm_delete' => 'Are you sure you want to delete this permission?',
     ],
 ];

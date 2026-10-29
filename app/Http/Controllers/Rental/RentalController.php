@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Rental\{Rental, Hall, Protocol};
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{DB, Log};
 
 class RentalController extends Controller
 {
@@ -26,22 +27,15 @@ class RentalController extends Controller
 
     public function store(Request $r)
     {
-        $data = $r->validate([
-            'contact_id'=>'required|uuid|exists:contacts,id',
-            'hall_id'=>'required|uuid|exists:halls,id',
-            'start'=>'required|date',
-            'end'=>'required|date|after:start',
-            'price'=>'nullable|numeric|min:0',
-            'deposit'=>'nullable|numeric|min:0',
-            'status'=>'required|in:scheduled,active,closed,cancelled',
-        ]);
+        $data = $r->validate($this->rules());
+
 
         if ($this->hallIsBooked($data)) {
-            return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
+            return back()->withInput()->withErrors(['hall_id' => __('rentals.messages.hall_booked')]);
         }
 
         Rental::create($data);
-        return redirect()->route('rentals.index')->with('ok','Vermietung angelegt.');
+        return redirect()->route('rentals.index')->with('ok', __('rentals.messages.created'));
     }
 
     public function edit(Rental $rental)
@@ -55,7 +49,23 @@ class RentalController extends Controller
 
     public function update(Request $r, Rental $rental)
     {
-        $data = $r->validate([
+        $data = $r->validate($this->rules());
+
+
+        if ($this->hallIsBooked($data, $rental)) {
+            return back()->withInput()->withErrors(['hall_id' => __('rentals.messages.hall_booked')]);
+        }
+
+        $rental->update($data);
+        return redirect()->route('rentals.index')->with('ok', __('rentals.messages.updated'));
+    }
+
+    /**
+     * Validierungsregeln fuer Anlegen und Aendern einer Vermietung.
+     */
+    private function rules(): array
+    {
+        return [
             'contact_id'=>'required|uuid|exists:contacts,id',
             'hall_id'=>'required|uuid|exists:halls,id',
             'start'=>'required|date',
@@ -63,14 +73,7 @@ class RentalController extends Controller
             'price'=>'nullable|numeric|min:0',
             'deposit'=>'nullable|numeric|min:0',
             'status'=>'required|in:scheduled,active,closed,cancelled',
-        ]);
-
-        if ($this->hallIsBooked($data, $rental)) {
-            return back()->withInput()->withErrors(['hall_id' => 'Diese Halle ist im gewählten Zeitraum bereits vermietet.']);
-        }
-
-        $rental->update($data);
-        return redirect()->route('rentals.index')->with('ok','Vermietung aktualisiert.');
+        ];
     }
 
     /**
@@ -88,11 +91,11 @@ class RentalController extends Controller
     public function destroy(Rental $rental)
     {
         if ($rental->protocols()->exists()) {
-            return back()->withErrors(['Vermietung kann nicht gelöscht werden, da bereits Protokolle vorhanden sind.']);
+            return back()->withErrors([__('rentals.messages.has_protocols')]);
         }
 
         $rental->delete();
-        return back()->with('ok','Vermietung gelöscht.');
+        return back()->with('ok', __('rentals.messages.deleted'));
     }
 
     // --- Protokoll-Aktionen:
@@ -100,7 +103,7 @@ class RentalController extends Controller
     public function createOrOpenHandover(Rental $rental)
     {
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             $proto = $rental->handover;
             if (!$proto) {
@@ -119,20 +122,20 @@ class RentalController extends Controller
                 }
             }
 
-            \DB::commit();
+            DB::commit();
             return redirect()->route('protocol.form', $proto);
 
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Error creating handover protocol', ['error' => $e->getMessage()]);
-            return back()->withErrors(['Fehler beim Erstellen des Übergabeprotokolls.']);
+            DB::rollBack();
+            Log::error('Error creating handover protocol', ['error' => $e->getMessage()]);
+            return back()->withErrors([__('rentals.messages.handover_error')]);
         }
     }
 
     public function createOrOpenReturn(Rental $rental)
     {
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             $return = $rental->returnProtocol;
             if (!$return) {
@@ -156,13 +159,13 @@ class RentalController extends Controller
                 }
             }
 
-            \DB::commit();
+            DB::commit();
             return redirect()->route('protocol.form', $return);
 
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Error creating return protocol', ['error' => $e->getMessage()]);
-            return back()->withErrors(['Fehler beim Erstellen des Rückgabeprotokolls.']);
+            DB::rollBack();
+            Log::error('Error creating return protocol', ['error' => $e->getMessage()]);
+            return back()->withErrors([__('rentals.messages.return_error')]);
         }
     }
 }

@@ -2,10 +2,10 @@
 namespace App\Models\Rental;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Signature extends Model {
-    use HasUuid;
+    use HasUuids;
     protected $fillable=['protocol_id','role','signer_name','png_path','signed_at'];
     protected $casts=['signed_at'=>'datetime'];
     public function protocol(){ return $this->belongsTo(Protocol::class); }

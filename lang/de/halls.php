@@ -14,9 +14,10 @@ return [
     'price_per_day' => 'Preis pro Tag',
     
     'messages' => [
-        'created' => 'Saal erfolgreich erstellt',
-        'updated' => 'Saal erfolgreich aktualisiert',
-        'deleted' => 'Saal erfolgreich gelöscht',
+        'created' => 'Halle angelegt.',
+        'updated' => 'Halle aktualisiert.',
+        'deleted' => 'Halle gelöscht.',
+        'has_rentals' => 'Halle kann nicht gelöscht werden, da noch Vermietungen vorhanden sind.',
         'confirm_delete' => 'Möchten Sie diesen Saal wirklich löschen?',
     ],
 ];

@@ -70,6 +70,18 @@ test('a seeded rental staff user can open the contact list but cannot delete', f
     $this->actingAs($user)->delete(route('contacts.destroy', $contact))->assertForbidden();
 });
 
+test('the base seeder creates the admin permissions without the unused settings permission', function () {
+    App\Models\User::factory()->create();
+
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+
+    $names = Permission::pluck('name');
+
+    expect($names)->toContain('user.list', 'role.edit', 'perm.delete')
+        ->and($names)->not->toContain('app.settings')
+        ->and(App\Models\User::find(1)->hasRole('super-admin'))->toBeTrue();
+});
+
 test('test contact seeder creates customers with customer numbers', function () {
     $this->seed(TestContactSeeder::class);
 

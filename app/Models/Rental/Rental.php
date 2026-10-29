@@ -2,13 +2,13 @@
 namespace App\Models\Rental;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\Contact;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 class Rental extends Model {
-    use HasUuid;
+    use HasUuids;
     protected $fillable=['contact_id','hall_id','start','end','price','deposit','status'];
     protected $casts=['start'=>'datetime','end'=>'datetime'];
 

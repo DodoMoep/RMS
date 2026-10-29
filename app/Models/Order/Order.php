@@ -6,12 +6,14 @@ use App\Enums\OrderStatus;
 use App\Models\Contact;
 use App\Models\User;
 use App\Services\NumberSequence;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Order extends Model
 {
@@ -124,7 +126,7 @@ class Order extends Model
         $previousLocale = app()->getLocale();
         app()->setLocale('de');
         
-        $pdf = \PDF::loadView('order.delivery-notes.template', ['order' => $this]);
+        $pdf = Pdf::loadView('order.delivery-notes.template', ['order' => $this]);
         
         // Restore previous locale
         app()->setLocale($previousLocale);
@@ -132,7 +134,7 @@ class Order extends Model
         $filename = "delivery-note-{$this->order_number}.pdf";
         $path = "delivery-notes/{$filename}";
         
-        \Storage::disk('local')->put($path, $pdf->output());
+        Storage::disk('local')->put($path, $pdf->output());
         
         $this->update(['delivery_note_path' => $path]);
         

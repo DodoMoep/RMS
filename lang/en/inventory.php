@@ -14,9 +14,10 @@ return [
     'location' => 'Location',
     
     'messages' => [
-        'created' => 'Item successfully created',
-        'updated' => 'Item successfully updated',
-        'deleted' => 'Item successfully deleted',
+        'created' => 'Inventory item created.',
+        'updated' => 'Inventory item updated.',
+        'deleted' => 'Inventory item deleted.',
+        'assigned_to_halls' => 'The inventory item cannot be deleted because it is still assigned to halls.',
         'confirm_delete' => 'Are you sure you want to delete this item?',
     ],
 ];

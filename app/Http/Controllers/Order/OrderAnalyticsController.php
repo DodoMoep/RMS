@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Order;
 use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
 use App\Models\Order\Order;
+use App\Models\Order\OrderItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class OrderAnalyticsController extends Controller
@@ -26,7 +28,7 @@ class OrderAnalyticsController extends Controller
         
         // Items packed in the period
         $packedStatuses = [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value];
-        $itemsPacked = \App\Models\Order\OrderItem::whereHas('order', function($q) use ($period, $packedStatuses) {
+        $itemsPacked = OrderItem::whereHas('order', function($q) use ($period, $packedStatuses) {
             $q->whereIn('status', $packedStatuses);
             if ($period !== 'all') {
                 $q->where('created_at', '>=', now()->subDays((int)$period));
@@ -111,7 +113,7 @@ class OrderAnalyticsController extends Controller
             'generatedAt' => now(),
         ];
 
-        $pdf = \PDF::loadView('order.analytics.report-pdf', $data);
+        $pdf = Pdf::loadView('order.analytics.report-pdf', $data);
         return $pdf->download('order-analytics-' . now()->format('Y-m-d') . '.pdf');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\OrderStatus;
 use App\Models\Order\Order;
 
 class OrderObserver
@@ -18,7 +19,7 @@ class OrderObserver
     {
         if ($order->wasChanged('status')) {
             $oldStatus = $order->getOriginal('status');
-            $oldStatusValue = $oldStatus instanceof \App\Enums\OrderStatus ? $oldStatus->value : $oldStatus;
+            $oldStatusValue = $oldStatus instanceof OrderStatus ? $oldStatus->value : $oldStatus;
             
             $order->logHistory(
                 'status_changed',

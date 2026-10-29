@@ -21,9 +21,11 @@ return [
     'deactivate' => 'Deaktivieren',
     
     'messages' => [
-        'created' => 'Benutzer erfolgreich erstellt',
-        'updated' => 'Benutzer erfolgreich aktualisiert',
-        'deleted' => 'Benutzer erfolgreich gelöscht',
+        'created' => 'User angelegt.',
+        'updated' => 'User aktualisiert.',
+        'deleted' => 'User gelöscht.',
+        'cannot_remove_own_super_admin' => 'Du kannst dir nicht selbst die Super-Admin Rolle entziehen.',
+        'cannot_delete_self' => 'Du kannst dich nicht selbst löschen.',
         'confirm_delete' => 'Möchten Sie diesen Benutzer wirklich löschen?',
         'confirm_deactivate' => 'Benutzer wirklich deaktivieren? Er kann sich danach nicht mehr anmelden, seine Aufträge bleiben erhalten.',
         'activated' => 'Benutzer aktiviert.',

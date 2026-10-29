@@ -13,12 +13,12 @@ class DeliveryNoteController extends Controller
     public function generate(Order $order)
     {
         if ($order->status !== OrderStatus::PACKED) {
-            return back()->withErrors(['Lieferschein kann nur für verpackte Bestellungen erstellt werden.']);
+            return back()->withErrors([__('delivery_notes.messages.only_packed')]);
         }
 
         try {
             $path = $order->generateDeliveryNote();
-            return back()->with('ok', 'Lieferschein wurde erstellt.');
+            return back()->with('ok', __('delivery_notes.messages.created'));
         } catch (\Exception $e) {
             return back()->withErrors([$e->getMessage()]);
         }
@@ -48,7 +48,7 @@ class DeliveryNoteController extends Controller
     public function download(Order $order)
     {
         if (!$order->delivery_note_path) {
-            return back()->withErrors(['Kein Lieferschein vorhanden.']);
+            return back()->withErrors([__('delivery_notes.messages.none_available')]);
         }
 
         $this->validateStoragePath($order->delivery_note_path);
@@ -65,11 +65,11 @@ class DeliveryNoteController extends Controller
         $candidate = realpath(Storage::disk('local')->path($path));
 
         if ($candidate === false || $diskRoot === false || !str_starts_with($candidate, $diskRoot . DIRECTORY_SEPARATOR)) {
-            abort(403, 'Ungültiger Dateipfad.');
+            abort(403, __('delivery_notes.messages.invalid_path'));
         }
 
         if (!Storage::disk('local')->exists($path)) {
-            abort(404, 'Datei nicht gefunden.');
+            abort(404, __('delivery_notes.messages.file_not_found'));
         }
     }
 }

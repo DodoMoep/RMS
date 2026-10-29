@@ -21,9 +21,11 @@ return [
     'deactivate' => 'Deactivate',
     
     'messages' => [
-        'created' => 'User successfully created',
-        'updated' => 'User successfully updated',
-        'deleted' => 'User successfully deleted',
+        'created' => 'User created.',
+        'updated' => 'User updated.',
+        'deleted' => 'User deleted.',
+        'cannot_remove_own_super_admin' => 'You cannot remove your own super admin role.',
+        'cannot_delete_self' => 'You cannot delete yourself.',
         'confirm_delete' => 'Are you sure you want to delete this user?',
         'confirm_deactivate' => 'Really deactivate this user? They will no longer be able to log in, their orders are kept.',
         'activated' => 'User activated.',

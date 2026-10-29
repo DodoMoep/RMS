@@ -12,9 +12,9 @@ return [
     'no_permissions' => 'Keine Berechtigungen vorhanden.',
     
     'messages' => [
-        'created' => 'Berechtigung erfolgreich erstellt',
-        'updated' => 'Berechtigung erfolgreich aktualisiert',
-        'deleted' => 'Berechtigung erfolgreich gelöscht',
+        'created' => 'Berechtigung erstellt.',
+        'updated' => 'Berechtigung aktualisiert.',
+        'deleted' => 'Berechtigung gelöscht.',
         'confirm_delete' => 'Möchten Sie diese Berechtigung wirklich löschen?',
     ],
 ];

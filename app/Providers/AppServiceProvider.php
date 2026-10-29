@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Order\Order;
+use App\Observers\OrderObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +27,6 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('super-admin') ? true : null;
         });
 
-        \App\Models\Order\Order::observe(\App\Observers\OrderObserver::class);
+        Order::observe(OrderObserver::class);
     }
 }

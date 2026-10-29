@@ -19,6 +19,11 @@ return [
     'download' => 'Herunterladen',
 
     'messages' => [
+        'only_packed' => 'Lieferschein kann nur für verpackte Bestellungen erstellt werden.',
+        'created' => 'Lieferschein wurde erstellt.',
+        'none_available' => 'Kein Lieferschein vorhanden.',
+        'invalid_path' => 'Ungültiger Dateipfad.',
+        'file_not_found' => 'Datei nicht gefunden.',
         'not_printable' => 'Der Lieferschein kann erst gedruckt werden, wenn die Bestellung verpackt ist.',
     ],
 ];

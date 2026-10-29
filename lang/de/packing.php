@@ -27,9 +27,9 @@ return [
     'packed_at' => 'Verpackt am',
     
     'messages' => [
-        'item_packed' => 'Artikel als verpackt markiert',
-        'item_unpacked' => 'Artikel als entpackt markiert',
-        'packing_completed' => 'Verpackung abgeschlossen',
+        'item_packed' => 'Artikel verpackt.',
+        'item_unpacked' => 'Artikel entpackt.',
+        'packing_completed' => 'Bestellung abgeschlossen und gesperrt.',
         'all_items_packed' => 'Alle Artikel sind verpackt',
         'order_not_packable' => 'Diese Bestellung ist nicht in Bearbeitung. Verpacken, Entpacken und Abschließen sind nur für Bestellungen in Bearbeitung möglich.',
     ],

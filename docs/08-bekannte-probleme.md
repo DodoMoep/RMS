@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3 und M1 bis M10 sind behoben und durch Tests abgesichert (Status je Punkt); alle übrigen Punkte sind offen.
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, M1 bis M11, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (S2, S4, S5, S6, T1, T2).
 
 Nachweis:
 
@@ -25,6 +25,7 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | S3 | Behoben | Benutzer löschen entfernt per Kaskade deren Aufträge | Code |
 | S4 | Niedrig | Lokale Werkzeugeinstellungen im Repository | Code |
 | S5 | Niedrig | Externes Skript ohne Integritätsprüfung | Code |
+| S6 | Hoch | Abhängigkeiten mit bekannten Schwachstellen (55 Hinweise in 15 Paketen) | Skript (`composer audit`) |
 | M1 | Behoben | Packen ohne Statusprüfung des Auftrags | Code |
 | M2 | Behoben | Lieferschein-Druck umgeht die Statusübergänge | Code |
 | M3 | Behoben | Alpine.js wird verwendet, aber nicht geladen | Code |
@@ -35,11 +36,12 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | M8 | Behoben | Zeitzone UTC, Jahreswechsel und Anzeige | Code |
 | M9 | Behoben | Aneinandergrenzende Vermietungen gelten als Überschneidung | Code |
 | M10 | Behoben | Aktivitätslog ohne Bereinigung | Code |
+| M11 | Behoben | Englische Mail-Sprachdatei mit Syntaxfehler | Skript (`php -l`) |
 | T1 | Mittel | Tests für Fachmodule nur teilweise vorhanden (Aufträge, Vermietungen, Auswertung fehlen) | Code |
-| T2 | Mittel | Stilabweichungen in 54 von 118 PHP-Dateien | Skript (Pint) |
-| T3 | Niedrig | Toter Code, ungenutzte Pakete | Code |
-| T4 | Niedrig | Feste deutsche Texte in Controllern | Code |
-| T5 | Niedrig | Zwei UUID-Mechanismen, doppelter Code | Code |
+| T2 | Mittel | Stilabweichungen in 54 von 118 PHP-Dateien (Stand vor den Korrekturen) | Skript (Pint) |
+| T3 | Behoben | Toter Code, ungenutzte Pakete (Rest: auskommentierter Menüpunkt) | Code |
+| T4 | Teilweise behoben | Feste deutsche Texte: Controller übersetzt, Views der Vermietung offen | Code |
+| T5 | Behoben | Zwei UUID-Mechanismen, Alias-Aufrufe, doppelter Code | Code |
 | T6 | Mittel | Lokales `vendor/` unvollständig, Tests nicht lauffähig | Skript |
 
 ## K Funktionsfehler (Folgen des Kontaktumbaus)
@@ -139,6 +141,13 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 - Auswirkung: Die Seite erfasst rechtsverbindliche Unterschriften; ein manipuliertes CDN-Skript könnte diese abgreifen. Zusätzlich Abhängigkeit von externer Erreichbarkeit.
 - Korrektur: Paket per npm einbinden und über Vite ausliefern, oder zumindest `integrity` und `crossorigin` setzen.
 
+### S6 Abhängigkeiten mit bekannten Schwachstellen
+
+- Fundstelle: `composer.lock` (installiert u. a. `laravel/framework` 12.27.0, Stand der Sperrdatei September 2025)
+- Nachweis: `composer audit` meldet 55 Sicherheitshinweise in 15 Paketen: `league/commonmark` (14), `guzzlehttp/guzzle` (9), `dompdf/dompdf` (6), `laravel/framework` (5), `guzzlehttp/psr7` (4), `symfony/yaml` (4), `symfony/http-foundation` (3), `symfony/mime` (2), `symfony/routing` (2) sowie je einer in `league/flysystem`, `phpunit/phpunit`, `psy/psysh`, `symfony/mailer`, `symfony/polyfill-intl-idn` und `symfony/process`.
+- Auswirkung: Nicht untersucht, welche Hinweise die Anwendung tatsächlich betreffen. Besonders relevant sind `laravel/framework` und `symfony/http-foundation` (Anfragenverarbeitung) sowie `dompdf/dompdf` (erzeugt PDFs aus Benutzerdaten; Remote-Zugriff ist in `config/dompdf.php` abgeschaltet).
+- Korrektur: Abhängigkeiten innerhalb der erlaubten Versionsbereiche aktualisieren (`composer update`), danach `composer audit` und den vollständigen Testlauf wiederholen; verbleibende Hinweise einzeln bewerten. Das ist ein eigenes Vorhaben und nicht Teil der Bereinigung technischer Schulden. Status: offen.
+
 ## M Fachliche und technische Mängel
 
 | ID | Beschreibung | Fundstelle | Korrektur |
@@ -153,20 +162,22 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 | M8 | Behoben: `config/app.php` setzte `timezone` auf `UTC`; Nummernkreise, Tagesgrenzen (Dashboard "heute") und alle Zeitstempel richteten sich nach UTC, also 1 bis 2 Stunden hinter der Ortszeit. Jetzt `env('APP_TIMEZONE', 'Europe/Berlin')`, `APP_TIMEZONE=Europe/Berlin` steht in `.env.example`. Tests: `tests/Feature/Database/TimezoneAndScheduleTest.php` (Jahreswechsel der Nummern, Dashboard kurz nach Mitternacht, Zeitstempel in deutscher Zeit). **Daten:** Vorhandene Zeitstempel wurden nicht umgerechnet. Sie zeigen dieselbe Uhrzeit wie zuvor (UTC, 1 bis 2 Stunden vor Ortszeit), neue Einträge sind korrekt; Vermietungszeiten und Lieferdaten sind Ortszeit und unverändert. Eine Umrechnung wurde bewusst nicht gemacht, weil sie die Zeitzone der Datenbanksitzung voraussetzt (TIMESTAMP-Spalten in MariaDB) und nicht ohne Blick auf die Produktivdatenbank sicher ist. Vor dem Produktivbetrieb prüfen: `SELECT @@global.time_zone, @@session.time_zone`, und bei Bedarf `APP_TIMEZONE` setzen. | `config/app.php`, `.env.example` | erledigt |
 | M9 | Behoben: Die Überschneidungsprüfung war inklusiv, eine Vermietung, die genau beim Ende der vorigen begann, wurde abgelehnt; die Logik stand doppelt in `store` und `update`. Jetzt halboffene Intervalle in `Rental::scopeOverlapping` und eine gemeinsame Methode `RentalController::hallIsBooked`. Die Eingaben werden zu Carbon geparst, weil SQLite und MariaDB Datumsangaben sonst unterschiedlich vergleichen (Text gegen Zahl). Tests: `tests/Feature/Rental/RentalOverlapTest.php`. | `RentalController`, `Rental` | erledigt |
 | M10 | Behoben: Die Aufbewahrung ist mit 365 Tagen konfiguriert, `activitylog:clean` lief aber nie. Jetzt plant `routes/console.php` den Befehl täglich ein. Der Server braucht den Cronjob `* * * * * php artisan schedule:run`, sonst wird nichts gelöscht. Tests: `TimezoneAndScheduleTest` (Eintrag im Plan, alte Einträge werden gelöscht, `order_history` bleibt unberührt). | `routes/console.php` | erledigt |
+| M11 | Behoben: `lang/en/mail.php` enthielt ein unmaskiertes Apostroph (`you're`) und ließ sich nicht parsen. Bei englischer Sprache scheiterten damit alle Mails, die das Mail-Layout nutzen (Passwort-Reset, E-Mail-Verifizierung, Protokoll-Mail) mit einem Syntaxfehler; bei der Standardsprache Deutsch fiel das nicht auf. Der Fehler bestand seit dem ersten Auftragsmodul und wurde bei der Prüfung aller Sprachdateien gefunden. Jetzt maskiert. Absicherung: `CodeConventionsTest` lädt alle Sprachdateien und vergleicht die Schlüssel von de und en, `TranslatedMessagesTest` rendert die englische Passwort-Reset-Mail. | `lang/en/mail.php` | erledigt |
 
 ## T Technische Schulden
 
-- **T1 Tests:** Die Suite ist vollständig grün (189 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
+- **T1 Tests:** Die Suite ist vollständig grün (228 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
 - **T2 Stil:** Pint (Standardpreset) meldet 54 von 118 Dateien. Siehe [07-coding-guidelines.md](07-coding-guidelines.md), Abschnitt 13.
-- **T3 Toter Code:** `LocaleController` (nicht geroutet, doppelt zu `LanguageController`), `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` ohne Verwendung, Breeze-Komponenten `dropdown`, `modal` und weitere ohne Verwendung (nicht einzeln geprüft), auskommentierter Menüpunkt "Berechtigungen".
-- **T4 Übersetzungen:** Controller mit festen deutschen Texten (siehe Abschnitt 13 der Guidelines); `order_history`-Beschreibungen sind englisch und fest.
-- **T5 Aufbau:** Zwei UUID-Mechanismen; Verwendung von `\DB`, `\Log`, `\PDF`, `\Storage` mit führendem Backslash; doppelter Cache-Reset in Rollen- und Rechtecontrollern; Validierungsregeln in `store` und `update` dupliziert (`ContactController`, `RentalController`, `OrderController`).
-- **T6 Lokale Umgebung:** Im lokalen `vendor/` fehlte `spatie/laravel-activitylog` (laut `composer.lock` vorgesehen). `php artisan test` brach deshalb ab (`Trait "Spatie\Activitylog\Traits\LogsActivity" not found`). Abhilfe: `composer install` (lokal am 2026-10-23 ausgeführt, danach lauffähig). Folge ohne Paket: auch `User` lässt sich nicht laden, das Aktivitätslog und jede Anmeldung scheitern.
+- **T3 Toter Code:** Behoben. Entfernt wurden `LocaleController`, `RegisteredUserController` (beide nicht geroutet), die ungenutzten Breeze-Komponenten `application-logo`, `danger-button`, `dropdown`, `dropdown-link`, `modal` und `responsive-nav-link`, das ungenutzte Recht `app.settings` im Seeder sowie die Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` (`composer remove`; die Treffer für "active" waren der eigene Scope `Article::active()`). Rest: Der Menüpunkt "Berechtigungen" in der Navigation ist weiter auskommentiert, die Route bleibt erreichbar. `tests/Feature/Quality/CodeConventionsTest.php` verhindert die Rückkehr.
+- **T4 Übersetzungen:** Teilweise behoben. Alle benutzersichtbaren Meldungen der Controller (Erfolg, Fehler, `abort`) laufen jetzt über `__()` mit Schlüsseln unter `<bereich>.messages.*` in `lang/de` und `lang/en`; der Wortlaut für Deutsch blieb unverändert, die englischen Texte sind neu. Die zuvor ungenutzten Schlüssel `created`/`updated`/`deleted` mit abweichender Wortwahl (z. B. "Saal" statt "Halle") wurden durch die tatsächlich angezeigten Texte ersetzt. Offen: Feste deutsche Texte in den Views der Vermietung (Hallen, Inventar, Protokolle, Vermietungen), die englischen `order_history`-Beschreibungen sind fest, und die Benennung "Saal"/"Säle" in den Sprachdateien weicht von "Halle" in den Meldungen ab. Zwei Meldungen in `ProtocolController` (zu viele Fotos, ungültige Unterschrift) werden als Ausnahme geworfen und vom Controller als allgemeiner Fehler ausgegeben; der genaue Grund erreicht den Benutzer nicht (nur im Log).
+- **T5 Aufbau:** Behoben. Alle Models verwenden `HasUuids` (der eigene Trait `HasUuid` ist entfernt). `\DB`, `\Log`, `\PDF`, `\Storage` und die voll qualifizierten Model-Namen sind durch Imports ersetzt, der doppelte Cache-Reset in den Rollen- und Rechtecontrollern ist entfernt (`forgetCachedPermissions()` genügt, wie der Quelltext von `permission:cache-reset` zeigt), die Validierungsregeln von `ContactController` und `RentalController` stehen je einmal. In `OrderController` unterscheiden sich `store` und `update` fachlich (Kundenanlage, Positionsabgleich); dort bleibt die Trennung bewusst.
+- **T6 Lokale Umgebung:** Behoben. Im lokalen `vendor/` fehlte `spatie/laravel-activitylog` (laut `composer.lock` vorgesehen), `php artisan test` brach deshalb ab. `composer install` hat das behoben. Nach dem Entfernen von Paketen oder Klassen `composer dump-autoload -o` ausführen, weil `optimize-autoloader` aktiv ist.
 
 ## Empfohlene Reihenfolge
 
-1. K1 bis K7, S1, S3 und M1 bis M10 sind erledigt.
+1. K1 bis K7, S1, S3, M1 bis M11, T3, T5 und T6 sind erledigt, T4 teilweise.
 2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Das Deaktivieren von Benutzern ist umgesetzt; ausgeschiedene Mitarbeiter sollten deaktiviert statt gelöscht werden.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. Vor dem Produktivbetrieb: Zeitzone der Datenbank prüfen (M8) und den Cronjob für `schedule:run` einrichten (M10).
-5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.
+5. T2 (Stilangleichung mit Pint) als eigene, rein formale Änderung nach dem Merge des gesamten Stapels, damit der Diff lesbar bleibt; danach `pint --test` zur Pflicht machen. T1 laufend: fehlende Tests für Auftragsanlage und -bearbeitung.
+6. S6 (Abhängigkeiten aktualisieren) vor dem Produktivbetrieb.

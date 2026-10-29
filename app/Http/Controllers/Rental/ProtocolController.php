@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Rental\{Protocol, ProtocolItem, Signature};
 use App\Mail\ProtocolFinalizedMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Storage, Mail};
+use Illuminate\Support\Facades\{DB, Log, Mail, Storage};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 
@@ -24,11 +24,11 @@ class ProtocolController extends Controller
     public function saveForm(Request $r, Protocol $protocol) {
 
         if ($protocol->pdf_path) {
-            return back()->withErrors(['Protokoll ist bereits finalisiert und kann nicht mehr geändert werden.']);
+            return back()->withErrors([__('protocols.messages.already_finalized')]);
         }
 
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             $protocol->update([
                 'notes'=>$r->input('notes'),
@@ -64,13 +64,13 @@ class ProtocolController extends Controller
                 }
             }
 
-            \DB::commit();
-            return back()->with('ok','Protokoll gespeichert.');
+            DB::commit();
+            return back()->with('ok', __('protocols.messages.saved'));
 
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Protocol save error', ['error' => $e->getMessage()]);
-            return back()->withErrors(['Ein Fehler ist aufgetreten beim Speichern.']);
+            DB::rollBack();
+            Log::error('Protocol save error', ['error' => $e->getMessage()]);
+            return back()->withErrors([__('protocols.messages.save_error')]);
         }
     }
 
@@ -82,13 +82,13 @@ class ProtocolController extends Controller
         ]);
 
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             // Pessimistic lock eliminates race window — check pdf_path only on the locked row
-            $protocol = \App\Models\Rental\Protocol::lockForUpdate()->find($protocol->id);
+            $protocol = Protocol::lockForUpdate()->find($protocol->id);
             if ($protocol->pdf_path) {
-                \DB::rollBack();
-                return back()->withErrors(['Dieses Protokoll ist bereits abgeschlossen.']);
+                DB::rollBack();
+                return back()->withErrors([__('protocols.messages.already_closed')]);
             }
 
             $sigData = $r->input('signature_data');
@@ -175,33 +175,33 @@ class ProtocolController extends Controller
                 ]);
 
                 // Send email after commit
-                \DB::commit();
+                DB::commit();
 
                 $tenantEmail = $protocol->rental?->contact?->email;
                 if ($tenantEmail) {
                     try {
                         Mail::to($tenantEmail)->send(new ProtocolFinalizedMail($protocol));
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send protocol email', [
+                        Log::error('Failed to send protocol email', [
                             'protocol_id' => $protocol->id,
                             'error' => $e->getMessage()
                         ]);
                     }
                 }
 
-                $message = 'Protokoll finalisiert und PDF erstellt.';
+                $message = __('protocols.messages.finalized');
             } else {
-                \DB::commit();
-                $pendingRole = !$hasTenant ? 'Mieter' : 'Vermieter';
-                $message = "Unterschrift gespeichert. Ausstehend: {$pendingRole}.";
+                DB::commit();
+                $pendingRole = __(!$hasTenant ? 'protocols.messages.role_tenant' : 'protocols.messages.role_landlord');
+                $message = __('protocols.messages.signature_saved', ['role' => $pendingRole]);
             }
 
             return back()->with('ok', $message);
             
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Protocol signing error', ['error' => $e->getMessage()]);
-            return back()->withErrors(['Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.']);
+            DB::rollBack();
+            Log::error('Protocol signing error', ['error' => $e->getMessage()]);
+            return back()->withErrors([__('protocols.messages.sign_error')]);
         }
     }
 

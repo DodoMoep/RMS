@@ -17,7 +17,7 @@
 | Tests | Pest 3 (+ Laravel-Plugin) | `tests/Pest.php` |
 | Stil | Laravel Pint (Standardpreset, keine `pint.json`) | `composer.json` |
 
-Installiert, aber im Code nicht referenziert: `spatie/laravel-medialibrary`, `tuytoosh/active`. `barryvdh/laravel-debugbar`, `laravel/sail`, `laravel/pail` sind reine Entwicklungswerkzeuge.
+`barryvdh/laravel-debugbar`, `laravel/sail`, `laravel/pail` sind reine Entwicklungswerkzeuge. Die früher installierten, aber ungenutzten Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` wurden entfernt.
 
 ## Verzeichnisstruktur
 
@@ -42,7 +42,6 @@ app/
     Contact.php, User.php, WorkInstruction.php, WorkInstructionCategory.php
     Order/                  Article, Order, OrderItem, OrderHistory
     Rental/                 Hall, InventoryItem, Rental, Protocol, ProtocolItem, Signature, Photo
-    Concerns/HasUuid.php
   Observers/OrderObserver.php
   Providers/AppServiceProvider.php
   Services/NumberSequence.php   Fortlaufende Nummern ohne Doppelvergabe (Zählertabelle)
@@ -85,8 +84,8 @@ flowchart LR
 ## Konfiguration und Besonderheiten
 
 - Zeitzone ist `Europe/Berlin` (`config/app.php`, überschreibbar über `APP_TIMEZONE`, früherer Befund M8). Nummernkreise, Tagesgrenzen (Dashboard "heute", Auswertungen) und alle neu geschriebenen Zeitstempel (`created_at`, `delivered_at`, ...) richten sich nach deutscher Zeit; der Jahreswechsel der Nummernkreise erfolgt um Mitternacht deutscher Zeit. Laravel speichert Zeitstempel ohne Umrechnung in der Anwendungszeitzone. Datensätze, die vor der Umstellung entstanden sind, wurden in UTC geschrieben und zeigen weiterhin dieselbe Uhrzeit wie zuvor (1 bis 2 Stunden vor der deutschen Ortszeit); sie wurden nicht umgerechnet. Vom Benutzer eingegebene Zeiten (`rentals.start`, `rentals.end`) und Datumsfelder (`delivery_date`) sind Ortszeit und von der Umstellung nicht betroffen.
-- Sprachen: `de` (Standard) und `en` (Fallback), erlaubt laut `config('app.available_locales')`. Die Wahl liegt in der Session (`LanguageController`, Route `language.switch`); `SetLocale` setzt sie je Request. `LocaleController` ist nicht geroutet (toter Code).
-- Primärschlüssel: überall UUID (außer `users`). Zwei Mechanismen koexistieren: Laravels `HasUuids` (Contact, Order-Modelle, WorkInstruction*) und der eigene Trait `App\Models\Concerns\HasUuid` (alle Rental-Modelle).
+- Sprachen: `de` (Standard) und `en` (Fallback), erlaubt laut `config('app.available_locales')`. Die Wahl liegt in der Session (`LanguageController`, Route `language.switch`); `SetLocale` setzt sie je Request.
+- Primärschlüssel: überall UUID (außer `users`), erzeugt mit Laravels `HasUuids` (einheitlich in allen Models; der frühere eigene Trait `HasUuid` der Vermietung wurde entfernt). `HasUuids` erzeugt in Laravel 12 zeitlich sortierbare UUIDs (Version 7); ältere Datensätze der Vermietung behalten ihre zufälligen UUIDs, beides passt in `char(36)`.
 - Konfiguration über `.env` (nicht versioniert, siehe `.gitignore`). Vorlage: `.env.example`. Produktionsvorgaben in der Vorlage: `APP_ENV=production`, `SESSION_DRIVER=database`, `QUEUE_CONNECTION=database`, `CACHE_STORE=database`, `LOG_STACK=single,slack`.
 - Das Aktivitätslog speichert laut Konfiguration 365 Tage. Der Scheduler führt täglich `activitylog:clean` aus (`routes/console.php`, früherer Befund M10); dafür muss auf dem Server der Cronjob `* * * * * php artisan schedule:run` laufen (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Die Tabelle `order_history` wird nicht bereinigt.
 
@@ -116,7 +115,7 @@ Die Pfade in der Datenbank sind relativ und gelten unabhängig von der Disk. Bes
 ## Mehrsprachigkeit
 
 - Sprachdateien liegen je Bereich in `lang/{de,en}/*.php` mit identischer Dateiliste.
-- Views nutzen durchgängig `__('datei.schluessel')`. Controller verwenden dagegen teilweise noch feste deutsche Texte (z. B. `ArticleController`, `DeliveryNoteController`, `OrderPackingController`, `HallController`, `ProtocolController`, `RentalController`). Neuere Controller (`ContactController`, `OrderController`, Arbeitsanweisungen) nutzen `__()`.
+- Views nutzen überwiegend `__('datei.schluessel')`; in einzelnen Views der Vermietung (Hallen, Inventar, Protokolle, Vermietungen) stehen noch feste deutsche Texte. Alle Meldungen der Controller (Erfolg, Fehler, `abort`) laufen über `__()` und liegen in `lang/de` und `lang/en` unter `<bereich>.messages.*`; `tests/Feature/Quality/CodeConventionsTest.php` schlägt bei neuen festen Texten in Controllern fehl. Interne Ausnahmetexte (Logs, Modelle) sind englisch und nicht für Benutzer bestimmt.
 - Der `OrderObserver` und `Order::logHistory()` schreiben englische Beschreibungstexte in `order_history`.
 
 ## Frontend

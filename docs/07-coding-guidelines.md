@@ -25,7 +25,7 @@ Quelle: `.editorconfig` und Laravel Pint.
 - UTF-8, Zeilenende LF, Einrückung 4 Leerzeichen (YAML: 2), Zeilenabschluss mit Leerzeile am Dateiende, keine Leerzeichen am Zeilenende (Markdown ausgenommen). **MUSS**
 - PHP folgt dem Laravel-Pint-Standardpreset (PSR-12-basiert). Eine `pint.json` existiert nicht; das Standardpreset gilt. **SOLL**
 - Vor jedem Commit: `vendor/bin/pint --test <geänderte Dateien>`; Korrekturen nur an den eigenen Änderungen, keine Formatierungsrunde über unbeteiligte Dateien im selben Commit. **SOLL**
-- Kurze Array-Syntax, einfache Anführungszeichen, `use`-Anweisungen alphabetisch und ohne ungenutzte Imports, keine voll qualifizierten Klassennamen im Code (`\DB::`, `\Log::`, `\App\Models\...`), sondern `use` am Dateikopf. **SOLL**
+- Kurze Array-Syntax, einfache Anführungszeichen, `use`-Anweisungen alphabetisch und ohne ungenutzte Imports, keine voll qualifizierten Klassennamen oder globalen Alias-Aufrufe im Code (`\DB::`, `\Log::`, `\PDF::`, `\App\Models\...`), sondern `use` am Dateikopf. `tests/Feature/Quality/CodeConventionsTest.php` prüft das. **MUSS**
 - Keine auskommentierten Codeblöcke einchecken (Beispiel im Bestand: Menüpunkt "Berechtigungen"). **SOLL**
 
 ## 3. Namensgebung und Struktur
@@ -60,7 +60,7 @@ Quelle: `.editorconfig` und Laravel Pint.
 
 ## 5. Models und Datenbank
 
-- Primärschlüssel: UUID mit Laravels `Illuminate\Database\Eloquent\Concerns\HasUuids`. Der eigene Trait `App\Models\Concerns\HasUuid` ist Altbestand der Vermietung und wird nicht für neue Models verwendet. **SOLL**
+- Primärschlüssel: UUID mit Laravels `Illuminate\Database\Eloquent\Concerns\HasUuids`, einheitlich in allen Models (ein eigener UUID-Trait existiert nicht mehr). **MUSS**
 - `$fillable` explizit pflegen, kein `$guarded = []`. `casts` für Enums, Booleans, Datum, Dezimalwerte und JSON; Enum-Casts statt String-Vergleichen (`$contact->type === ContactType::Tenant`). **SOLL**
 - Relationen mit Rückgabetyp (`BelongsTo`, `HasMany`) und Importen. Jede Relation, deren Zielklasse in einem anderen Namespace liegt, braucht einen `use`-Import; ein fehlender Import erzeugt keinen Syntaxfehler, aber eine Laufzeitfehlermeldung (K1). **MUSS**
 - Nach Namespace-Umzügen oder Umbenennungen von Relationen die Verwendungen suchen: PHP, Blade (`->relation`), Eager-Loading-Strings (`'rental.tenant'`), Seeder, Mails, PDFs. Es gibt keine statische Prüfung, die das auffängt (K1 bis K5, M6). **MUSS**
@@ -153,7 +153,7 @@ Messung mit Laravel Pint (Standardpreset, `vendor/bin/pint --test app routes dat
 
 | Bereich | Typische Abweichung |
 |---|---|
-| `app/Models/Rental/*`, `Concerns/HasUuid.php` | Einzeilige Klassen und Methoden, fehlende Leerzeilen, `class X {` in derselben Zeile |
+| `app/Models/Rental/*` | Einzeilige Klassen und Methoden, fehlende Leerzeilen, `class X {` in derselben Zeile |
 | `app/Http/Controllers/Rental/*`, `Order/*` | Leerzeichen um Operatoren und Argumente, ungenutzte Imports, `!`-Operator ohne Leerzeichenregel, uneinheitliche Anführungszeichen |
 | Ältere Migrationen | Klassenkopf und Klammerstil, Leerzeichen in Leerzeilen |
 | `routes/web.php`, `routes/rental.php` | Leerzeichen nach Kommas, doppelte Leerzeilen |
@@ -163,15 +163,10 @@ Weitere inhaltliche Abweichungen von den Regeln oben:
 
 | Regel | Abweichung | Fundstelle |
 |---|---|---|
-| Voll qualifizierte Klassen vermeiden | `\DB`, `\Log`, `\PDF`, `\Storage`, `\Artisan` direkt im Code | `ProtocolController`, `RentalController`, `Order`, `RoleController` |
-| Texte übersetzen | Feste deutsche Meldungen in Controllern | `ArticleController`, `DeliveryNoteController`, `OrderPackingController`, `HallController`, `InventoryItemController`, `ProtocolController`, `RentalController`, `PermissionController`, `RoleController` |
+| Texte übersetzen | Feste deutsche Texte in den Views der Vermietung (Hallen, Inventar, Protokolle, Vermietungen); die Meldungen der Controller sind übersetzt | `resources/views/rental/*` |
 | Form Requests | Fachcontroller validieren inline; Form Requests gibt es nur für Rollen, Rechte, Login, Profil | alle Fach-Controller |
-| Eine UUID-Variante | Zwei Mechanismen (`HasUuids` und `HasUuid`) | Rental-Models |
 | Einheitliche Flash-Schlüssel | `ok`, `status`, `error` gemischt | Controller und Views |
-| Ungenutzte Breeze-Komponenten | `components/dropdown`, `components/modal` (Tailwind-Klassen, Alpine) werden nirgends verwendet | `resources/views/components` |
-| Keine toten Codeteile | `LocaleController`, `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` | siehe [08-bekannte-probleme.md](08-bekannte-probleme.md) |
+| Auskommentierter Menüpunkt | Menüpunkt "Berechtigungen" in der Navigation ist auskommentiert, die Route bleibt erreichbar | `resources/views/layouts/navigation.blade.php` |
 | Fachlogik nicht im Controller | `ProtocolController::sign` (PDF, Mail, Statuswechsel, Transaktion in einer Methode) | `ProtocolController` |
-| Doppelter Code | Validierungsregeln je in `store` und `update` doppelt | `ContactController`, `RentalController` |
-| Doppelter Cache-Reset | `Artisan::call('permission:cache-reset')` und `forgetCachedPermissions()` hintereinander | Admin-Controller |
 
 Vorgehen: Keine flächige Formatierungsrunde. Beim Ändern einer Datei werden deren Verstöße in einem getrennten Commit (`refactor: Stil angleichen`) behoben, damit Diff und Verhaltensänderung nachvollziehbar bleiben.

@@ -84,7 +84,7 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 - Rollen (`Admin\RoleController`, `role.*`): Name und Rechte; die Rolle `super-admin` kann nicht gelöscht werden.
 - Berechtigungen (`Admin\PermissionController`, `perm.*`): freie Verwaltung der Rechtenamen. Menüpunkt ist ausgeblendet.
 - Aktivitätslog (`Admin\ActivityLogController`, `/admin/activity-log`, Recht `user.list`): Suche, Filter nach Log-Name und Verursacher, 50 je Seite. Geloggt werden Änderungen an Name und E-Mail von `User` (nur geänderte Felder) sowie die manuellen Benutzereinträge. Aufträge nutzen weiterhin die eigene Tabelle `order_history`.
-- Nach Rechteänderungen wird der Spatie-Cache zurückgesetzt (`permission:cache-reset` und `forgetCachedPermissions`, doppelt vorhanden).
+- Nach Rechteänderungen wird der Spatie-Cache über `forgetCachedPermissions()` zurückgesetzt; Änderungen an Rollen und Rechten wirken dadurch sofort (früher zusätzlich doppelt über `permission:cache-reset`, `tests/Feature/Admin/RolesAndPermissionsTest.php`).
 
 ## Dashboard und Profil
 

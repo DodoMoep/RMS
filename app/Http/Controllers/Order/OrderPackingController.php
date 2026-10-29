@@ -29,7 +29,7 @@ class OrderPackingController extends Controller
     {
         if ($order->status->value !== 'in_progress') {
             return redirect()->route('packing.index')
-                ->withErrors(['Diese Bestellung kann nicht verpackt werden.']);
+                ->withErrors([__('packing.messages.order_not_packable')]);
         }
 
         $order->load(['items.article', 'creator']);
@@ -54,7 +54,7 @@ class OrderPackingController extends Controller
             $quantity = $validated['quantity'] ?? null;
             $orderItem->markAsPacked($quantity);
 
-            return back()->with('ok', 'Artikel verpackt.');
+            return back()->with('ok', __('packing.messages.item_packed'));
         } catch (\Exception $e) {
             return back()->withErrors([$e->getMessage()]);
         }
@@ -70,7 +70,7 @@ class OrderPackingController extends Controller
 
         try {
             $orderItem->unpack();
-            return back()->with('ok', 'Artikel entpackt.');
+            return back()->with('ok', __('packing.messages.item_unpacked'));
         } catch (\Exception $e) {
             return back()->withErrors([$e->getMessage()]);
         }
@@ -86,7 +86,7 @@ class OrderPackingController extends Controller
             $order->lockOrder();
             
             return redirect()->route('orders.show', $order)
-                ->with('ok', 'Bestellung abgeschlossen und gesperrt.');
+                ->with('ok', __('packing.messages.packing_completed'));
         } catch (\Exception $e) {
             return back()->withErrors([$e->getMessage()]);
         }
