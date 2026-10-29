@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\Storage;
 class MakeFilesPrivate extends Command
 {
     /** Verzeichnisse, die nicht mehr oeffentlich erreichbar sein duerfen. */
-    private const DIRECTORIES = ['delivery-notes', 'protocols'];
+    private const DIRECTORIES = ['delivery-notes', 'protocols', 'work-instructions'];
 
     protected $signature = 'files:make-private {--dry-run : Nur anzeigen, was verschoben wuerde}';
 
-    protected $description = 'Verschiebt Lieferscheine und Protokolldateien von der oeffentlichen auf die private Disk';
+    protected $description = 'Verschiebt Lieferscheine, Protokolldateien und Arbeitsanweisungen von der oeffentlichen auf die private Disk';
 
     public function handle(): int
     {

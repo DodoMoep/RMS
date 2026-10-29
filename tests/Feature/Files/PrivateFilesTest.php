@@ -165,14 +165,22 @@ test('the command moves existing files to the private disk and keeps the paths',
     expect(Storage::disk('public')->allDirectories('protocols'))->toBe([]);
 });
 
-test('the command leaves intentionally public files alone', function () {
-    Storage::disk('public')->put('avatars/1/avatar.webp', 'Avatar');
+test('the command moves work instructions to the private disk', function () {
     Storage::disk('public')->put('work-instructions/abc/anweisung.pdf', 'Anweisung');
 
     $this->artisan('files:make-private')->assertSuccessful();
 
+    Storage::disk('local')->assertExists('work-instructions/abc/anweisung.pdf');
+    Storage::disk('public')->assertMissing('work-instructions/abc/anweisung.pdf');
+    expect(Storage::disk('local')->get('work-instructions/abc/anweisung.pdf'))->toBe('Anweisung');
+});
+
+test('the command leaves intentionally public files alone', function () {
+    Storage::disk('public')->put('avatars/1/avatar.webp', 'Avatar');
+
+    $this->artisan('files:make-private')->assertSuccessful();
+
     Storage::disk('public')->assertExists('avatars/1/avatar.webp');
-    Storage::disk('public')->assertExists('work-instructions/abc/anweisung.pdf');
     Storage::disk('local')->assertMissing('avatars/1/avatar.webp');
 });
 

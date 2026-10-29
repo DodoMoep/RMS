@@ -9,7 +9,7 @@ RMS ist eine interne Laravel-Webanwendung (Laravel 12, PHP 8.2+, MariaDB) mit vi
 | Kontakte | Gemeinsamer Stamm für Kunden und Mieter (`Contact`) |
 | Auftragsverwaltung | Aufträge, Artikel, Packen, Lieferschein (PDF), Auswertungen |
 | Vermietung | Hallen, Inventar, Vermietungen, Übergabe-/Rückgabeprotokolle mit Unterschrift, Fotos und PDF |
-| Arbeitsanweisungen | PDF-Ablage je Tätigkeit, öffentlich abrufbar unter `/anweisungen/{slug}` |
+| Arbeitsanweisungen | PDF-Ablage je Tätigkeit, ohne Login abrufbar unter `/anweisungen/{slug}` (Dateien liegen privat, nur aktive Einträge) |
 
 Dazu kommen Benutzer-, Rollen- und Rechteverwaltung (Spatie Permission), ein Aktivitätslog (Spatie Activitylog) sowie eine zweisprachige Oberfläche (Deutsch, Englisch).
 
@@ -29,8 +29,8 @@ Dazu kommen Benutzer-, Rollen- und Rechteverwaltung (Spatie Permission), ein Akt
 ## Wichtigste Erkenntnisse vorab
 
 1. Der Umbau vom 2026-04-12 (Zusammenführung von `tenants` und `customers` zu `contacts`) war nicht vollständig nachgezogen. Die dadurch verursachten Fehler K1 bis K5 sowie M6 (Seeder, Rechte) sind behoben. Ebenfalls behoben und getestet: K6 (Auftrag löschen, jetzt Soft Delete), K7 (atomare Nummernvergabe), M1 (Packen nur in Bearbeitung), M2 (Lieferscheindruck erst ab "verpackt") und M5 (Admin-Benutzer sind verifiziert). Offen sind die übrigen Punkte in [08-bekannte-probleme.md](08-bekannte-probleme.md).
-2. Automatisierte Tests gibt es für Kontakte, Packübersicht, Lieferschein, Inventar, Protokolle, Seeder, Auftragslöschung, Packstatus, Nummernkreise, Benutzerverwaltung, Benutzer löschen, private Dateispeicherung und Frontend-Konsistenz (100 Tests, gesamt 122 grün). Auftragsanlage und -bearbeitung, Vermietungen und Auswertung sind weiterhin ungetestet.
-3. Lieferscheine, Protokoll-PDFs, Unterschriften und Fotos liegen auf der privaten Disk und werden nur über berechtigte Routen ausgeliefert (S1 behoben). Auf bestehenden Installationen muss einmalig `php artisan files:make-private` ausgeführt werden. Das Löschen eines Benutzers entfernt dessen Aufträge nicht mehr (S3 behoben).
+2. Automatisierte Tests gibt es für Kontakte, Packübersicht, Lieferschein, Inventar, Protokolle, Seeder, Auftragslöschung, Packstatus, Nummernkreise, Benutzerverwaltung, Benutzer löschen, private Dateispeicherung, Arbeitsanweisungen und Frontend-Konsistenz (113 Tests, gesamt 135 grün). Auftragsanlage und -bearbeitung, Vermietungen und Auswertung sind weiterhin ungetestet.
+3. Lieferscheine, Protokoll-PDFs, Unterschriften, Fotos und Arbeitsanweisungen liegen auf der privaten Disk und werden nur über berechtigte Routen ausgeliefert (S1 behoben). Auf bestehenden Installationen muss einmalig `php artisan files:make-private` ausgeführt werden. Das Löschen eines Benutzers entfernt dessen Aufträge nicht mehr (S3 behoben).
 4. Der Code-Stil ist uneinheitlich: Das Laravel-Pint-Standardpreset beanstandet 54 von 118 PHP-Dateien.
 
 ## Wie diese Dokumentation entstanden ist

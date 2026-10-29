@@ -75,8 +75,8 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 
 ## Arbeitsanweisungen
 
-- Verwaltung (`Admin\WorkInstructionCategoryController`, `Admin\WorkInstructionController`, Präfix `/admin/work-instructions`, Recht `work-instructions.manage`): Kategorien ("Tätigkeiten") mit Reihenfolge und Aktiv-Flag; je Kategorie PDF-Anweisungen (max. 20 MB, nur PDF). Kategorien mit Anweisungen lassen sich nicht löschen. Beim Ersetzen oder Löschen wird die alte Datei entfernt.
-- Öffentlich (`WorkInstructionPublicController`): `/anweisungen/{slug}` listet aktive Anweisungen, `/anweisungen/{slug}/{id}` liefert das PDF inline. Keine Anmeldung nötig, inaktive Einträge liefern 404. Der Zweck ist offenbar der Aushang per QR-Code oder Link; die Inhalte sind damit für jeden mit der URL lesbar.
+- Verwaltung (`Admin\WorkInstructionCategoryController`, `Admin\WorkInstructionController`, Präfix `/admin/work-instructions`, Recht `work-instructions.manage`): Kategorien ("Tätigkeiten") mit Reihenfolge und Aktiv-Flag; je Kategorie PDF-Anweisungen (max. 20 MB, nur PDF), gespeichert auf der privaten Disk (`local`). Kategorien mit Anweisungen lassen sich nicht löschen. Beim Ersetzen oder Löschen wird die alte Datei entfernt.
+- Öffentlich (`WorkInstructionPublicController`): `/anweisungen/{slug}` listet aktive Anweisungen, `/anweisungen/{slug}/{id}` liefert das PDF inline. Keine Anmeldung nötig, inaktive Einträge (Kategorie oder Anweisung), falsche Kategorie-Zuordnung und fehlende Dateien liefern 404. Der Zweck ist offenbar der Aushang per QR-Code oder Link; die Inhalte sind damit für jeden mit der URL lesbar, solange sie aktiv sind. Die PDFs liegen auf der privaten Disk und sind nur über diese Route erreichbar (früherer Rest-Risiko-Punkt aus S1: deaktivierte Anweisungen waren über die `/storage`-URL abrufbar).
 
 ## Administration
 

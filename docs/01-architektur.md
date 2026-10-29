@@ -92,7 +92,7 @@ flowchart LR
 
 ## Dateispeicher
 
-Dateien mit Personenbezug (Lieferscheine, Protokolle, Unterschriften, Fotos) liegen auf der privaten Disk `local` (`storage/app/private`) und sind nicht über `/storage` erreichbar. Sie werden ausschließlich über Routen mit Anmeldung und Berechtigung ausgeliefert. Nur bewusst öffentliche Inhalte liegen auf der Disk `public` (`storage/app/public`, URL `/storage`):
+Dateien mit Personenbezug (Lieferscheine, Protokolle, Unterschriften, Fotos) liegen auf der privaten Disk `local` (`storage/app/private`) und sind nicht über `/storage` erreichbar. Sie werden ausschließlich über Routen mit Anmeldung und Berechtigung ausgeliefert. Nur Inhalte, die in der Oberfläche direkt per URL eingebunden werden (Avatare), liegen auf der Disk `public` (`storage/app/public`, URL `/storage`):
 
 | Disk | Pfad | Inhalt | Erzeugt in | Auslieferung |
 |---|---|---|---|---|
@@ -100,10 +100,10 @@ Dateien mit Personenbezug (Lieferscheine, Protokolle, Unterschriften, Fotos) lie
 | `local` (privat) | `protocols/{protocol_id}/final.pdf` | Finales Protokoll | `ProtocolController::sign()` | `protocol.pdf`, Recht `protocols.pdf`; Mailanhang |
 | `local` (privat) | `protocols/{protocol_id}/sign-{uuid}.png` | Unterschriften | `ProtocolController::sign()` | nur eingebettet im Protokoll-PDF |
 | `local` (privat) | `protocols/{protocol_id}/photos/...` | Protokollfotos | `ProtocolController::saveForm()` | nur eingebettet im Protokoll-PDF |
-| `public` | `work-instructions/{category_id}/{uuid}.pdf` | Arbeitsanweisungen | `Admin\WorkInstructionController` | Route `/anweisungen/...` (bewusst öffentlich) |
+| `local` (privat) | `work-instructions/{category_id}/{uuid}.pdf` | Arbeitsanweisungen | `Admin\WorkInstructionController` | Route `/anweisungen/{slug}/{id}` ohne Login, aber nur für aktive Kategorie und aktive Anweisung |
 | `public` | `avatars/{user_id}/avatar-{uuid}.webp` | Benutzerbilder | `ProfileController` | direkte URL, wird in der Oberfläche angezeigt |
 
-Die Pfade in der Datenbank sind relativ und gelten unabhängig von der Disk. Bestehende Dateien werden mit `php artisan files:make-private` von `public` nach `local` verschoben (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Befund S1 in [08-bekannte-probleme.md](08-bekannte-probleme.md) ist damit behoben. Die Arbeitsanweisungen liegen weiter auf `public`; ein deaktivierter Eintrag ist dort über die direkte `/storage`-URL erreichbar, wenn deren UUID-Pfad bekannt ist.
+Die Pfade in der Datenbank sind relativ und gelten unabhängig von der Disk. Bestehende Dateien werden mit `php artisan files:make-private` von `public` nach `local` verschoben (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Befund S1 in [08-bekannte-probleme.md](08-bekannte-probleme.md) ist damit behoben. Die Arbeitsanweisungen sind inhaltlich öffentlich, liegen aber ebenfalls auf der privaten Disk. Sie sind nur über die Route `/anweisungen/...` erreichbar, die Aktiv-Flags von Kategorie und Anweisung prüft; eine direkte `/storage`-URL gibt es nicht.
 
 ## PDF-Erzeugung
 

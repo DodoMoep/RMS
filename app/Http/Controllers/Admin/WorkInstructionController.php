@@ -27,7 +27,7 @@ class WorkInstructionController extends Controller
         $path = $request->file('pdf')->storeAs(
             'work-instructions/' . $category->id,
             Str::uuid() . '.pdf',
-            'public'
+            'local'
         );
 
         $category->instructions()->create([
@@ -57,12 +57,12 @@ class WorkInstructionController extends Controller
         $pdfPath = $instruction->pdf_path;
 
         if ($request->hasFile('pdf')) {
-            Storage::disk('public')->delete($instruction->pdf_path);
+            Storage::disk('local')->delete($instruction->pdf_path);
 
             $pdfPath = $request->file('pdf')->storeAs(
                 'work-instructions/' . $category->id,
                 Str::uuid() . '.pdf',
-                'public'
+                'local'
             );
         }
 
@@ -79,7 +79,7 @@ class WorkInstructionController extends Controller
 
     public function destroy(WorkInstructionCategory $category, WorkInstruction $instruction)
     {
-        Storage::disk('public')->delete($instruction->pdf_path);
+        Storage::disk('local')->delete($instruction->pdf_path);
         $instruction->delete();
 
         return redirect()->route('work-instructions.categories.edit', $category)

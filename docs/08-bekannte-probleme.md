@@ -110,7 +110,8 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 - Auswirkung: Ohne Anmeldung abrufbar, wenn der Pfad bekannt ist. Besonders kritisch ist der Lieferschein: Pfad `storage/delivery-notes/delivery-note-ORD-JJJJ-NNNN.pdf` ist vorhersagbar (laufende Nummer) und enthält Name, Adresse und Telefon des Empfängers. Protokoll-PDFs, Unterschriften und Fotos nutzen UUIDs im Pfad, sind aber ebenfalls ohne Anmeldung lesbar, sobald die URL bekannt ist (z. B. aus dem E-Mail-Anhang oder Browserverlauf).
 - Status: behoben. Lieferscheine, Protokoll-PDFs, Unterschriften und Fotos werden auf der privaten Disk `local` gespeichert (`Order::generateDeliveryNote`, `ProtocolController`, `ProtocolFinalizedMail`, `DeliveryNoteController`) und nur über Routen mit Anmeldung und Berechtigung ausgeliefert (`orders.print`, `protocols.pdf`). Fotos und Unterschriften werden nirgends direkt angezeigt, sondern nur ins Protokoll-PDF eingebettet; neue Auslieferungsrouten waren daher nicht nötig. `protocol.pdf` liefert 404, wenn die Datei fehlt.
 - Bestehende Daten: `php artisan files:make-private` (mit `--dry-run` als Probelauf) verschiebt vorhandene Dateien von `public` nach `local`, ohne die Pfade in der Datenbank zu ändern. Er muss auf bestehenden Installationen einmalig ausgeführt werden (siehe [06-entwicklung-und-betrieb.md](06-entwicklung-und-betrieb.md)). Bis dahin sind alte Dateien über die Anwendung nicht abrufbar (404) und zugleich weiter über `/storage` erreichbar.
-- Bewusst unverändert: Avatare und Arbeitsanweisungen bleiben auf `public`. Rest-Risiko: Eine deaktivierte Arbeitsanweisung ist über ihre direkte `/storage`-URL (UUID-Pfad) weiter abrufbar. Wer das ausschließen will, verschiebt `work-instructions/` ebenfalls auf die private Disk und liefert sie nur über `WorkInstructionPublicController::serve` aus.
+- Rest-Risiko ausgeräumt: Auch die Arbeitsanweisungen liegen jetzt auf der privaten Disk (`Admin\WorkInstructionController`, `WorkInstructionPublicController::serve`, Befehl `files:make-private` um `work-instructions/` erweitert). Eine deaktivierte Anweisung war vorher über ihre direkte `/storage`-URL (UUID-Pfad) abrufbar. Die öffentlichen Links `/anweisungen/...` bleiben unverändert. Tests: `tests/Feature/WorkInstructions/WorkInstructionTest.php` (12 Tests).
+- Bewusst unverändert: Nur Avatare bleiben auf `public`, weil die Oberfläche sie direkt per URL einbindet.
 - Tests: `tests/Feature/Files/PrivateFilesTest.php`.
 
 ### S2 Ausgabe von Ausnahmetexten
@@ -165,7 +166,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 ## Empfohlene Reihenfolge
 
 1. K1 bis K7, M1, M2, M5 und M6 sind erledigt.
-2. S1 und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Offen bleibt die Frage, ob Benutzer deaktiviert statt gelöscht werden sollen.
+2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Offen bleibt die Frage, ob Benutzer deaktiviert statt gelöscht werden sollen.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. M4, M8 bis M10.
 5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.
