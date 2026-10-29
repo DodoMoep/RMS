@@ -37,6 +37,8 @@ Route::middleware(['auth','verified'])->group(function () {
             Route::get('/{user}/edit', 'edit')->name('edit')->middleware('permission:user.edit');
             Route::put('/{user}', 'update')->name('update')->middleware('permission:user.edit');
 
+            Route::patch('/{user}/toggle-status', 'toggleStatus')->name('toggle-status')->middleware('permission:user.edit');
+
             Route::delete('/{user}', 'destroy')->name('destroy')->middleware('permission:user.delete');
         });
 

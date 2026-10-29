@@ -97,7 +97,7 @@ Ein Protokoll gilt als finalisiert, sobald `pdf_path` gesetzt ist. Danach sind S
 
 | Tabelle | Herkunft |
 |---|---|
-| `users` | Laravel plus `avatar_path`; Primärschlüssel `bigint` |
+| `users` | Laravel plus `avatar_path` und `is_active` (bool, Default true, indiziert; deaktivierte Benutzer können sich nicht anmelden, bleiben aber mit Aufträgen und Historie erhalten); Primärschlüssel `bigint` |
 | `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` | Spatie Permission |
 | `activity_log` | Spatie Activitylog (inkl. `event`, `batch_uuid`) |
 | `number_sequences` | Zähler für Nummernkreise: `name` (PK, z. B. `order-2026`, `customer-2026`), `last_value`, Zeitstempel (siehe Abschnitt Nummernkreise) |
@@ -142,5 +142,6 @@ Vergabe: `App\Services\NumberSequence::next()` zählt den Eintrag in `number_seq
 | 2026-04-12 `000001`-`000007` | Zusammenführung zu `contacts`: Tabelle anlegen, Mieter und Kunden kopieren (gleiche UUIDs), `contact_id` ergänzen, befüllen und FKs setzen, Altspalten und Alttabellen löschen (nicht umkehrbar), Rechte `tenants.*`/`customers.*` auf `contacts.*` abbilden |
 | 2026-04-12 `200001`-`200003` | Arbeitsanweisungen, Recht `work-instructions.manage` |
 | 2026-10-23 `000001`-`000003` | Soft Delete für Aufträge, Tabelle `number_sequences`, `orders.created_by` auf `nullOnDelete` |
+| 2026-10-29 `000001` | `users.is_active` (Benutzer deaktivieren), bestehende Benutzer bleiben aktiv |
 
 Hinweise zur Kontakt-Migration: Die Kopie der Kunden setzt voraus, dass keine UUID zwischen `tenants` und `customers` kollidiert (im Code nur als Kommentar vermerkt, nicht geprüft). Migration `000006` ist mit einer Exception als irreversibel markiert; vor dem Einspielen in Produktion ist ein Backup zwingend.

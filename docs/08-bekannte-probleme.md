@@ -125,7 +125,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 - Fundstelle: `orders.created_by` mit `onDelete('cascade')` (Migration `2025_11_18_180419`); `UserController::destroy` führt hartes `delete()` aus
 - Auswirkung: Das Löschen eines Benutzers entfernt alle von ihm angelegten Aufträge samt Positionen und Historie. Pack-Nachweise (`packed_by`) werden dagegen nur auf `null` gesetzt.
 - Status: behoben. Migration `2026_10_23_000003_set_orders_created_by_to_null_on_user_delete` macht `orders.created_by` nullable mit `nullOnDelete` (auf SQLite hoch, runter und wieder hoch geprüft). Aufträge, Positionen und Historie bleiben beim Löschen eines Benutzers erhalten; Auftragsdetail und Packansicht zeigen "Gelöschter Benutzer" (`orders.deleted_user`). Tests: `tests/Feature/Admin/UserDeletionTest.php`.
-- Entscheidung: `set null` statt `restrict`, damit Benutzer weiterhin gelöscht werden können (z. B. ausgeschiedene Mitarbeiter). Preis: Der Ersteller eines Auftrags geht dabei verloren, ebenso der Benutzer in der Historie (war bereits so). Wenn die Nachvollziehbarkeit Vorrang haben soll, wäre eine Deaktivierung von Benutzern (Flag statt Löschen) die Alternative; sie existiert bisher nicht.
+- Entscheidung: `set null` statt `restrict`, damit Benutzer weiterhin gelöscht werden können. Preis: Der Ersteller eines Auftrags geht beim Löschen verloren, ebenso der Benutzer in der Historie (war bereits so). **Ergänzung:** Die Alternative existiert jetzt: Benutzer lassen sich deaktivieren statt löschen (`users.is_active`, Button in der Benutzerliste, Details in [03-module.md](03-module.md)). Für ausgeschiedene Mitarbeiter ist das der empfohlene Weg, weil Ersteller und Packer erhalten bleiben. Tests: `tests/Feature/Admin/UserDeactivationTest.php`.
 
 ### S4 Lokale Werkzeugeinstellungen im Repository
 
@@ -156,7 +156,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## T Technische Schulden
 
-- **T1 Tests:** Die Suite ist vollständig grün (172 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
+- **T1 Tests:** Die Suite ist vollständig grün (189 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
 - **T2 Stil:** Pint (Standardpreset) meldet 54 von 118 Dateien. Siehe [07-coding-guidelines.md](07-coding-guidelines.md), Abschnitt 13.
 - **T3 Toter Code:** `LocaleController` (nicht geroutet, doppelt zu `LanguageController`), `RegisteredUserController` (nicht geroutet), Recht `app.settings`, Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` ohne Verwendung, Breeze-Komponenten `dropdown`, `modal` und weitere ohne Verwendung (nicht einzeln geprüft), auskommentierter Menüpunkt "Berechtigungen".
 - **T4 Übersetzungen:** Controller mit festen deutschen Texten (siehe Abschnitt 13 der Guidelines); `order_history`-Beschreibungen sind englisch und fest.
@@ -166,7 +166,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 ## Empfohlene Reihenfolge
 
 1. K1 bis K7, S1, S3 und M1 bis M10 sind erledigt.
-2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Offen bleibt die Frage, ob Benutzer deaktiviert statt gelöscht werden sollen.
+2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Das Deaktivieren von Benutzern ist umgesetzt; ausgeschiedene Mitarbeiter sollten deaktiviert statt gelöscht werden.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. Vor dem Produktivbetrieb: Zeitzone der Datenbank prüfen (M8) und den Cronjob für `schedule:run` einrichten (M10).
 5. T1, T2 laufend: Tests und Stilangleichung bei jedem berührten Bereich.

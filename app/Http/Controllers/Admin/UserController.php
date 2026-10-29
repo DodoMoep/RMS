@@ -128,6 +128,50 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('status','User aktualisiert.');
     }
 
+    /**
+     * Konto aktivieren oder deaktivieren. Ein deaktiviertes Konto bleibt mit allen
+     * Verknuepfungen (Auftraege, Historie) erhalten, kann sich aber nicht anmelden.
+     */
+    public function toggleStatus(User $user)
+    {
+        // Sich selbst nicht aussperren
+        abort_if(auth()->id() === $user->id, 403, __('users.messages.cannot_deactivate_self'));
+
+        if ($user->is_active && $this->isLastActiveSuperAdmin($user)) {
+            return back()->withErrors([__('users.messages.cannot_deactivate_last_super_admin')]);
+        }
+
+        $active = ! $user->is_active;
+
+        $user->is_active = $active;
+        if (! $active) {
+            // "Angemeldet bleiben" soll nach der Deaktivierung nicht mehr greifen
+            $user->remember_token = null;
+        }
+        $user->save();
+
+        activity('admin')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties(['ip' => request()->ip()])
+            ->event($active ? 'user.activated' : 'user.deactivated')
+            ->log($active ? 'User aktiviert' : 'User deaktiviert');
+
+        return back()->with('status', __($active ? 'users.messages.activated' : 'users.messages.deactivated'));
+    }
+
+    /**
+     * Es muss immer mindestens ein aktiver Super-Admin uebrig bleiben.
+     */
+    private function isLastActiveSuperAdmin(User $user): bool
+    {
+        return $user->hasRole('super-admin')
+            && User::role('super-admin')
+                ->where('is_active', true)
+                ->where('id', '!=', $user->id)
+                ->doesntExist();
+    }
+
     public function destroy(User $user)
     {
         // Sich selbst nicht löschen

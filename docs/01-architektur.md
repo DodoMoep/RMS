@@ -34,7 +34,7 @@ app/
       Order/                Article, Order, OrderPacking, DeliveryNote, OrderAnalytics
       Rental/               Hall, InventoryItem, Rental, Protocol
       DashboardController, ProfileController, LanguageController, WorkInstructionPublicController
-    Middleware/SetLocale.php
+    Middleware/             SetLocale, EnsureUserIsActive
     Requests/               Admin/ (PermissionRequest, RoleRequest), Auth/LoginRequest, ProfileUpdateRequest
   Console/Commands/MakeFilesPrivate.php   Befehl files:make-private (Dateien auf die private Disk verschieben)
   Mail/ProtocolFinalizedMail.php
@@ -62,7 +62,7 @@ tests/                      nur Breeze-Tests
 
 ## Request-Ablauf
 
-1. `bootstrap/app.php` registriert `routes/web.php`, die Middleware `SetLocale` (an die Gruppe `web` angehängt) und die Aliase `role`, `permission`, `role_or_permission` (Spatie).
+1. `bootstrap/app.php` registriert `routes/web.php`, die Middleware `SetLocale` und `EnsureUserIsActive` (beide an die Gruppe `web` angehängt) und die Aliase `role`, `permission`, `role_or_permission` (Spatie). `EnsureUserIsActive` meldet einen angemeldeten Benutzer, dessen Konto deaktiviert wurde, beim nächsten Seitenaufruf ab und leitet auf den Login.
 2. `routes/web.php` definiert zuerst die öffentlichen Routen (`/language/{locale}`, `/anweisungen/...`). Alle übrigen Fachrouten liegen in der Gruppe `auth` + `verified` und werden über `require` aus `rental.php`, `orders.php`, `contacts.php`, `work_instructions.php` eingebunden. Das Profil liegt in einer eigenen `auth`-Gruppe (ohne `verified`).
 3. Der Zugriff wird pro Route mit `permission:<name>` geschützt (nicht per Policy, nicht im Controller). Details in [04-rechte-und-rollen.md](04-rechte-und-rollen.md).
 4. `AppServiceProvider::boot()` setzt `Gate::before`: Wer die Rolle `super-admin` hat, besteht jede Prüfung. Zusätzlich wird `OrderObserver` an `Order` gehängt.
@@ -71,7 +71,7 @@ tests/                      nur Breeze-Tests
 ```mermaid
 flowchart LR
     Browser --> Routes[routes/*.php]
-    Routes --> MW[auth, verified, permission, SetLocale]
+    Routes --> MW[auth, verified, permission, SetLocale, EnsureUserIsActive]
     MW --> Ctrl[Controller]
     Ctrl --> Model[Eloquent Models]
     Model --> DB[(MariaDB)]

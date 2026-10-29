@@ -98,6 +98,7 @@ Quelle: `.editorconfig` und Laravel Pint.
 - Aufwendige oder externe Endpunkte (PDF, JSON, Download) mit `throttle` versehen (Vorbild: Auswertung).
 - Benutzereingaben nie in `Content-Disposition` ohne Escaping einsetzen; im Bestand wird `addslashes` verwendet, besser ist eine Dateinamensbereinigung.
 - Anmeldung, Rechte- und Benutzeränderungen sind im Aktivitätslog nachvollziehbar zu halten (Log `admin`).
+- Konten ausgeschiedener Mitarbeiter werden deaktiviert, nicht gelöscht (`users.is_active`, `UserController::toggleStatus`), damit Ersteller und Packer von Aufträgen nachvollziehbar bleiben. Neue Bereiche, die Benutzer auswerten, müssen deaktivierte Konten berücksichtigen (Anmeldung, Zuweisung, Anzeige). Prüfungen auf deaktivierte Konten laufen über `User::isDeactivated()`. **SOLL**
 
 ## 9. Kommentare und Dokumentation im Code
 

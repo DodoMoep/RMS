@@ -19,7 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email'])
+            ->logOnly(['name', 'email', 'is_active'])
             ->logOnlyDirty()
             ->useLogName('admin')
             ->dontSubmitEmptyLogs();
@@ -48,6 +48,15 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    /**
+     * Ein Konto gilt nur dann als deaktiviert, wenn is_active ausdruecklich false ist.
+     * Ein fehlendes Attribut (z. B. bei einem noch nicht neu geladenen Model) sperrt nicht aus.
+     */
+    public function isDeactivated(): bool
+    {
+        return $this->is_active === false;
+    }
+
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar_path) {
@@ -66,6 +75,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_active' => 'boolean',
             'password' => 'hashed',
         ];
     }

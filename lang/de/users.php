@@ -14,11 +14,21 @@ return [
     'password_confirmation' => 'Passwort bestätigen',
     'roles' => 'Rollen',
     'permissions' => 'Berechtigungen',
+    'status' => 'Status',
+    'status_active' => 'Aktiv',
+    'status_inactive' => 'Deaktiviert',
+    'activate' => 'Aktivieren',
+    'deactivate' => 'Deaktivieren',
     
     'messages' => [
         'created' => 'Benutzer erfolgreich erstellt',
         'updated' => 'Benutzer erfolgreich aktualisiert',
         'deleted' => 'Benutzer erfolgreich gelöscht',
         'confirm_delete' => 'Möchten Sie diesen Benutzer wirklich löschen?',
+        'confirm_deactivate' => 'Benutzer wirklich deaktivieren? Er kann sich danach nicht mehr anmelden, seine Aufträge bleiben erhalten.',
+        'activated' => 'Benutzer aktiviert.',
+        'deactivated' => 'Benutzer deaktiviert.',
+        'cannot_deactivate_self' => 'Du kannst dein eigenes Konto nicht deaktivieren.',
+        'cannot_deactivate_last_super_admin' => 'Der letzte aktive Super-Admin kann nicht deaktiviert werden.',
     ],
 ];

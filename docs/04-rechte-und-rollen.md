@@ -14,7 +14,7 @@ Namensschema: `<bereich>.<aktion>`. Ausnahme: Die Administration nutzt `user.`, 
 
 | Bereich | Rechte | Verwendet in |
 |---|---|---|
-| Benutzer | `user.list`, `user.add`, `user.edit`, `user.delete` | `/admin/users`; `user.list` schützt zusätzlich das Aktivitätslog |
+| Benutzer | `user.list`, `user.add`, `user.edit`, `user.delete` | `/admin/users`; `user.edit` gilt auch für Aktivieren und Deaktivieren (`users.toggle-status`); `user.list` schützt zusätzlich das Aktivitätslog |
 | Rollen | `role.list`, `role.add`, `role.edit`, `role.delete` | `/admin/roles` |
 | Berechtigungen | `perm.list`, `perm.add`, `perm.edit`, `perm.delete` | `/admin/permissions`; Form Requests prüfen zusätzlich `perm.edit` bzw. `role.edit` |
 | Kontakte | `contacts.view`, `contacts.create`, `contacts.edit`, `contacts.delete`, `contacts.toggle-status` | `/contacts` |

@@ -49,6 +49,18 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Ein deaktiviertes Konto wird erst nach korrektem Passwort gemeldet; bei falschem
+        // Passwort bleibt es bei der allgemeinen Fehlermeldung.
+        if (Auth::user()->isDeactivated()) {
+            Auth::logout();
+
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => trans('auth.deactivated'),
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

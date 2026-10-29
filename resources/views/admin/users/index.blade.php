@@ -27,6 +27,7 @@
                         <th>{{ __('users.email') }}</th>
                         <th>{{ __('users.roles') }}</th>
                         <th>{{ __('users.permissions') }}</th>
+                        <th>{{ __('users.status') }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -45,9 +46,25 @@
                                 <span class="badge rounded-pill text-bg-secondary">{{ $p }}</span>
                             @endforeach
                         </td>
+                        <td>
+                            @if($user->is_active)
+                                <span class="badge text-bg-success">{{ __('users.status_active') }}</span>
+                            @else
+                                <span class="badge text-bg-secondary">{{ __('users.status_inactive') }}</span>
+                            @endif
+                        </td>
                         <td class="text-end">
                             @can('user.edit')
                                 <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                @if($user->id !== auth()->id())
+                                    <form action="{{ route('users.toggle-status', $user) }}" method="POST" class="d-inline"
+                                          @if($user->is_active) onsubmit="return confirm('{{ __('users.messages.confirm_deactivate') }}')" @endif>
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="btn btn-sm {{ $user->is_active ? 'btn-outline-warning' : 'btn-outline-success' }}">
+                                            {{ $user->is_active ? __('users.deactivate') : __('users.activate') }}
+                                        </button>
+                                    </form>
+                                @endif
                             @endcan
                             @can('user.delete')
                                     <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Benutzer wirklich löschen?')">

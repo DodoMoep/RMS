@@ -41,6 +41,7 @@ Zusätzlich zur Routen-Berechtigung blenden die Views Menüpunkte und Schaltflä
 | PUT | `/admin/users/{user}` | `users.update` | `Admin\UserController@update` | `user.edit` | Login+verifiziert |
 | DELETE | `/admin/users/{user}` | `users.destroy` | `Admin\UserController@destroy` | `user.delete` | Login+verifiziert |
 | GET | `/admin/users/{user}/edit` | `users.edit` | `Admin\UserController@edit` | `user.edit` | Login+verifiziert |
+| PATCH | `/admin/users/{user}/toggle-status` | `users.toggle-status` | `Admin\UserController@toggleStatus` | `user.edit` | Login+verifiziert |
 | GET | `/admin/work-instructions` | `work-instructions.categories.index` | `Admin\WorkInstructionCategoryController@index` | `work-instructions.manage` | Login+verifiziert |
 | POST | `/admin/work-instructions` | `work-instructions.categories.store` | `Admin\WorkInstructionCategoryController@store` | `work-instructions.manage` | Login+verifiziert |
 | GET | `/admin/work-instructions/create` | `work-instructions.categories.create` | `Admin\WorkInstructionCategoryController@create` | `work-instructions.manage` | Login+verifiziert |
