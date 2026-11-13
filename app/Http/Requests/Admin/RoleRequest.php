@@ -9,7 +9,10 @@ class RoleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('role.edit') ?? false;
+        // Mit {role} in der Route wird geaendert, sonst angelegt
+        $permission = $this->route('role') ? 'role.edit' : 'role.add';
+
+        return $this->user()?->can($permission) ?? false;
     }
 
     public function rules(): array

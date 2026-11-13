@@ -24,6 +24,21 @@ class Article extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Beim weichen Loeschen wird die Artikelnummer freigegeben: Der Unique-Index und die
+     * Validierungsregel zaehlen geloeschte Zeilen mit, die Nummer waere sonst fuer immer
+     * gesperrt. Auftragspositionen behalten die Nummer als Schnappschuss (article_sku).
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Article $article) {
+            if (! $article->isForceDeleting() && $article->sku !== null) {
+                $article->sku = null;
+                $article->saveQuietly();
+            }
+        });
+    }
+
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);

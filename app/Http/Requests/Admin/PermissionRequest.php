@@ -9,7 +9,10 @@ class PermissionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('perm.edit') ?? false;
+        // Mit {permission} in der Route wird geaendert, sonst angelegt
+        $permission = $this->route('permission') ? 'perm.edit' : 'perm.add';
+
+        return $this->user()?->can($permission) ?? false;
     }
 
     public function rules(): array

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Order\Article;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Artikelstamm (ArticleController).
@@ -155,6 +156,91 @@ test('an article that is used in an order cannot be deleted', function () {
 
     expect(session('errors')->first())->toBe(__('articles.messages.in_use'))
         ->and(Article::find($article->id))->not->toBeNull();
+});
+
+// ------------------------------------------- Artikelnummer nach dem Loeschen (M13)
+
+test('deleting an article releases its sku for a new article', function () {
+    $article = makeArticle(['sku' => 'WIEDER-1']);
+
+    $this->actingAs($this->user)->delete(route('articles.destroy', $article));
+
+    $this->actingAs($this->user)
+        ->post(route('articles.store'), articlePayload(['sku' => 'WIEDER-1']))
+        ->assertSessionHasNoErrors();
+
+    expect(Article::where('sku', 'WIEDER-1')->count())->toBe(1)
+        ->and(Article::withTrashed()->count())->toBe(2);
+});
+
+test('a deleted article is kept as soft delete without its sku', function () {
+    $article = makeArticle(['sku' => 'WEG-1', 'name' => 'Geloescht']);
+
+    $article->delete();
+
+    $trashed = Article::withTrashed()->findOrFail($article->id);
+
+    expect($trashed->trashed())->toBeTrue()
+        ->and($trashed->sku)->toBeNull()
+        ->and($trashed->name)->toBe('Geloescht');
+});
+
+test('several deleted articles can release the same sku one after another', function () {
+    foreach (range(1, 3) as $ignored) {
+        makeArticle(['sku' => 'MEHRFACH-1'])->delete();
+    }
+
+    expect(Article::onlyTrashed()->count())->toBe(3)
+        ->and(Article::onlyTrashed()->whereNotNull('sku')->count())->toBe(0);
+});
+
+test('deleting an article does not change the other articles', function () {
+    $other = makeArticle(['sku' => 'BLEIBT-1']);
+    makeArticle(['sku' => 'WEG-2'])->delete();
+
+    expect($other->refresh()->sku)->toBe('BLEIBT-1');
+});
+
+test('an article without a sku can be deleted', function () {
+    $article = makeArticle(['sku' => null]);
+
+    $article->delete();
+
+    expect(Article::withTrashed()->findOrFail($article->id)->trashed())->toBeTrue();
+});
+
+test('an order item keeps the sku of a deleted article', function () {
+    $article = makeArticle(['sku' => 'SCHNAPP-1']);
+    $order = makeOrder(makeContact(), $this->user);
+    $item = $order->items()->create([
+        'article_id' => $article->id, 'article_name' => $article->name, 'article_sku' => 'SCHNAPP-1', 'quantity_ordered' => 1,
+    ]);
+
+    // Mit Auftragsposition ist Loeschen ueber die Oberflaeche gesperrt, das Model loescht trotzdem weich
+    $article->delete();
+
+    expect($item->refresh()->article_sku)->toBe('SCHNAPP-1');
+});
+
+test('a permanently deleted article is removed completely', function () {
+    $article = makeArticle(['sku' => 'ENDGUELTIG-1']);
+
+    $article->forceDelete();
+
+    expect(Article::withTrashed()->find($article->id))->toBeNull();
+});
+
+test('the migration releases the sku of articles that were deleted before', function () {
+    $live = makeArticle(['sku' => 'LEBT-1']);
+    $trashed = makeArticle(['sku' => 'ALT-GELOESCHT-1']);
+    // saveQuietly und delete wuerden das Model-Ereignis ausloesen, daher direkt in der Datenbank
+    DB::table('articles')->where('id', $trashed->id)->update(['deleted_at' => now()]);
+
+    $migration = require database_path('migrations/2026_11_13_000001_release_sku_of_deleted_articles.php');
+    $migration->up();
+
+    expect(Article::withTrashed()->find($trashed->id)->sku)->toBeNull()
+        ->and($live->refresh()->sku)->toBe('LEBT-1');
 });
 
 // -------------------------------------------------------------- Seiten, Rechte
