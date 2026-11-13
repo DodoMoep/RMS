@@ -33,12 +33,14 @@ class PermissionController extends Controller
         ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('permissions.index')->with('status', __('permissions.messages.created'));
     }
 
     public function edit(Permission $permission)
     {
         abort_unless($permission->guard_name === 'web', 404);
+
         return view('admin.permissions.edit', compact('permission'));
     }
 
@@ -49,6 +51,7 @@ class PermissionController extends Controller
         $permission->update(['name' => $request->name]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('permissions.index')->with('status', __('permissions.messages.updated'));
     }
 
@@ -59,7 +62,7 @@ class PermissionController extends Controller
         $permission->delete();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('permissions.index')->with('status', __('permissions.messages.deleted'));
     }
 }
-

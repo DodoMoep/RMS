@@ -1,24 +1,26 @@
 <?php
+
 namespace App\Models\Rental;
 
-
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
-class Hall extends Model {
-
+class Hall extends Model
+{
     use HasUuids;
 
     protected $fillable = [
-        'name','address','notes'
+        'name', 'address', 'notes',
     ];
 
-    public function rentals() {
+    public function rentals()
+    {
         return $this->hasMany(Rental::class);
     }
 
-    public function inventory(){
-        return $this->belongsToMany(InventoryItem::class,'hall_inventory')
+    public function inventory()
+    {
+        return $this->belongsToMany(InventoryItem::class, 'hall_inventory')
             ->withPivot('quantity')->withTimestamps();
     }
 }

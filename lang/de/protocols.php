@@ -8,7 +8,7 @@ return [
     'edit' => 'Protokoll bearbeiten',
     'view' => 'Protokoll anzeigen',
     'finalize' => 'Protokoll finalisieren',
-    
+
     'messages' => [
         'saved' => 'Protokoll gespeichert.',
         'already_finalized' => 'Protokoll ist bereits finalisiert und kann nicht mehr geändert werden.',

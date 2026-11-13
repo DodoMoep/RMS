@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RoleRequest;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends Controller
@@ -25,6 +25,7 @@ class RoleController extends Controller
     public function create()
     {
         $permissions = Permission::where('guard_name', 'web')->orderBy('name')->get();
+
         return view('admin.roles.create', compact('permissions'));
     }
 
@@ -38,6 +39,7 @@ class RoleController extends Controller
         $role->syncPermissions($request->input('permissions', []));
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('roles.index')->with('status', __('roles.messages.created'));
     }
 
@@ -59,6 +61,7 @@ class RoleController extends Controller
         $role->syncPermissions($request->input('permissions', []));
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('roles.index')->with('status', __('roles.messages.updated'));
     }
 
@@ -74,7 +77,7 @@ class RoleController extends Controller
         $role->delete();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('roles.index')->with('status', __('roles.messages.deleted'));
     }
 }
-

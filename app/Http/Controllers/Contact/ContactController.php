@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Contact;
 
-use App\Enums\ContactType;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use Illuminate\Http\Request;
@@ -16,10 +15,10 @@ class ContactController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('customer_number', 'like', "%{$request->search}%")
-                  ->orWhere('email', 'like', "%{$request->search}%")
-                  ->orWhere('phone', 'like', "%{$request->search}%")
-                  ->orWhere('city', 'like', "%{$request->search}%");
+                    ->orWhere('customer_number', 'like', "%{$request->search}%")
+                    ->orWhere('email', 'like', "%{$request->search}%")
+                    ->orWhere('phone', 'like', "%{$request->search}%")
+                    ->orWhere('city', 'like', "%{$request->search}%");
             });
         }
 
@@ -39,6 +38,7 @@ class ContactController extends Controller
     public function create(Request $request)
     {
         $type = $request->query('type', 'customer');
+
         return view('contacts.create', compact('type'));
     }
 
@@ -63,8 +63,7 @@ class ContactController extends Controller
         }
 
         if (in_array($contact->type->value, ['tenant', 'both'])) {
-            $contact->load(['rentals.hall' => function ($q) {
-            }]);
+            $contact->load(['rentals.hall' => function ($q) {}]);
             $contact->loadCount('rentals');
         }
 
@@ -84,7 +83,7 @@ class ContactController extends Controller
         $validated['is_active'] = $request->has('is_active');
 
         // If switching to customer/both and no customer_number, generate one
-        if (in_array($type, ['customer', 'both']) && !$contact->customer_number) {
+        if (in_array($type, ['customer', 'both']) && ! $contact->customer_number) {
             $validated['customer_number'] = Contact::generateCustomerNumber();
         }
 
@@ -101,19 +100,19 @@ class ContactController extends Controller
     private function rules(string $type): array
     {
         $rules = [
-            'type'    => 'required|in:tenant,customer,both',
-            'name'    => 'required|string|max:255',
-            'email'   => 'nullable|email',
-            'phone'   => 'nullable|string|max:50',
-            'notes'   => 'nullable|string',
+            'type' => 'required|in:tenant,customer,both',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string|max:50',
+            'notes' => 'nullable|string',
             'is_active' => 'boolean',
         ];
 
         if (in_array($type, ['customer', 'both'])) {
             $rules['contact_person_name'] = 'nullable|string|max:255';
-            $rules['street']       = 'nullable|string|max:255';
-            $rules['zip_code']     = 'nullable|string|max:20';
-            $rules['city']         = 'nullable|string|max:100';
+            $rules['street'] = 'nullable|string|max:255';
+            $rules['zip_code'] = 'nullable|string|max:20';
+            $rules['city'] = 'nullable|string|max:100';
             $rules['address_notes'] = 'nullable|string';
         }
 
@@ -134,7 +133,7 @@ class ContactController extends Controller
 
     public function toggleStatus(Contact $contact)
     {
-        $contact->update(['is_active' => !$contact->is_active]);
+        $contact->update(['is_active' => ! $contact->is_active]);
         $status = $contact->is_active ? 'activated' : 'deactivated';
 
         return back()->with('ok', __("contacts.messages.{$status}"));

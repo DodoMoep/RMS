@@ -26,7 +26,7 @@ class WorkInstructionCategoryController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ]);
 
@@ -48,7 +48,7 @@ class WorkInstructionCategoryController extends Controller
     public function update(Request $request, WorkInstructionCategory $category)
     {
         $data = $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ]);
 

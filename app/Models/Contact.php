@@ -8,7 +8,6 @@ use App\Models\Rental\Rental;
 use App\Services\NumberSequence;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contact extends Model
@@ -31,7 +30,7 @@ class Contact extends Model
     ];
 
     protected $casts = [
-        'type'      => ContactType::class,
+        'type' => ContactType::class,
         'is_active' => 'boolean',
     ];
 
@@ -40,7 +39,7 @@ class Contact extends Model
         parent::boot();
 
         static::creating(function (Contact $contact) {
-            if ($contact->type !== ContactType::Tenant && !$contact->customer_number) {
+            if ($contact->type !== ContactType::Tenant && ! $contact->customer_number) {
                 $contact->customer_number = static::generateCustomerNumber();
             }
         });
@@ -90,11 +89,12 @@ class Contact extends Model
     {
         $parts = array_filter([
             $this->street,
-            trim(($this->zip_code ?? '') . ' ' . ($this->city ?? '')),
+            trim(($this->zip_code ?? '').' '.($this->city ?? '')),
         ]);
         if ($this->address_notes) {
             $parts[] = $this->address_notes;
         }
+
         return implode("\n", $parts);
     }
 }

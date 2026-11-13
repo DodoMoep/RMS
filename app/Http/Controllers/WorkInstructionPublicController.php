@@ -28,8 +28,8 @@ class WorkInstructionPublicController extends Controller
         $path = Storage::disk('local')->path($instruction->pdf_path);
 
         return response()->file($path, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . addslashes($instruction->title) . '.pdf"',
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.addslashes($instruction->title).'.pdf"',
         ]);
     }
 }

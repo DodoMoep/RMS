@@ -2,7 +2,7 @@
 
 return [
     'profile_information' => 'Profilinformationen',
-    'update_profile_information' => "Aktualisieren Sie die Profilinformationen und E-Mail-Adresse Ihres Kontos.",
+    'update_profile_information' => 'Aktualisieren Sie die Profilinformationen und E-Mail-Adresse Ihres Kontos.',
     'name' => 'Name',
     'email' => 'E-Mail',
     'avatar' => 'Profilbild',

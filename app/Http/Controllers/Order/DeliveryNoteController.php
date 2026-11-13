@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Order;
 
-use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class DeliveryNoteController extends Controller
@@ -18,6 +17,7 @@ class DeliveryNoteController extends Controller
 
         try {
             $path = $order->generateDeliveryNote();
+
             return back()->with('ok', __('delivery_notes.messages.created'));
         } catch (\Exception $e) {
             return back()->withErrors([$e->getMessage()]);
@@ -27,11 +27,11 @@ class DeliveryNoteController extends Controller
     public function print(Order $order)
     {
         // Gedruckt wird erst ab dem Status "verpackt"
-        if (!in_array($order->status, [OrderStatus::PACKED, OrderStatus::IN_DELIVERY, OrderStatus::DELIVERED], true)) {
+        if (! in_array($order->status, [OrderStatus::PACKED, OrderStatus::IN_DELIVERY, OrderStatus::DELIVERED], true)) {
             return back()->withErrors([__('delivery_notes.messages.not_printable')]);
         }
 
-        if (!$order->delivery_note_path) {
+        if (! $order->delivery_note_path) {
             $order->generateDeliveryNote();
         }
 
@@ -47,7 +47,7 @@ class DeliveryNoteController extends Controller
 
     public function download(Order $order)
     {
-        if (!$order->delivery_note_path) {
+        if (! $order->delivery_note_path) {
             return back()->withErrors([__('delivery_notes.messages.none_available')]);
         }
 
@@ -64,14 +64,12 @@ class DeliveryNoteController extends Controller
         $diskRoot = realpath(Storage::disk('local')->path(''));
         $candidate = realpath(Storage::disk('local')->path($path));
 
-        if ($candidate === false || $diskRoot === false || !str_starts_with($candidate, $diskRoot . DIRECTORY_SEPARATOR)) {
+        if ($candidate === false || $diskRoot === false || ! str_starts_with($candidate, $diskRoot.DIRECTORY_SEPARATOR)) {
             abort(403, __('delivery_notes.messages.invalid_path'));
         }
 
-        if (!Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             abort(404, __('delivery_notes.messages.file_not_found'));
         }
     }
 }
-
-

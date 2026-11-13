@@ -1,5 +1,14 @@
 <?php
 
+use App\Enums\ContactType;
+use App\Enums\OrderStatus;
+use App\Models\Contact;
+use App\Models\Order\Order;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,8 +20,8 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -51,12 +60,12 @@ function something()
  *
  * @param  list<string>  $permissions
  */
-function userWithPermissions(array $permissions): App\Models\User
+function userWithPermissions(array $permissions): User
 {
-    $user = App\Models\User::factory()->create();
+    $user = User::factory()->create();
 
     foreach ($permissions as $name) {
-        Spatie\Permission\Models\Permission::findOrCreate($name, 'web');
+        Permission::findOrCreate($name, 'web');
     }
 
     $user->givePermissionTo($permissions);
@@ -69,10 +78,10 @@ function userWithPermissions(array $permissions): App\Models\User
  *
  * @param  array<string, mixed>  $overrides
  */
-function makeContact(array $overrides = []): App\Models\Contact
+function makeContact(array $overrides = []): Contact
 {
-    return App\Models\Contact::create(array_merge([
-        'type' => App\Enums\ContactType::Customer,
+    return Contact::create(array_merge([
+        'type' => ContactType::Customer,
         'name' => 'Muster GmbH',
         'email' => 'kontakt@example.test',
         'street' => 'Teststrasse 1',
@@ -87,13 +96,13 @@ function makeContact(array $overrides = []): App\Models\Contact
  *
  * @param  array<string, mixed>  $overrides
  */
-function makeOrder(App\Models\Contact $contact, App\Models\User $creator, array $overrides = []): App\Models\Order\Order
+function makeOrder(Contact $contact, User $creator, array $overrides = []): Order
 {
-    $order = App\Models\Order\Order::create(array_merge([
+    $order = Order::create(array_merge([
         'contact_id' => $contact->id,
         'delivery_date' => now()->addDays(3)->toDateString(),
         'delivery_type' => 'delivery',
-        'status' => App\Enums\OrderStatus::IN_PROGRESS,
+        'status' => OrderStatus::IN_PROGRESS,
         'created_by' => $creator->id,
     ], $overrides));
 

@@ -8,7 +8,7 @@ return [
     'generate_report' => 'Bericht erstellen',
     'download_pdf' => 'PDF herunterladen',
     'export_report' => 'Bericht exportieren',
-    
+
     'total_orders' => 'Gesamt Bestellungen',
     'active_orders' => 'Aktive Bestellungen',
     'items_packed' => 'Artikel verpackt',
@@ -21,7 +21,7 @@ return [
     'orders_packed' => 'Bestellungen verpackt',
     'count' => 'Anzahl',
     'no_data' => 'Keine Daten verfügbar',
-    
+
     'periods' => [
         'last_7_days' => 'Letzte 7 Tage',
         'last_30_days' => 'Letzte 30 Tage',
@@ -30,7 +30,7 @@ return [
         'last_n_days' => 'Letzte :days Tage',
         'all_time' => 'Alle Zeit',
     ],
-    
+
     'filters' => 'Filter',
     'filter_by_time' => 'Nach Zeitraum filtern',
     'time_period' => 'Zeitraum',
@@ -43,7 +43,7 @@ return [
     'from' => 'Von',
     'to' => 'Bis',
     'apply' => 'Anwenden',
-    
+
     'metrics' => [
         'total_orders' => 'Gesamtbestellungen',
         'total_revenue' => 'Gesamtumsatz',

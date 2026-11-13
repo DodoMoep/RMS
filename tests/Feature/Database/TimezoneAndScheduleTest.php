@@ -3,6 +3,7 @@
 use App\Models\Order\Order;
 use App\Models\Rental\Hall;
 use App\Models\Rental\Rental;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Spatie\Activitylog\Models\Activity;
@@ -16,7 +17,7 @@ test('the application runs in the german timezone', function () {
 });
 
 test('the order number year follows the german new year', function () {
-    $user = App\Models\User::factory()->create();
+    $user = User::factory()->create();
     $contact = makeContact();
 
     // 31.12. 23:30 UTC ist in Deutschland bereits der 1.1. um 00:30
@@ -26,7 +27,7 @@ test('the order number year follows the german new year', function () {
 });
 
 test('the order number year does not change before the german new year', function () {
-    $user = App\Models\User::factory()->create();
+    $user = User::factory()->create();
     $contact = makeContact();
 
     // 31.12. 22:30 UTC ist in Deutschland noch der 31.12. um 23:30
@@ -56,7 +57,7 @@ test('the dashboard shows rentals of the german day shortly after midnight', fun
 test('created timestamps are stored in german time', function () {
     $this->travelTo(Carbon::parse('2026-07-01 10:00:00', 'UTC'));
 
-    $order = makeOrder(makeContact(), App\Models\User::factory()->create());
+    $order = makeOrder(makeContact(), User::factory()->create());
 
     // Im Sommer ist Deutschland UTC+2
     expect($order->refresh()->created_at->format('Y-m-d H:i'))->toBe('2026-07-01 12:00');
@@ -91,7 +92,7 @@ test('the cleanup removes old activity entries and keeps recent ones', function 
 });
 
 test('the cleanup does not touch the order history', function () {
-    $order = makeOrder(makeContact(), App\Models\User::factory()->create());
+    $order = makeOrder(makeContact(), User::factory()->create());
     $order->history()->update(['created_at' => now()->subDays(1000)]);
 
     $this->artisan('activitylog:clean')->assertSuccessful();

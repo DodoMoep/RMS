@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum ContactType: string
 {
-    case Tenant   = 'tenant';
+    case Tenant = 'tenant';
     case Customer = 'customer';
-    case Both     = 'both';
+    case Both = 'both';
 }

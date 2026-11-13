@@ -33,10 +33,10 @@ return [
     'address_notes_help' => 'Additional information (floor, building, etc.)',
 
     'actions' => [
-        'view'       => 'View',
-        'edit'       => 'Edit',
-        'delete'     => 'Delete',
-        'activate'   => 'Activate',
+        'view' => 'View',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'activate' => 'Activate',
         'deactivate' => 'Deactivate',
     ],
 

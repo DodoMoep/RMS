@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Order;
 
-use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
 use App\Models\Order\OrderItem;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -16,22 +16,22 @@ class OrderAnalyticsController extends Controller
         $request->validate(['period' => 'nullable|in:7,14,30,60,90,180,365,all']);
 
         $period = $request->get('period', 30);
-        
+
         // Build base query with date filter
         $query = Order::query();
         if ($period !== 'all') {
-            $query->where('created_at', '>=', now()->subDays((int)$period));
+            $query->where('created_at', '>=', now()->subDays((int) $period));
         }
-        
+
         $totalOrders = (clone $query)->count();
         $activeOrders = (clone $query)->whereIn('status', [OrderStatus::NEW->value, OrderStatus::IN_PROGRESS->value])->count();
-        
+
         // Items packed in the period
         $packedStatuses = [OrderStatus::PACKED->value, OrderStatus::IN_DELIVERY->value, OrderStatus::DELIVERED->value];
-        $itemsPacked = OrderItem::whereHas('order', function($q) use ($period, $packedStatuses) {
+        $itemsPacked = OrderItem::whereHas('order', function ($q) use ($period, $packedStatuses) {
             $q->whereIn('status', $packedStatuses);
             if ($period !== 'all') {
-                $q->where('created_at', '>=', now()->subDays((int)$period));
+                $q->where('created_at', '>=', now()->subDays((int) $period));
             }
         })->count();
 
@@ -61,11 +61,11 @@ class OrderAnalyticsController extends Controller
     {
         $request->validate([
             'period' => 'nullable|in:hour,day,week,month',
-            'days'   => 'nullable|integer|min:1|max:365',
+            'days' => 'nullable|integer|min:1|max:365',
         ]);
 
         $period = $request->get('period', 'day');
-        $days   = (int) $request->get('days', 30);
+        $days = (int) $request->get('days', 30);
 
         return response()->json(Order::ordersOverTime($period, $days));
     }
@@ -77,6 +77,7 @@ class OrderAnalyticsController extends Controller
         ]);
 
         $limit = (int) $request->get('limit', 10);
+
         return response()->json(Order::topItems($limit));
     }
 
@@ -114,8 +115,7 @@ class OrderAnalyticsController extends Controller
         ];
 
         $pdf = Pdf::loadView('order.analytics.report-pdf', $data);
-        return $pdf->download('order-analytics-' . now()->format('Y-m-d') . '.pdf');
+
+        return $pdf->download('order-analytics-'.now()->format('Y-m-d').'.pdf');
     }
 }
-
-

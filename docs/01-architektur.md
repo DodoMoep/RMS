@@ -15,7 +15,7 @@
 | UI | CoreUI 5 (Bootstrap 5), Font Awesome 7 Free, Blade | `resources/scss/app.scss` |
 | Frontend-Interaktion | Alpine.js 3 (nur für das Kontaktformular), CoreUI-JavaScript | `resources/js/app.js` |
 | Tests | Pest 3 (+ Laravel-Plugin) | `tests/Pest.php` |
-| Stil | Laravel Pint (Standardpreset, keine `pint.json`) | `composer.json` |
+| Stil | Laravel Pint (Preset `laravel`, ausgenommen `database/migrations`) | `pint.json` |
 
 `barryvdh/laravel-debugbar`, `laravel/sail`, `laravel/pail` sind reine Entwicklungswerkzeuge. Die früher installierten, aber ungenutzten Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` wurden entfernt.
 

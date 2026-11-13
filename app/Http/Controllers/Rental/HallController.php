@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Rental;
 
 use App\Http\Controllers\Controller;
@@ -8,21 +9,26 @@ use Illuminate\Http\Request;
 
 class HallController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $halls = Hall::latest()->paginate(15);
+
         return view('rental.halls.index', compact('halls'));
     }
 
-    public function create(){
+    public function create()
+    {
         $items = InventoryItem::orderBy('name')->get(); // alle Inventarartikel
+
         return view('rental.halls.create', compact('items'));
     }
 
-    public function store(Request $r){
+    public function store(Request $r)
+    {
         $data = $r->validate([
-            'name'=>'required|string|min:2',
-            'address'=>'nullable|string|max:255',
-            'notes'=>'nullable|string',
+            'name' => 'required|string|min:2',
+            'address' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
             // validiere Mengen (optional, s. unten)
             'inventory.*.quantity' => 'nullable|integer|min:1',
         ]);
@@ -33,7 +39,7 @@ class HallController extends Controller
         $sync = [];
         foreach ((array) $r->input('inventory', []) as $itemId => $row) {
             // nur ausgewählte + mit Menge
-            if (!empty($row['selected']) && !empty($row['quantity'])) {
+            if (! empty($row['selected']) && ! empty($row['quantity'])) {
                 $sync[$itemId] = ['quantity' => (int) $row['quantity']];
             }
         }
@@ -42,17 +48,20 @@ class HallController extends Controller
         return redirect()->route('halls.index')->with('ok', __('halls.messages.created'));
     }
 
-    public function edit(Hall $hall){
+    public function edit(Hall $hall)
+    {
         $hall->load('inventory'); // vorhandene Zuordnungen
         $items = InventoryItem::orderBy('name')->get();
-        return view('rental.halls.edit', compact('hall','items'));
+
+        return view('rental.halls.edit', compact('hall', 'items'));
     }
 
-    public function update(Request $r, Hall $hall){
+    public function update(Request $r, Hall $hall)
+    {
         $data = $r->validate([
-            'name'=>'required|string|min:2',
-            'address'=>'nullable|string|max:255',
-            'notes'=>'nullable|string',
+            'name' => 'required|string|min:2',
+            'address' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
             'inventory.*.quantity' => 'nullable|integer|min:1',
         ]);
 
@@ -60,7 +69,7 @@ class HallController extends Controller
 
         $sync = [];
         foreach ((array) $r->input('inventory', []) as $itemId => $row) {
-            if (!empty($row['selected']) && !empty($row['quantity'])) {
+            if (! empty($row['selected']) && ! empty($row['quantity'])) {
                 $sync[$itemId] = ['quantity' => (int) $row['quantity']];
             }
         }
@@ -69,14 +78,15 @@ class HallController extends Controller
         return redirect()->route('halls.index')->with('ok', __('halls.messages.updated'));
     }
 
-    public function destroy(Hall $hall){
+    public function destroy(Hall $hall)
+    {
         if ($hall->rentals()->exists()) {
             return back()->withErrors([__('halls.messages.has_rentals')]);
         }
-        
+
         $hall->inventory()->detach();
         $hall->delete();
+
         return back()->with('ok', __('halls.messages.deleted'));
     }
 }
-

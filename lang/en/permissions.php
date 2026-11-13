@@ -7,10 +7,10 @@ return [
     'create' => 'Create Permission',
     'edit' => 'Edit Permission',
     'delete' => 'Delete Permission',
-    
+
     'name' => 'Name',
     'no_permissions' => 'No permissions available.',
-    
+
     'messages' => [
         'created' => 'Permission created.',
         'updated' => 'Permission updated.',

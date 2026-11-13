@@ -1,27 +1,38 @@
 <?php
+
 namespace App\Http\Controllers\Rental;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rental\{Protocol, ProtocolItem, Signature};
 use App\Mail\ProtocolFinalizedMail;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Log, Mail, Storage};
+use App\Models\Rental\Protocol;
+use App\Models\Rental\ProtocolItem;
+use App\Models\Rental\Signature;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProtocolController extends Controller
 {
-    public function index(){
-        $protocols = Protocol::with(['rental.contact','rental.hall','signatures'])->latest()->paginate(15);
+    public function index()
+    {
+        $protocols = Protocol::with(['rental.contact', 'rental.hall', 'signatures'])->latest()->paginate(15);
+
         return view('rental.protocol.index', compact('protocols'));
     }
 
-    public function showForm(Protocol $protocol) {
-        $protocol->load('rental.contact','rental.hall','items','signatures');
+    public function showForm(Protocol $protocol)
+    {
+        $protocol->load('rental.contact', 'rental.hall', 'items', 'signatures');
+
         return view('rental.protocol.form', compact('protocol'));
     }
 
-    public function saveForm(Request $r, Protocol $protocol) {
+    public function saveForm(Request $r, Protocol $protocol)
+    {
 
         if ($protocol->pdf_path) {
             return back()->withErrors([__('protocols.messages.already_finalized')]);
@@ -31,18 +42,18 @@ class ProtocolController extends Controller
             DB::beginTransaction();
 
             $protocol->update([
-                'notes'=>$r->input('notes'),
-                'checklist'=>[
-                    'stromzaehler'=>$r->input('checklist.stromzaehler'),
-                    'wasserzaehler'=>$r->input('checklist.wasserzaehler'),
+                'notes' => $r->input('notes'),
+                'checklist' => [
+                    'stromzaehler' => $r->input('checklist.stromzaehler'),
+                    'wasserzaehler' => $r->input('checklist.wasserzaehler'),
                 ],
             ]);
 
-            foreach ($r->input('items',[]) as $id=>$data) {
-                ProtocolItem::where('id',$id)->where('protocol_id',$protocol->id)->update([
-                    'state'=>$data['state'] ?? 'ok',
-                    'comment'=>$data['comment'] ?? null,
-                    'charge'=>$data['charge'] ?? null,
+            foreach ($r->input('items', []) as $id => $data) {
+                ProtocolItem::where('id', $id)->where('protocol_id', $protocol->id)->update([
+                    'state' => $data['state'] ?? 'ok',
+                    'comment' => $data['comment'] ?? null,
+                    'charge' => $data['charge'] ?? null,
                 ]);
             }
 
@@ -59,26 +70,29 @@ class ProtocolController extends Controller
                 }
 
                 foreach ($newPhotos as $file) {
-                    $path = $file->store("protocols/{$protocol->id}/photos",'local');
-                    $protocol->photos()->create(['path'=>$path,'caption'=>null]);
+                    $path = $file->store("protocols/{$protocol->id}/photos", 'local');
+                    $protocol->photos()->create(['path' => $path, 'caption' => null]);
                 }
             }
 
             DB::commit();
+
             return back()->with('ok', __('protocols.messages.saved'));
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Protocol save error', ['error' => $e->getMessage()]);
+
             return back()->withErrors([__('protocols.messages.save_error')]);
         }
     }
 
-    public function sign(Request $r, Protocol $protocol) {
+    public function sign(Request $r, Protocol $protocol)
+    {
         $r->validate([
-            'role'=>'required|in:tenant,landlord',
-            'signer'=>'required|string|min:2',
-            'signature_data'=>'required|string'
+            'role' => 'required|in:tenant,landlord',
+            'signer' => 'required|string|min:2',
+            'signature_data' => 'required|string',
         ]);
 
         try {
@@ -88,11 +102,12 @@ class ProtocolController extends Controller
             $protocol = Protocol::lockForUpdate()->find($protocol->id);
             if ($protocol->pdf_path) {
                 DB::rollBack();
+
                 return back()->withErrors([__('protocols.messages.already_closed')]);
             }
 
             $sigData = $r->input('signature_data');
-            if (!str_contains($sigData, ',')) {
+            if (! str_contains($sigData, ',')) {
                 throw new \Exception('Ungültige Signatur-Daten');
             }
             [$meta, $b64] = explode(',', $sigData, 2);
@@ -109,23 +124,23 @@ class ProtocolController extends Controller
             if (strlen($png) > 2 * 1024 * 1024) {
                 throw new \Exception('Signaturdaten sind zu groß.');
             }
-            
-            $path = "protocols/{$protocol->id}/sign-".Str::uuid().".png";
+
+            $path = "protocols/{$protocol->id}/sign-".Str::uuid().'.png';
             Storage::disk('local')->put($path, $png);
 
             $protocol->signatures()->create([
-                'role'=>$r->role,'signer_name'=>$r->signer,
-                'png_path'=>$path,'signed_at'=>now()
+                'role' => $r->role, 'signer_name' => $r->signer,
+                'png_path' => $path, 'signed_at' => now(),
             ]);
 
             // Wenn beide Rollen unterschrieben haben -> PDF + Mail
             $protocol->load('signatures');
-            $hasTenant  = $protocol->signatures->contains('role', 'tenant');
+            $hasTenant = $protocol->signatures->contains('role', 'tenant');
             $hasLandlord = $protocol->signatures->contains('role', 'landlord');
 
             if ($hasTenant && $hasLandlord) {
-                $protocol->load(['rental.contact','rental.hall','items','photos']);
-                
+                $protocol->load(['rental.contact', 'rental.hall', 'items', 'photos']);
+
                 $signDataUris = [];
                 foreach ($protocol->signatures as $sig) {
                     if (Storage::disk('local')->exists($sig->png_path)) {
@@ -146,8 +161,8 @@ class ProtocolController extends Controller
                 }
 
                 $pdf = Pdf::loadView('pdf.protocol', [
-                    'protocol'      => $protocol,
-                    'signDataUris'  => $signDataUris,
+                    'protocol' => $protocol,
+                    'signDataUris' => $signDataUris,
                     'photoDataUris' => $photoDataUris,
                 ]);
                 $pdfBytes = $pdf->output();
@@ -169,9 +184,9 @@ class ProtocolController extends Controller
                 }
 
                 $protocol->update([
-                    'pdf_path'=>$pdfPath,
-                    'pdf_sha256'=>hash('sha256',$pdfBytes),
-                    'meta'=>array_merge($protocol->meta ?? [], ['ip'=>request()->ip(),'ua'=>request()->userAgent()])
+                    'pdf_path' => $pdfPath,
+                    'pdf_sha256' => hash('sha256', $pdfBytes),
+                    'meta' => array_merge($protocol->meta ?? [], ['ip' => request()->ip(), 'ua' => request()->userAgent()]),
                 ]);
 
                 // Send email after commit
@@ -184,7 +199,7 @@ class ProtocolController extends Controller
                     } catch (\Exception $e) {
                         Log::error('Failed to send protocol email', [
                             'protocol_id' => $protocol->id,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -192,22 +207,24 @@ class ProtocolController extends Controller
                 $message = __('protocols.messages.finalized');
             } else {
                 DB::commit();
-                $pendingRole = __(!$hasTenant ? 'protocols.messages.role_tenant' : 'protocols.messages.role_landlord');
+                $pendingRole = __(! $hasTenant ? 'protocols.messages.role_tenant' : 'protocols.messages.role_landlord');
                 $message = __('protocols.messages.signature_saved', ['role' => $pendingRole]);
             }
 
             return back()->with('ok', $message);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Protocol signing error', ['error' => $e->getMessage()]);
+
             return back()->withErrors([__('protocols.messages.sign_error')]);
         }
     }
 
-    public function pdf(Protocol $protocol) {
+    public function pdf(Protocol $protocol)
+    {
         abort_unless($protocol->pdf_path && Storage::disk('local')->exists($protocol->pdf_path), 404);
+
         return response()->file(Storage::disk('local')->path($protocol->pdf_path));
     }
 }
-

@@ -7,12 +7,12 @@ return [
     'create' => 'Neue Vermietung erstellen',
     'edit' => 'Vermietung bearbeiten',
     'delete' => 'Vermietung löschen',
-    
+
     'start_date' => 'Startdatum',
     'end_date' => 'Enddatum',
     'status' => 'Status',
     'total_price' => 'Gesamtpreis',
-    
+
     'messages' => [
         'created' => 'Vermietung angelegt.',
         'updated' => 'Vermietung aktualisiert.',

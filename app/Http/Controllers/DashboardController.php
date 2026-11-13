@@ -16,8 +16,8 @@ class DashboardController extends Controller
         if (auth()->user()->can('rentals.view')) {
             $today = now()->toDateString();
 
-            $todayRentals = Rental::with(['contact','hall'])
-                ->where(fn($q) => $q->whereDate('start', $today)->orWhereDate('end', $today))
+            $todayRentals = Rental::with(['contact', 'hall'])
+                ->where(fn ($q) => $q->whereDate('start', $today)->orWhereDate('end', $today))
                 ->orderBy('start')
                 ->take(10)->get();
         }
@@ -27,6 +27,6 @@ class DashboardController extends Controller
             $openProtocols = Protocol::whereNull('pdf_path')->latest()->take(10)->get();
         }
 
-        return view('dashboard.index', compact('todayRentals','openProtocols'));
+        return view('dashboard.index', compact('todayRentals', 'openProtocols'));
     }
 }

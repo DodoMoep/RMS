@@ -1,16 +1,20 @@
 <?php
+
 namespace App\Models\Rental;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\Contact;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
-class Rental extends Model {
+class Rental extends Model
+{
     use HasUuids;
-    protected $fillable=['contact_id','hall_id','start','end','price','deposit','status'];
-    protected $casts=['start'=>'datetime','end'=>'datetime'];
+
+    protected $fillable = ['contact_id', 'hall_id', 'start', 'end', 'price', 'deposit', 'status'];
+
+    protected $casts = ['start' => 'datetime', 'end' => 'datetime'];
 
     /**
      * Buchungen, die sich mit dem Zeitraum ueberschneiden. Die Intervalle sind halboffen:
@@ -25,10 +29,28 @@ class Rental extends Model {
             ->where('end', '>', Carbon::parse($start));
     }
 
-    public function contact(): BelongsTo { return $this->belongsTo(Contact::class, 'contact_id'); }
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'contact_id');
+    }
 
-    public function hall(){ return $this->belongsTo(Hall::class); }
-    public function protocols(){ return $this->hasMany(Protocol::class); }
-    public function handover(){ return $this->hasOne(Protocol::class)->where('type','handover')->latest('id'); }
-    public function returnProtocol(){ return $this->hasOne(Protocol::class)->where('type','return')->latest('id'); }
+    public function hall()
+    {
+        return $this->belongsTo(Hall::class);
+    }
+
+    public function protocols()
+    {
+        return $this->hasMany(Protocol::class);
+    }
+
+    public function handover()
+    {
+        return $this->hasOne(Protocol::class)->where('type', 'handover')->latest('id');
+    }
+
+    public function returnProtocol()
+    {
+        return $this->hasOne(Protocol::class)->where('type', 'return')->latest('id');
+    }
 }

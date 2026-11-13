@@ -12,7 +12,7 @@ enum OrderStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::NEW => __('orders.statuses.new'),
             self::IN_PROGRESS => __('orders.statuses.in_progress'),
             self::PACKED => __('orders.statuses.packed'),
@@ -23,7 +23,7 @@ enum OrderStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::NEW => 'bg-primary text-white',
             self::IN_PROGRESS => 'bg-warning text-dark',
             self::PACKED => 'bg-info text-white',
@@ -34,7 +34,7 @@ enum OrderStatus: string
 
     public function canTransitionTo(OrderStatus $status): bool
     {
-        return match($this) {
+        return match ($this) {
             self::NEW => in_array($status, [self::IN_PROGRESS]),
             self::IN_PROGRESS => in_array($status, [self::PACKED]),
             self::PACKED => in_array($status, [self::IN_DELIVERY]),

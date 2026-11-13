@@ -7,10 +7,10 @@ return [
     'create' => 'Neue Rolle erstellen',
     'edit' => 'Rolle bearbeiten',
     'delete' => 'Rolle löschen',
-    
+
     'name' => 'Name',
     'permissions' => 'Berechtigungen',
-    
+
     'messages' => [
         'created' => 'Rolle erstellt.',
         'updated' => 'Rolle aktualisiert.',

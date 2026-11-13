@@ -25,11 +25,11 @@ Route::prefix('halls')->middleware(['auth', 'permission:halls.view'])->group(fun
 });
 
 Route::prefix('protocols')->middleware(['auth', 'permission:protocols.view'])->group(function () {
-    Route::get('/', [ProtocolController::class,'index'])->name('protocols.index');
-    Route::get('/{protocol}', [ProtocolController::class,'showForm'])->middleware('permission:protocols.create')->name('protocol.form');
-    Route::post('/{protocol}/save', [ProtocolController::class,'saveForm'])->middleware('permission:protocols.edit')->name('protocol.save');
-    Route::post('/{protocol}/sign', [ProtocolController::class,'sign'])->middleware('permission:protocols.sign')->name('protocol.sign');
-    Route::get('/{protocol}/pdf', [ProtocolController::class,'pdf'])->middleware('permission:protocols.pdf')->name('protocol.pdf');
+    Route::get('/', [ProtocolController::class, 'index'])->name('protocols.index');
+    Route::get('/{protocol}', [ProtocolController::class, 'showForm'])->middleware('permission:protocols.create')->name('protocol.form');
+    Route::post('/{protocol}/save', [ProtocolController::class, 'saveForm'])->middleware('permission:protocols.edit')->name('protocol.save');
+    Route::post('/{protocol}/sign', [ProtocolController::class, 'sign'])->middleware('permission:protocols.sign')->name('protocol.sign');
+    Route::get('/{protocol}/pdf', [ProtocolController::class, 'pdf'])->middleware('permission:protocols.pdf')->name('protocol.pdf');
 });
 
 Route::prefix('rentals')->middleware(['auth', 'permission:rentals.view'])->group(function () {
@@ -39,8 +39,8 @@ Route::prefix('rentals')->middleware(['auth', 'permission:rentals.view'])->group
     Route::get('/{rental}/edit', [RentalController::class, 'edit'])->middleware('permission:rentals.edit')->name('rentals.edit');
     Route::put('/{rental}', [RentalController::class, 'update'])->middleware('permission:rentals.edit')->name('rentals.update');
     Route::delete('/{rental}', [RentalController::class, 'destroy'])->middleware('permission:rentals.delete')->name('rentals.destroy');
-    
+
     // Protokoll-Aktionen direkt aus Vermietung
-    Route::post('/{rental}/handover', [RentalController::class,'createOrOpenHandover'])->middleware('permission:rentals.handover')->name('rentals.handover');
-    Route::post('/{rental}/return', [RentalController::class,'createOrOpenReturn'])->middleware('permission:rentals.return')->name('rentals.return');
+    Route::post('/{rental}/handover', [RentalController::class, 'createOrOpenHandover'])->middleware('permission:rentals.handover')->name('rentals.handover');
+    Route::post('/{rental}/return', [RentalController::class, 'createOrOpenReturn'])->middleware('permission:rentals.return')->name('rentals.return');
 });

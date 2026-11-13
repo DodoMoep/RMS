@@ -3,17 +3,21 @@
 namespace App\Http\Controllers\Rental;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rental\{Rental, Hall, Protocol};
 use App\Models\Contact;
+use App\Models\Rental\Hall;
+use App\Models\Rental\Protocol;
+use App\Models\Rental\Rental;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Log};
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RentalController extends Controller
 {
     public function index()
     {
-        $rentals = Rental::with(['contact','hall','handover','returnProtocol'])
+        $rentals = Rental::with(['contact', 'hall', 'handover', 'returnProtocol'])
             ->latest()->paginate(15);
+
         return view('rental.rentals.index', compact('rentals'));
     }
 
@@ -21,7 +25,7 @@ class RentalController extends Controller
     {
         return view('rental.rentals.create', [
             'contacts' => Contact::tenants()->orderBy('name')->get(),
-            'halls'    => Hall::orderBy('name')->get(),
+            'halls' => Hall::orderBy('name')->get(),
         ]);
     }
 
@@ -29,21 +33,21 @@ class RentalController extends Controller
     {
         $data = $r->validate($this->rules());
 
-
         if ($this->hallIsBooked($data)) {
             return back()->withInput()->withErrors(['hall_id' => __('rentals.messages.hall_booked')]);
         }
 
         Rental::create($data);
+
         return redirect()->route('rentals.index')->with('ok', __('rentals.messages.created'));
     }
 
     public function edit(Rental $rental)
     {
         return view('rental.rentals.edit', [
-            'rental'   => $rental,
+            'rental' => $rental,
             'contacts' => Contact::tenants()->orderBy('name')->get(),
-            'halls'    => Hall::orderBy('name')->get(),
+            'halls' => Hall::orderBy('name')->get(),
         ]);
     }
 
@@ -51,12 +55,12 @@ class RentalController extends Controller
     {
         $data = $r->validate($this->rules());
 
-
         if ($this->hallIsBooked($data, $rental)) {
             return back()->withInput()->withErrors(['hall_id' => __('rentals.messages.hall_booked')]);
         }
 
         $rental->update($data);
+
         return redirect()->route('rentals.index')->with('ok', __('rentals.messages.updated'));
     }
 
@@ -66,13 +70,13 @@ class RentalController extends Controller
     private function rules(): array
     {
         return [
-            'contact_id'=>'required|uuid|exists:contacts,id',
-            'hall_id'=>'required|uuid|exists:halls,id',
-            'start'=>'required|date',
-            'end'=>'required|date|after:start',
-            'price'=>'nullable|numeric|min:0',
-            'deposit'=>'nullable|numeric|min:0',
-            'status'=>'required|in:scheduled,active,closed,cancelled',
+            'contact_id' => 'required|uuid|exists:contacts,id',
+            'hall_id' => 'required|uuid|exists:halls,id',
+            'start' => 'required|date',
+            'end' => 'required|date|after:start',
+            'price' => 'nullable|numeric|min:0',
+            'deposit' => 'nullable|numeric|min:0',
+            'status' => 'required|in:scheduled,active,closed,cancelled',
         ];
     }
 
@@ -95,6 +99,7 @@ class RentalController extends Controller
         }
 
         $rental->delete();
+
         return back()->with('ok', __('rentals.messages.deleted'));
     }
 
@@ -106,28 +111,30 @@ class RentalController extends Controller
             DB::beginTransaction();
 
             $proto = $rental->handover;
-            if (!$proto) {
+            if (! $proto) {
                 $proto = Protocol::create([
-                    'rental_id'=>$rental->id, 'type'=>'handover',
-                    'checklist'=>['stromzaehler'=>null,'wasserzaehler'=>null],
+                    'rental_id' => $rental->id, 'type' => 'handover',
+                    'checklist' => ['stromzaehler' => null, 'wasserzaehler' => null],
                 ]);
 
                 $rental->load('hall.inventory');
                 foreach ($rental->hall->inventory as $inv) {
                     $proto->items()->create([
-                        'inventory_item_id'=>$inv->id,
-                        'label'=>$inv->name.' (Soll: '.$inv->pivot->quantity.')',
-                        'state'=>'ok',
+                        'inventory_item_id' => $inv->id,
+                        'label' => $inv->name.' (Soll: '.$inv->pivot->quantity.')',
+                        'state' => 'ok',
                     ]);
                 }
             }
 
             DB::commit();
+
             return redirect()->route('protocol.form', $proto);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating handover protocol', ['error' => $e->getMessage()]);
+
             return back()->withErrors([__('rentals.messages.handover_error')]);
         }
     }
@@ -138,33 +145,35 @@ class RentalController extends Controller
             DB::beginTransaction();
 
             $return = $rental->returnProtocol;
-            if (!$return) {
+            if (! $return) {
                 $source = $rental->handover;
-                if (!$source) {
+                if (! $source) {
                     $source = Protocol::create([
-                        'rental_id'=>$rental->id,'type'=>'handover','checklist'=>[]
+                        'rental_id' => $rental->id, 'type' => 'handover', 'checklist' => [],
                     ]);
                 }
 
                 $return = Protocol::create([
-                    'rental_id'=>$rental->id,'type'=>'return','checklist'=>$source->checklist
+                    'rental_id' => $rental->id, 'type' => 'return', 'checklist' => $source->checklist,
                 ]);
 
                 $source->load('items');
                 foreach ($source->items as $src) {
                     $return->items()->create([
-                        'inventory_item_id'=>$src->inventory_item_id,
-                        'label'=>$src->label, 'state'=>'ok'
+                        'inventory_item_id' => $src->inventory_item_id,
+                        'label' => $src->label, 'state' => 'ok',
                     ]);
                 }
             }
 
             DB::commit();
+
             return redirect()->route('protocol.form', $return);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating return protocol', ['error' => $e->getMessage()]);
+
             return back()->withErrors([__('rentals.messages.return_error')]);
         }
     }

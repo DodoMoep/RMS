@@ -23,8 +23,8 @@ Kennzeichnung: **MUSS** gilt ohne Ausnahme, **SOLL** gilt für neuen und geände
 Quelle: `.editorconfig` und Laravel Pint.
 
 - UTF-8, Zeilenende LF, Einrückung 4 Leerzeichen (YAML: 2), Zeilenabschluss mit Leerzeile am Dateiende, keine Leerzeichen am Zeilenende (Markdown ausgenommen). **MUSS**
-- PHP folgt dem Laravel-Pint-Standardpreset (PSR-12-basiert). Eine `pint.json` existiert nicht; das Standardpreset gilt. **SOLL**
-- Vor jedem Commit: `vendor/bin/pint --test <geänderte Dateien>`; Korrekturen nur an den eigenen Änderungen, keine Formatierungsrunde über unbeteiligte Dateien im selben Commit. **SOLL**
+- PHP folgt dem Laravel-Pint-Preset `laravel` (PSR-12-basiert), konfiguriert in `pint.json` (ausgenommen: `database/migrations`, weil bestehende Migrationen nie geändert werden). **MUSS**
+- Vor jedem Commit: `vendor/bin/pint --test` (gesamtes Projekt) muss ohne Abweichung durchlaufen; `vendor/bin/pint` korrigiert automatisch. Formatierung und Verhaltensänderung nicht im selben Commit mischen. **MUSS**
 - Kurze Array-Syntax, einfache Anführungszeichen, `use`-Anweisungen alphabetisch und ohne ungenutzte Imports, keine voll qualifizierten Klassennamen oder globalen Alias-Aufrufe im Code (`\DB::`, `\Log::`, `\PDF::`, `\App\Models\...`), sondern `use` am Dateikopf. `tests/Feature/Quality/CodeConventionsTest.php` prüft das. **MUSS**
 - Keine auskommentierten Codeblöcke einchecken (Beispiel im Bestand: Menüpunkt "Berechtigungen"). **SOLL**
 
@@ -150,15 +150,7 @@ Quelle: `.editorconfig` und Laravel Pint.
 
 ## 13. Abweichungen im Bestand
 
-Messung mit Laravel Pint (Standardpreset, `vendor/bin/pint --test app routes database tests`): **54 von 118 PHP-Dateien** weichen ab (Stand vor den Korrekturen K1 bis K5 und M6; neue und angepasste Seeder- und Testdateien sind sauber). Schwerpunkte:
-
-| Bereich | Typische Abweichung |
-|---|---|
-| `app/Models/Rental/*` | Einzeilige Klassen und Methoden, fehlende Leerzeilen, `class X {` in derselben Zeile |
-| `app/Http/Controllers/Rental/*`, `Order/*` | Leerzeichen um Operatoren und Argumente, ungenutzte Imports, `!`-Operator ohne Leerzeichenregel, uneinheitliche Anführungszeichen |
-| Ältere Migrationen | Klassenkopf und Klammerstil, Leerzeichen in Leerzeilen |
-| `routes/web.php`, `routes/rental.php` | Leerzeichen nach Kommas, doppelte Leerzeilen |
-| `app/Models/Order/OrderItem.php` | `int $quantity = null` ist ab PHP 8.4 als implizit nullable veraltet (`?int $quantity = null`) |
+Der Code-Stil ist bereinigt: `vendor/bin/pint --test` meldet für das gesamte Projekt keine Abweichungen (vorher 101 von 292 PHP-Dateien; 86 wurden formatiert, die 15 alten Migrationen sind ausgenommen). Die einzige inhaltliche Änderung dabei: `OrderItem::markAsPacked(int $quantity = null)` heißt jetzt `?int $quantity = null` (in PHP 8.4 veraltet). Die Formatierung steht in `pint.json` (Preset `laravel`, ausgenommen `database/migrations`, weil bestehende Migrationen nicht angefasst werden); neue Migrationen sollen trotzdem Pint-konform sein.
 
 Weitere inhaltliche Abweichungen von den Regeln oben:
 
@@ -170,4 +162,4 @@ Weitere inhaltliche Abweichungen von den Regeln oben:
 | Auskommentierter Menüpunkt | Menüpunkt "Berechtigungen" in der Navigation ist auskommentiert, die Route bleibt erreichbar | `resources/views/layouts/navigation.blade.php` |
 | Fachlogik nicht im Controller | `ProtocolController::sign` (PDF, Mail, Statuswechsel, Transaktion in einer Methode) | `ProtocolController` |
 
-Vorgehen: Keine flächige Formatierungsrunde. Beim Ändern einer Datei werden deren Verstöße in einem getrennten Commit (`refactor: Stil angleichen`) behoben, damit Diff und Verhaltensänderung nachvollziehbar bleiben.
+Vorgehen: `vendor/bin/pint --test` muss vor jedem Merge ohne Abweichung durchlaufen (Abschnitt 10). Formatierungsänderungen gehören in einen eigenen Commit (`style: ...`), nie in denselben wie eine Verhaltensänderung.

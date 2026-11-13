@@ -30,7 +30,7 @@ return [
         'remove' => 'Remove',
         'add' => 'Add',
     ],
-    
+
     'navigation' => [
         'dashboard' => 'Dashboard',
         'order_management' => 'Order Management',
@@ -60,7 +60,7 @@ return [
         'settings' => 'Settings',
         'language' => 'Language',
     ],
-    
+
     'messages' => [
         'success' => 'Success!',
         'error' => 'Error!',
@@ -78,7 +78,7 @@ return [
         'please_sign' => 'Please sign.',
         'please_select' => 'Please select…',
     ],
-    
+
     'validation' => [
         'required' => 'This field is required',
         'email' => 'Please enter a valid email address',
@@ -86,7 +86,7 @@ return [
         'max' => 'The value must not exceed :max',
         'numeric' => 'The value must be a number',
     ],
-    
+
     'dates' => [
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',

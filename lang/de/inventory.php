@@ -7,12 +7,12 @@ return [
     'create' => 'Neuen Artikel erstellen',
     'edit' => 'Artikel bearbeiten',
     'delete' => 'Artikel löschen',
-    
+
     'name' => 'Name',
     'description' => 'Beschreibung',
     'quantity' => 'Menge',
     'location' => 'Standort',
-    
+
     'messages' => [
         'created' => 'Inventarposition angelegt.',
         'updated' => 'Inventar aktualisiert.',

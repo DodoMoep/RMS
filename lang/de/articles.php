@@ -11,7 +11,7 @@ return [
     'created' => 'Artikel erstellt',
     'updated' => 'Artikel aktualisiert',
     'no_articles' => 'Keine Artikel verfügbar',
-    
+
     'name' => 'Name',
     'description' => 'Beschreibung',
     'price' => 'Preis',
@@ -22,7 +22,7 @@ return [
     'inactive' => 'Inaktiv',
     'status' => 'Status',
     'actions' => 'Aktionen',
-    
+
     'messages' => [
         'created' => 'Artikel erstellt.',
         'updated' => 'Artikel aktualisiert.',

@@ -7,12 +7,12 @@ return [
     'create' => 'Neuen Saal erstellen',
     'edit' => 'Saal bearbeiten',
     'delete' => 'Saal löschen',
-    
+
     'name' => 'Name',
     'description' => 'Beschreibung',
     'capacity' => 'Kapazität',
     'price_per_day' => 'Preis pro Tag',
-    
+
     'messages' => [
         'created' => 'Halle angelegt.',
         'updated' => 'Halle aktualisiert.',

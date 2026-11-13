@@ -12,7 +12,7 @@ return [
     'created' => 'Order created',
     'updated' => 'Order updated',
     'no_orders' => 'No orders available',
-    
+
     'order_number' => 'Order Number',
     'customer_number' => 'Customer Number',
     'customer_name' => 'Customer Name',
@@ -36,19 +36,19 @@ return [
     'updated_at' => 'Updated At',
     'packed_by' => 'Packed By',
     'delivered_at' => 'Delivered At',
-    
+
     'order_information' => 'Order Information',
     'customer_information' => 'Customer Information',
     'update_status' => 'Update Status',
     'order_completed' => 'Order Completed',
-    
+
     'article' => 'Article',
     'sku' => 'SKU',
     'ordered' => 'Ordered',
     'packed' => 'Packed',
     'item_packed' => 'Packed',
     'item_open' => 'Open',
-    
+
     'items' => 'Items',
     'add_item' => 'Add Item',
     'item_added' => 'Item added',
@@ -57,7 +57,7 @@ return [
     'packed_quantity' => 'Packed Quantity',
     'unit_price' => 'Unit Price',
     'total' => 'Total',
-    
+
     'statuses' => [
         'all' => 'All Statuses',
         'new' => 'New',
@@ -66,7 +66,7 @@ return [
         'in_delivery' => 'In Delivery',
         'delivered' => 'Delivered',
     ],
-    
+
     'actions' => [
         'view' => 'View',
         'edit' => 'Edit',
@@ -75,7 +75,7 @@ return [
         'print_delivery_note' => 'Print Delivery Note',
         'change_status' => 'Change Status',
     ],
-    
+
     'messages' => [
         'confirm_delete' => 'Are you sure you want to delete this order?',
         'cannot_edit_packed' => 'Packed orders cannot be edited',
@@ -96,7 +96,7 @@ return [
         'invalid_status_transition' => 'This status transition is not allowed.',
         'status_updated' => 'Status updated.',
     ],
-    
+
     'history' => 'Order History',
     'timeline' => 'Timeline',
     'user' => 'User',
@@ -108,7 +108,7 @@ return [
     'select_article' => 'Select Article',
     'fully_packed' => 'Fully Packed',
     'partially_packed' => 'Partially Packed',
-    
+
     'history_event_types' => [
         'order_created' => 'Order Created',
         'order_updated' => 'Order Updated',

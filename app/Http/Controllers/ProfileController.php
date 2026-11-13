@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver; // oder Imagick
+use Intervention\Image\ImageManager; // oder Imagick
 
 class ProfileController extends Controller
 {
@@ -38,18 +38,18 @@ class ProfileController extends Controller
         }
 
         if ($request->hasFile('avatar')) {
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
 
             $img = $manager->read($request->file('avatar'))
                 ->orient()
                 ->cover(512, 512); // = quadratisch zuschneide
             $filename = 'avatars/'.$request->user()->id.'/avatar-'.Str::uuid().'.webp';
             Storage::disk('public')->put($filename, (string) $img->encode(new WebpEncoder(quality: 85)));
-            if ($request->user()->avatar_path) Storage::disk('public')->delete($request->user()->avatar_path);
+            if ($request->user()->avatar_path) {
+                Storage::disk('public')->delete($request->user()->avatar_path);
+            }
             $request->user()->avatar_path = $filename;
         }
-
-
 
         $request->user()->save();
 

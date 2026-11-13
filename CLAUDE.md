@@ -32,7 +32,7 @@ Ist keine Doku betroffen, das am Ende der Arbeit kurz nennen. Doku-Dateien nach 
 
 ```bash
 composer test                      # Pest-Tests (SQLite in-memory)
-vendor/bin/pint --test <Dateien>   # Stilprüfung, nur geänderte Dateien
+vendor/bin/pint --test             # Stilprüfung für das gesamte Projekt, muss sauber sein
 php artisan route:list --except-vendor
 ```
 

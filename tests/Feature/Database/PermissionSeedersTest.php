@@ -5,6 +5,7 @@ use App\Models\User;
 use Database\Seeders\ContactPermissionsSeeder;
 use Database\Seeders\OrderPermissionsSeeder;
 use Database\Seeders\RentalPermissionsSeeder;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Database\Seeders\TestContactSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -71,15 +72,15 @@ test('a seeded rental staff user can open the contact list but cannot delete', f
 });
 
 test('the base seeder creates the admin permissions without the unused settings permission', function () {
-    App\Models\User::factory()->create();
+    User::factory()->create();
 
-    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $names = Permission::pluck('name');
 
     expect($names)->toContain('user.list', 'role.edit', 'perm.delete')
         ->and($names)->not->toContain('app.settings')
-        ->and(App\Models\User::find(1)->hasRole('super-admin'))->toBeTrue();
+        ->and(User::find(1)->hasRole('super-admin'))->toBeTrue();
 });
 
 test('test contact seeder creates customers with customer numbers', function () {

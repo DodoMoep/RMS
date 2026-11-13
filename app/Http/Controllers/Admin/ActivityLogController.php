@@ -16,8 +16,8 @@ class ActivityLogController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('description', 'like', "%{$request->search}%")
-                  ->orWhere('subject_type', 'like', "%{$request->search}%")
-                  ->orWhere('log_name', 'like', "%{$request->search}%");
+                    ->orWhere('subject_type', 'like', "%{$request->search}%")
+                    ->orWhere('log_name', 'like', "%{$request->search}%");
             });
         }
 
@@ -27,12 +27,12 @@ class ActivityLogController extends Controller
 
         if ($request->filled('causer_id')) {
             $query->where('causer_id', $request->causer_id)
-                  ->where('causer_type', User::class);
+                ->where('causer_type', User::class);
         }
 
-        $logs    = $query->paginate(50)->withQueryString();
+        $logs = $query->paginate(50)->withQueryString();
         $logNames = Activity::distinct()->orderBy('log_name')->pluck('log_name');
-        $users   = User::orderBy('name')->get(['id', 'name']);
+        $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('admin.activity-log.index', compact('logs', 'logNames', 'users'));
     }

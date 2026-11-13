@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, S6, M1 bis M11, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (S2, S4, S5, T1, T2).
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, S6, M1 bis M11, T2, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (S2, S4, S5, T1).
 
 Nachweis:
 
@@ -38,7 +38,7 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | M10 | Behoben | Aktivitätslog ohne Bereinigung | Code |
 | M11 | Behoben | Englische Mail-Sprachdatei mit Syntaxfehler | Skript (`php -l`) |
 | T1 | Mittel | Tests für Fachmodule nur teilweise vorhanden (Aufträge, Vermietungen, Auswertung fehlen) | Code |
-| T2 | Mittel | Stilabweichungen in 54 von 118 PHP-Dateien (Stand vor den Korrekturen) | Skript (Pint) |
+| T2 | Behoben | Stilabweichungen in 101 von 292 PHP-Dateien (Pint) | Skript (Pint) |
 | T3 | Behoben | Toter Code, ungenutzte Pakete (Rest: auskommentierter Menüpunkt) | Code |
 | T4 | Teilweise behoben | Feste deutsche Texte: Controller übersetzt, Views der Vermietung offen | Code |
 | T5 | Behoben | Zwei UUID-Mechanismen, Alias-Aufrufe, doppelter Code | Code |
@@ -169,7 +169,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 ## T Technische Schulden
 
 - **T1 Tests:** Die Suite ist vollständig grün (228 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
-- **T2 Stil:** Pint (Standardpreset) meldet 54 von 118 Dateien. Siehe [07-coding-guidelines.md](07-coding-guidelines.md), Abschnitt 13.
+- **T2 Stil:** Behoben. `vendor/bin/pint --test` meldete für das gesamte Projekt (`app`, `bootstrap`, `config`, `database`, `lang`, `routes`, `tests`) 101 von 292 PHP-Dateien; die frühere Zahl 54 von 118 galt nur für vier Verzeichnisse und eine ältere Pint-Version. Formatiert wurden 86 Dateien, die 15 alten Migrationen sind über `pint.json` ausgenommen (bestehende Migrationen werden nicht angefasst). Inhaltlich geprüft wurde ohne Tests: Syntaxprüfung aller geänderten Dateien, Anwendungsstart, gleiche Routenzahl (113), unveränderte Anzahl der Umlaute und Zeilenenden, sowie ein Vergleich der Namen, Zeichenketten und Zahlen jeder Datei vor und nach der Formatierung. Dabei zeigte sich genau eine inhaltliche Änderung: `OrderItem::markAsPacked(int $quantity = null)` wurde zu `?int $quantity = null` (in PHP 8.4 veraltet). Ein vollständiger Testlauf auf diesem Stand steht noch aus und ist vor dem Merge empfohlen.
 - **T3 Toter Code:** Behoben. Entfernt wurden `LocaleController`, `RegisteredUserController` (beide nicht geroutet), die ungenutzten Breeze-Komponenten `application-logo`, `danger-button`, `dropdown`, `dropdown-link`, `modal` und `responsive-nav-link`, das ungenutzte Recht `app.settings` im Seeder sowie die Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` (`composer remove`; die Treffer für "active" waren der eigene Scope `Article::active()`). Rest: Der Menüpunkt "Berechtigungen" in der Navigation ist weiter auskommentiert, die Route bleibt erreichbar. `tests/Feature/Quality/CodeConventionsTest.php` verhindert die Rückkehr.
 - **T4 Übersetzungen:** Teilweise behoben. Alle benutzersichtbaren Meldungen der Controller (Erfolg, Fehler, `abort`) laufen jetzt über `__()` mit Schlüsseln unter `<bereich>.messages.*` in `lang/de` und `lang/en`; der Wortlaut für Deutsch blieb unverändert, die englischen Texte sind neu. Die zuvor ungenutzten Schlüssel `created`/`updated`/`deleted` mit abweichender Wortwahl (z. B. "Saal" statt "Halle") wurden durch die tatsächlich angezeigten Texte ersetzt. Offen: Feste deutsche Texte in den Views der Vermietung (Hallen, Inventar, Protokolle, Vermietungen), die englischen `order_history`-Beschreibungen sind fest, und die Benennung "Saal"/"Säle" in den Sprachdateien weicht von "Halle" in den Meldungen ab. Zwei Meldungen in `ProtocolController` (zu viele Fotos, ungültige Unterschrift) werden als Ausnahme geworfen und vom Controller als allgemeiner Fehler ausgegeben; der genaue Grund erreicht den Benutzer nicht (nur im Log).
 - **T5 Aufbau:** Behoben. Alle Models verwenden `HasUuids` (der eigene Trait `HasUuid` ist entfernt). `\DB`, `\Log`, `\PDF`, `\Storage` und die voll qualifizierten Model-Namen sind durch Imports ersetzt, der doppelte Cache-Reset in den Rollen- und Rechtecontrollern ist entfernt (`forgetCachedPermissions()` genügt, wie der Quelltext von `permission:cache-reset` zeigt), die Validierungsregeln von `ContactController` und `RentalController` stehen je einmal. In `OrderController` unterscheiden sich `store` und `update` fachlich (Kundenanlage, Positionsabgleich); dort bleibt die Trennung bewusst.
@@ -177,9 +177,9 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## Empfohlene Reihenfolge
 
-1. K1 bis K7, S1, S3, S6, M1 bis M11, T3, T5 und T6 sind erledigt, T4 teilweise.
+1. K1 bis K7, S1, S3, S6, M1 bis M11, T2, T3, T5 und T6 sind erledigt, T4 teilweise.
 2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Das Deaktivieren von Benutzern ist umgesetzt; ausgeschiedene Mitarbeiter sollten deaktiviert statt gelöscht werden.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. Vor dem Produktivbetrieb: Zeitzone der Datenbank prüfen (M8) und den Cronjob für `schedule:run` einrichten (M10).
-5. T2 (Stilangleichung mit Pint) als eigene, rein formale Änderung nach dem Merge des gesamten Stapels, damit der Diff lesbar bleibt; danach `pint --test` zur Pflicht machen. T1 laufend: fehlende Tests für Auftragsanlage und -bearbeitung.
+5. T2 ist erledigt (eigener formaler Commit); `pint --test` ist jetzt Pflicht vor jedem Merge. T1 laufend: fehlende Tests für Auftragsanlage und -bearbeitung.
 6. S6 ist erledigt; `composer audit` und `npm audit` vor jedem Release wiederholen.

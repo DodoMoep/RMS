@@ -52,21 +52,21 @@ class OrderItem extends Model
     public function canBeModified(): bool
     {
         // Cannot modify if fully packed or partially packed
-        return $this->quantity_packed === 0 && !$this->is_packed && $this->order->canBeModified();
+        return $this->quantity_packed === 0 && ! $this->is_packed && $this->order->canBeModified();
     }
-    
+
     public function isPartiallyPacked(): bool
     {
-        return $this->quantity_packed > 0 && !$this->is_packed;
+        return $this->quantity_packed > 0 && ! $this->is_packed;
     }
-    
+
     public function canBeDeleted(): bool
     {
         // Cannot delete if any quantity has been packed
         return $this->quantity_packed === 0;
     }
 
-    public function markAsPacked(int $quantity = null): void
+    public function markAsPacked(?int $quantity = null): void
     {
         if ($this->order->status !== OrderStatus::IN_PROGRESS) {
             throw new \Exception('Cannot pack items of an order that is not in progress.');

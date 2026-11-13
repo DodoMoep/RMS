@@ -1,12 +1,20 @@
 <?php
+
 namespace App\Models\Rental;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
-class Signature extends Model {
+class Signature extends Model
+{
     use HasUuids;
-    protected $fillable=['protocol_id','role','signer_name','png_path','signed_at'];
-    protected $casts=['signed_at'=>'datetime'];
-    public function protocol(){ return $this->belongsTo(Protocol::class); }
+
+    protected $fillable = ['protocol_id', 'role', 'signer_name', 'png_path', 'signed_at'];
+
+    protected $casts = ['signed_at' => 'datetime'];
+
+    public function protocol()
+    {
+        return $this->belongsTo(Protocol::class);
+    }
 }

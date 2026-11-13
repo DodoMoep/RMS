@@ -18,14 +18,14 @@ return [
     'all_items_packed' => 'Alle Artikel verpackt!',
     'ready_to_complete' => 'Die Bestellung ist bereit zum Abschluss.',
     'complete_order' => 'Bestellung abschließen',
-    
+
     'mark_as_packed' => 'Als verpackt markieren',
     'mark_as_unpacked' => 'Als entpackt markieren',
     'complete_packing' => 'Verpackung abschließen',
-    
+
     'packed_by' => 'Verpackt von',
     'packed_at' => 'Verpackt am',
-    
+
     'messages' => [
         'item_packed' => 'Artikel verpackt.',
         'item_unpacked' => 'Artikel entpackt.',

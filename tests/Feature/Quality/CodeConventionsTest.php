@@ -1,5 +1,20 @@
 <?php
 
+use App\Models\Contact;
+use App\Models\Order\Article;
+use App\Models\Order\Order;
+use App\Models\Order\OrderHistory;
+use App\Models\Order\OrderItem;
+use App\Models\Rental\Hall;
+use App\Models\Rental\InventoryItem;
+use App\Models\Rental\Photo;
+use App\Models\Rental\Protocol;
+use App\Models\Rental\ProtocolItem;
+use App\Models\Rental\Rental;
+use App\Models\Rental\Signature;
+use App\Models\WorkInstruction;
+use App\Models\WorkInstructionCategory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Arr;
 
 /**
@@ -134,30 +149,30 @@ test('unused packages are not required', function () {
 
 test('all models with uuid keys use the framework trait', function () {
     $models = [
-        App\Models\Contact::class,
-        App\Models\WorkInstruction::class,
-        App\Models\WorkInstructionCategory::class,
-        App\Models\Order\Article::class,
-        App\Models\Order\Order::class,
-        App\Models\Order\OrderItem::class,
-        App\Models\Order\OrderHistory::class,
-        App\Models\Rental\Hall::class,
-        App\Models\Rental\InventoryItem::class,
-        App\Models\Rental\Photo::class,
-        App\Models\Rental\Protocol::class,
-        App\Models\Rental\ProtocolItem::class,
-        App\Models\Rental\Rental::class,
-        App\Models\Rental\Signature::class,
+        Contact::class,
+        WorkInstruction::class,
+        WorkInstructionCategory::class,
+        Article::class,
+        Order::class,
+        OrderItem::class,
+        OrderHistory::class,
+        Hall::class,
+        InventoryItem::class,
+        Photo::class,
+        Protocol::class,
+        ProtocolItem::class,
+        Rental::class,
+        Signature::class,
     ];
 
     foreach ($models as $model) {
-        expect(in_array(Illuminate\Database\Eloquent\Concerns\HasUuids::class, class_uses_recursive($model)))
+        expect(in_array(HasUuids::class, class_uses_recursive($model)))
             ->toBeTrue("{$model} verwendet nicht HasUuids");
     }
 });
 
 test('rental models create string uuid keys', function () {
-    $hall = App\Models\Rental\Hall::create(['name' => 'Schluesselhalle']);
+    $hall = Hall::create(['name' => 'Schluesselhalle']);
 
     expect($hall->getIncrementing())->toBeFalse()
         ->and($hall->getKeyType())->toBe('string')

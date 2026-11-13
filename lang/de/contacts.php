@@ -33,10 +33,10 @@ return [
     'address_notes_help' => 'Zusätzliche Informationen (Stockwerk, Gebäude, etc.)',
 
     'actions' => [
-        'view'       => 'Anzeigen',
-        'edit'       => 'Bearbeiten',
-        'delete'     => 'Löschen',
-        'activate'   => 'Aktivieren',
+        'view' => 'Anzeigen',
+        'edit' => 'Bearbeiten',
+        'delete' => 'Löschen',
+        'activate' => 'Aktivieren',
         'deactivate' => 'Deaktivieren',
     ],
 

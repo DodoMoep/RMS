@@ -18,14 +18,14 @@ return [
     'all_items_packed' => 'All items packed!',
     'ready_to_complete' => 'The order is ready to complete.',
     'complete_order' => 'Complete Order',
-    
+
     'mark_as_packed' => 'Mark as Packed',
     'mark_as_unpacked' => 'Mark as Unpacked',
     'complete_packing' => 'Complete Packing',
-    
+
     'packed_by' => 'Packed By',
     'packed_at' => 'Packed At',
-    
+
     'messages' => [
         'item_packed' => 'Item packed.',
         'item_unpacked' => 'Item unpacked.',

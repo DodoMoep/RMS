@@ -7,12 +7,12 @@ return [
     'create' => 'Create Item',
     'edit' => 'Edit Item',
     'delete' => 'Delete Item',
-    
+
     'name' => 'Name',
     'description' => 'Description',
     'quantity' => 'Quantity',
     'location' => 'Location',
-    
+
     'messages' => [
         'created' => 'Inventory item created.',
         'updated' => 'Inventory item updated.',

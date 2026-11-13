@@ -11,6 +11,7 @@ class ArticleController extends Controller
     public function index()
     {
         $articles = Article::latest()->paginate(20);
+
         return view('order.articles.index', compact('articles'));
     }
 
@@ -43,7 +44,7 @@ class ArticleController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'nullable|string|max:255|unique:articles,sku,' . $article->id,
+            'sku' => 'nullable|string|max:255|unique:articles,sku,'.$article->id,
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
@@ -61,7 +62,7 @@ class ArticleController extends Controller
         }
 
         $article->delete();
+
         return redirect()->route('articles.index')->with('ok', __('articles.messages.deleted'));
     }
 }
-

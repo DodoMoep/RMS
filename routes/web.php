@@ -18,7 +18,7 @@ Route::get('/anweisungen/{category:slug}', [WorkInstructionPublicController::cla
 Route::get('/anweisungen/{category:slug}/{instruction}', [WorkInstructionPublicController::class, 'serve'])
     ->name('work-instructions.serve');
 
-Route::middleware(['auth','verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -80,6 +80,5 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/profile', 'destroy')->name('destroy');
     });
 });
-
 
 require __DIR__.'/auth.php';

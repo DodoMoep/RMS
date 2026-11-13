@@ -8,7 +8,7 @@ return [
     'edit' => 'Edit Protocol',
     'view' => 'View Protocol',
     'finalize' => 'Finalize Protocol',
-    
+
     'messages' => [
         'saved' => 'Protocol saved.',
         'already_finalized' => 'The protocol is already finalized and can no longer be changed.',

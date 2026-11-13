@@ -7,12 +7,12 @@ return [
     'create' => 'Create Hall',
     'edit' => 'Edit Hall',
     'delete' => 'Delete Hall',
-    
+
     'name' => 'Name',
     'description' => 'Description',
     'capacity' => 'Capacity',
     'price_per_day' => 'Price per Day',
-    
+
     'messages' => [
         'created' => 'Hall created.',
         'updated' => 'Hall updated.',

@@ -7,10 +7,10 @@ return [
     'create' => 'Neue Berechtigung erstellen',
     'edit' => 'Berechtigung bearbeiten',
     'delete' => 'Berechtigung löschen',
-    
+
     'name' => 'Name',
     'no_permissions' => 'Keine Berechtigungen vorhanden.',
-    
+
     'messages' => [
         'created' => 'Berechtigung erstellt.',
         'updated' => 'Berechtigung aktualisiert.',

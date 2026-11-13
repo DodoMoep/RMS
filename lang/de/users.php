@@ -7,7 +7,7 @@ return [
     'create' => 'Neuen Benutzer erstellen',
     'edit' => 'Benutzer bearbeiten',
     'delete' => 'Benutzer löschen',
-    
+
     'name' => 'Name',
     'email' => 'E-Mail',
     'password' => 'Passwort',
@@ -19,7 +19,7 @@ return [
     'status_inactive' => 'Deaktiviert',
     'activate' => 'Aktivieren',
     'deactivate' => 'Deaktivieren',
-    
+
     'messages' => [
         'created' => 'User angelegt.',
         'updated' => 'User aktualisiert.',

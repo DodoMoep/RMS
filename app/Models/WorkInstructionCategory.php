@@ -22,9 +22,9 @@ class WorkInstructionCategory extends Model
         static::creating(function (self $category) {
             $base = Str::slug($category->name);
             $slug = $base;
-            $i    = 2;
+            $i = 2;
             while (static::where('slug', $slug)->exists()) {
-                $slug = $base . '-' . $i++;
+                $slug = $base.'-'.$i++;
             }
             $category->slug = $slug;
         });

@@ -20,7 +20,7 @@ class OrderObserver
         if ($order->wasChanged('status')) {
             $oldStatus = $order->getOriginal('status');
             $oldStatusValue = $oldStatus instanceof OrderStatus ? $oldStatus->value : $oldStatus;
-            
+
             $order->logHistory(
                 'status_changed',
                 "Status changed from {$oldStatusValue} to {$order->status->value}",

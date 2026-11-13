@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class OrderPermissionsSeeder extends Seeder
 {
@@ -26,15 +27,15 @@ class OrderPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create Packer role if it doesn't exist
-        $packerRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'packer']);
+        $packerRole = Role::firstOrCreate(['name' => 'packer']);
         $packerRole->syncPermissions(['orders.view', 'orders.pack', 'orders.update-status']);
 
         // Create Order Manager role
-        $managerRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'order-manager']);
+        $managerRole = Role::firstOrCreate(['name' => 'order-manager']);
         $managerRole->syncPermissions([
             'orders.view',
             'orders.create',

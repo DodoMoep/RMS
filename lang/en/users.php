@@ -7,7 +7,7 @@ return [
     'create' => 'Create User',
     'edit' => 'Edit User',
     'delete' => 'Delete User',
-    
+
     'name' => 'Name',
     'email' => 'Email',
     'password' => 'Password',
@@ -19,7 +19,7 @@ return [
     'status_inactive' => 'Deactivated',
     'activate' => 'Activate',
     'deactivate' => 'Deactivate',
-    
+
     'messages' => [
         'created' => 'User created.',
         'updated' => 'User updated.',

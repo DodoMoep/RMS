@@ -40,7 +40,7 @@ php artisan db:seed --class=ContactPermissionsSeeder
 | Migrationen | `php artisan migrate` |
 | Routen prüfen | `php artisan route:list --except-vendor` |
 | Caches leeren | `php artisan optimize:clear` (bei Rechteproblemen zusätzlich `php artisan permission:cache-reset`) |
-| Stil prüfen | `vendor/bin/pint --test` bzw. `vendor/bin/pint` zum Korrigieren |
+| Stil prüfen | `vendor/bin/pint --test` (gesamtes Projekt, muss sauber sein) bzw. `vendor/bin/pint` zum Korrigieren; Konfiguration in `pint.json` |
 | Tests | `composer test` (leert die Config, dann `php artisan test`) |
 | Dateien auf die private Disk verschieben | `php artisan files:make-private` (zuvor `--dry-run` zur Kontrolle; wiederholbar) |
 | Aktivitätslog bereinigen | `php artisan activitylog:clean` (läuft täglich über den Scheduler, siehe Betriebshinweise) |

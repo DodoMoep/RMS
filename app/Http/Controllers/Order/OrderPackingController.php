@@ -15,7 +15,7 @@ class OrderPackingController extends Controller
         $orders = Order::forPacker()
             ->withCount([
                 'items',
-                'items as packed_items_count' => fn($q) => $q->where('is_packed', true),
+                'items as packed_items_count' => fn ($q) => $q->where('is_packed', true),
             ])
             ->with(['creator', 'contact'])
             ->orderByRaw('delivery_date IS NULL, delivery_date ASC')
@@ -70,6 +70,7 @@ class OrderPackingController extends Controller
 
         try {
             $orderItem->unpack();
+
             return back()->with('ok', __('packing.messages.item_unpacked'));
         } catch (\Exception $e) {
             return back()->withErrors([$e->getMessage()]);
@@ -84,7 +85,7 @@ class OrderPackingController extends Controller
 
         try {
             $order->lockOrder();
-            
+
             return redirect()->route('orders.show', $order)
                 ->with('ok', __('packing.messages.packing_completed'));
         } catch (\Exception $e) {
@@ -92,5 +93,3 @@ class OrderPackingController extends Controller
         }
     }
 }
-
-

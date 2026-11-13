@@ -7,12 +7,12 @@ return [
     'create' => 'Create Rental',
     'edit' => 'Edit Rental',
     'delete' => 'Delete Rental',
-    
+
     'start_date' => 'Start Date',
     'end_date' => 'End Date',
     'status' => 'Status',
     'total_price' => 'Total Price',
-    
+
     'messages' => [
         'created' => 'Rental created.',
         'updated' => 'Rental updated.',

@@ -7,10 +7,10 @@ return [
     'create' => 'Create Role',
     'edit' => 'Edit Role',
     'delete' => 'Delete Role',
-    
+
     'name' => 'Name',
     'permissions' => 'Permissions',
-    
+
     'messages' => [
         'created' => 'Role created.',
         'updated' => 'Role updated.',

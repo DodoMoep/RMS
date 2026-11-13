@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ContactType;
 use App\Models\Rental\Hall;
 use App\Models\Rental\Rental;
 use Illuminate\Support\Carbon;
@@ -7,7 +8,7 @@ use Illuminate\Support\Carbon;
 function overlapPayload(Hall $hall, string $start, string $end, array $overrides = []): array
 {
     return array_merge([
-        'contact_id' => makeContact(['type' => App\Enums\ContactType::Tenant])->id,
+        'contact_id' => makeContact(['type' => ContactType::Tenant])->id,
         'hall_id' => $hall->id,
         'start' => $start,
         'end' => $end,
@@ -18,7 +19,7 @@ function overlapPayload(Hall $hall, string $start, string $end, array $overrides
 function bookedRental(Hall $hall, string $start, string $end, string $status = 'scheduled'): Rental
 {
     return Rental::create([
-        'contact_id' => makeContact(['type' => App\Enums\ContactType::Tenant])->id,
+        'contact_id' => makeContact(['type' => ContactType::Tenant])->id,
         'hall_id' => $hall->id,
         'start' => $start,
         'end' => $end,

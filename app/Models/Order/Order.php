@@ -106,7 +106,7 @@ class Order extends Model
             throw new \Exception('Cannot lock an order that is not in progress.');
         }
 
-        if (!$this->isFullyPacked()) {
+        if (! $this->isFullyPacked()) {
             throw new \Exception('Cannot lock order. Not all items are packed.');
         }
 
@@ -125,27 +125,27 @@ class Order extends Model
         // Always generate delivery note in German
         $previousLocale = app()->getLocale();
         app()->setLocale('de');
-        
+
         $pdf = Pdf::loadView('order.delivery-notes.template', ['order' => $this]);
-        
+
         // Restore previous locale
         app()->setLocale($previousLocale);
-        
+
         $filename = "delivery-note-{$this->order_number}.pdf";
         $path = "delivery-notes/{$filename}";
-        
+
         Storage::disk('local')->put($path, $pdf->output());
-        
+
         $this->update(['delivery_note_path' => $path]);
-        
+
         $this->logHistory('delivery_note_generated', 'Delivery note generated');
-        
+
         return $path;
     }
 
     public function markAsInDelivery(): void
     {
-        if (!$this->status->canTransitionTo(OrderStatus::IN_DELIVERY)) {
+        if (! $this->status->canTransitionTo(OrderStatus::IN_DELIVERY)) {
             throw new \Exception('Cannot mark an order as in delivery that is not packed.');
         }
 
@@ -172,30 +172,30 @@ class Order extends Model
     public static function ordersByStatus($period = 30)
     {
         $query = static::select('status', DB::raw('count(*) as count'));
-        
+
         if ($period !== 'all') {
-            $query->where('created_at', '>=', now()->subDays((int)$period));
+            $query->where('created_at', '>=', now()->subDays((int) $period));
         }
-        
+
         return $query->groupBy('status')->get();
     }
 
     public static function ordersOverTime(string $period = 'day', $days = 30)
     {
         // Whitelist to prevent SQL injection — $dateFormat must never be user-controlled
-        $dateFormat = match($period) {
-            'hour'  => '%Y-%m-%d %H:00',
-            'week'  => '%Y-%u',
+        $dateFormat = match ($period) {
+            'hour' => '%Y-%m-%d %H:00',
+            'week' => '%Y-%u',
             'month' => '%Y-%m',
             default => '%Y-%m-%d',   // 'day' and any other value fall back to date
         };
 
         $query = static::selectRaw('DATE_FORMAT(created_at, ?) as period, count(*) as count', [$dateFormat]);
-        
+
         if ($days !== 'all') {
-            $query->where('created_at', '>=', now()->subDays((int)$days));
+            $query->where('created_at', '>=', now()->subDays((int) $days));
         }
-        
+
         return $query->groupBy('period')
             ->orderBy('period')
             ->get();
@@ -211,9 +211,9 @@ class Order extends Model
         );
 
         // Immer ueber die Auftraege filtern, damit Positionen geloeschter Auftraege nicht zaehlen
-        $query->whereHas('order', function($q) use ($period) {
+        $query->whereHas('order', function ($q) use ($period) {
             if ($period !== 'all') {
-                $q->where('created_at', '>=', now()->subDays((int)$period));
+                $q->where('created_at', '>=', now()->subDays((int) $period));
             }
         });
 
@@ -230,14 +230,14 @@ class Order extends Model
             'users.name as packer_name',
             DB::raw('COUNT(*) as orders_packed')
         )
-        ->join('users', 'orders.packed_by', '=', 'users.id')
-        ->whereNotNull('packed_by')
-        ->whereIn('status', ['packed', 'in_delivery', 'delivered']);
-        
+            ->join('users', 'orders.packed_by', '=', 'users.id')
+            ->whereNotNull('packed_by')
+            ->whereIn('status', ['packed', 'in_delivery', 'delivered']);
+
         if ($period !== 'all') {
-            $query->where('orders.created_at', '>=', now()->subDays((int)$period));
+            $query->where('orders.created_at', '>=', now()->subDays((int) $period));
         }
-        
+
         return $query->groupBy('packed_by', 'users.name')->get();
     }
 
