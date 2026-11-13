@@ -4,7 +4,7 @@
 
 | Schicht | Technik | Quelle |
 |---|---|---|
-| Framework | Laravel 12 (installiert: 12.27.0), PHP ^8.2 (lokal 8.4) | `composer.json` |
+| Framework | Laravel 12 (installiert: 12.70.2), PHP ^8.2 (lokal 8.4; die Auflösung der Abhängigkeiten ist auf PHP 8.2.0 festgelegt, siehe `config.platform` in `composer.json`) | `composer.json` |
 | Datenbank | MariaDB (`DB_CONNECTION=mariadb`); Tests: SQLite in-memory | `.env.example`, `phpunit.xml` |
 | Authentifizierung | Laravel Breeze (nur Login, Passwort-Reset, E-Mail-Verifizierung; keine Registrierung) | `routes/auth.php` |
 | Autorisierung | `spatie/laravel-permission` ^6.21 (Rollen und Rechte, Guard `web`) | `config/permission.php` |

@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, M1 bis M11, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (S2, S4, S5, S6, T1, T2).
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, S6, M1 bis M11, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (S2, S4, S5, T1, T2).
 
 Nachweis:
 
@@ -25,7 +25,7 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | S3 | Behoben | Benutzer löschen entfernt per Kaskade deren Aufträge | Code |
 | S4 | Niedrig | Lokale Werkzeugeinstellungen im Repository | Code |
 | S5 | Niedrig | Externes Skript ohne Integritätsprüfung | Code |
-| S6 | Hoch | Abhängigkeiten mit bekannten Schwachstellen (55 Hinweise in 15 Paketen) | Skript (`composer audit`) |
+| S6 | Behoben | Abhängigkeiten mit bekannten Schwachstellen (55 Hinweise in 15 Composer-Paketen, 12 in npm) | Skript (`composer audit`, `npm audit`) |
 | M1 | Behoben | Packen ohne Statusprüfung des Auftrags | Code |
 | M2 | Behoben | Lieferschein-Druck umgeht die Statusübergänge | Code |
 | M3 | Behoben | Alpine.js wird verwendet, aber nicht geladen | Code |
@@ -143,10 +143,12 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ### S6 Abhängigkeiten mit bekannten Schwachstellen
 
-- Fundstelle: `composer.lock` (installiert u. a. `laravel/framework` 12.27.0, Stand der Sperrdatei September 2025)
-- Nachweis: `composer audit` meldet 55 Sicherheitshinweise in 15 Paketen: `league/commonmark` (14), `guzzlehttp/guzzle` (9), `dompdf/dompdf` (6), `laravel/framework` (5), `guzzlehttp/psr7` (4), `symfony/yaml` (4), `symfony/http-foundation` (3), `symfony/mime` (2), `symfony/routing` (2) sowie je einer in `league/flysystem`, `phpunit/phpunit`, `psy/psysh`, `symfony/mailer`, `symfony/polyfill-intl-idn` und `symfony/process`.
-- Auswirkung: Nicht untersucht, welche Hinweise die Anwendung tatsächlich betreffen. Besonders relevant sind `laravel/framework` und `symfony/http-foundation` (Anfragenverarbeitung) sowie `dompdf/dompdf` (erzeugt PDFs aus Benutzerdaten; Remote-Zugriff ist in `config/dompdf.php` abgeschaltet).
-- Korrektur: Abhängigkeiten innerhalb der erlaubten Versionsbereiche aktualisieren (`composer update`), danach `composer audit` und den vollständigen Testlauf wiederholen; verbleibende Hinweise einzeln bewerten. Das ist ein eigenes Vorhaben und nicht Teil der Bereinigung technischer Schulden. Status: offen.
+- Fundstelle: `composer.lock` (Stand September 2025, u. a. `laravel/framework` 12.27.0) und `package-lock.json`
+- Nachweis vorher: `composer audit` meldete 55 Sicherheitshinweise in 15 Paketen (`league/commonmark` 14, `guzzlehttp/guzzle` 9, `dompdf/dompdf` 6, `laravel/framework` 5, `guzzlehttp/psr7` 4, `symfony/yaml` 4, `symfony/http-foundation` 3, `symfony/mime` 2, `symfony/routing` 2, dazu je einer in `league/flysystem`, `phpunit/phpunit`, `psy/psysh`, `symfony/mailer`, `symfony/polyfill-intl-idn`, `symfony/process`). `npm audit` meldete 12 Hinweise (1 kritisch in `shell-quote`, 10 hoch, u. a. `vite`, `axios`, `rollup`, `postcss`), alle in Build-Werkzeugen und Entwicklungsabhängigkeiten.
+- Status: behoben. `composer update` innerhalb der erlaubten Versionsbereiche (101 von 141 Paketen aktualisiert, `symfony/polyfill-time` neu, u. a. `laravel/framework` 12.27.0 auf 12.70.2, `dompdf/dompdf` 3.1.0 auf 3.1.6, `symfony/*` auf 7.4.x, `guzzlehttp/guzzle` auf 7.16.1, `league/commonmark` auf 2.10.4) und `npm audit fix` ohne Hauptversionssprung. Danach melden `composer audit` und `npm audit` keine Hinweise mehr. Alle 228 Tests laufen weiter (darunter die PDF-Erzeugung für Lieferschein und Protokoll), das Frontend-Bundle wurde neu gebaut und enthält Alpine, CoreUI und die `x-cloak`-Regel.
+- Entscheidung PHP-Version: Ein ungebundenes Update hat die effektive PHP-Mindestversion auf 8.4.1 angehoben (sechs Symfony-Pakete auf Version 8, `laravel/pint` auf 8.3), obwohl `composer.json` `^8.2` verspricht und die produktive PHP-Version nicht bekannt ist. Deshalb steht in `composer.json` `config.platform.php = 8.2.0`; Symfony bleibt auf 7.4, das die Sicherheitskorrekturen ebenfalls enthält, und die Sperrdatei bleibt mit PHP 8.2 kompatibel (`composer why-not php 8.2.0` meldet keinen Konflikt). Läuft die Produktion sicher auf PHP 8.4, kann diese Festlegung entfallen.
+- Bewusst nicht eingespielt: neue Hauptversionen (Laravel 13, Pest 5, `spatie/laravel-activitylog` 5, `spatie/laravel-permission` 8, `intervention/image` 4, `laravel/tinker` 3, `barryvdh/laravel-debugbar` 4). Das sind eigene Vorhaben mit Migrationsschritten. Der Audit meldet für die eingesetzten Versionen nichts.
+- Hinweis: Die Prüfung hat kein Wissen über künftige Hinweise. `composer audit` und `npm audit` gehören vor jedes Release.
 
 ## M Fachliche und technische Mängel
 
@@ -175,9 +177,9 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## Empfohlene Reihenfolge
 
-1. K1 bis K7, S1, S3, M1 bis M11, T3, T5 und T6 sind erledigt, T4 teilweise.
+1. K1 bis K7, S1, S3, S6, M1 bis M11, T3, T5 und T6 sind erledigt, T4 teilweise.
 2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Das Deaktivieren von Benutzern ist umgesetzt; ausgeschiedene Mitarbeiter sollten deaktiviert statt gelöscht werden.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. Vor dem Produktivbetrieb: Zeitzone der Datenbank prüfen (M8) und den Cronjob für `schedule:run` einrichten (M10).
 5. T2 (Stilangleichung mit Pint) als eigene, rein formale Änderung nach dem Merge des gesamten Stapels, damit der Diff lesbar bleibt; danach `pint --test` zur Pflicht machen. T1 laufend: fehlende Tests für Auftragsanlage und -bearbeitung.
-6. S6 (Abhängigkeiten aktualisieren) vor dem Produktivbetrieb.
+6. S6 ist erledigt; `composer audit` und `npm audit` vor jedem Release wiederholen.
