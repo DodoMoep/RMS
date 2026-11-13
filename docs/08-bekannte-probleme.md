@@ -1,6 +1,6 @@
 # 08 Bekannte Probleme und Risiken
 
-Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1, S3, S6, M1 bis M11, T2, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (S2, S4, S5, T1).
+Stand: Commit `6787310`. Jeder Befund nennt Fundstelle, Auswirkung, Nachweis und einen Korrekturvorschlag. K1 bis K7, S1 bis S6, M1 bis M11, T2, T3, T5 und T6 sind behoben, T4 teilweise; alle übrigen Punkte sind offen (T1).
 
 Nachweis:
 
@@ -21,10 +21,10 @@ Kategorien: **K** Funktionsfehler, **S** Sicherheit und Datenschutz, **M** Fachl
 | K6 | Behoben | Auftrag löschen schreibt Historie nach dem Löschen | Code |
 | K7 | Behoben | Nummernvergabe nicht atomar | Code |
 | S1 | Behoben | PDFs, Unterschriften, Fotos öffentlich abrufbar | Code |
-| S2 | Mittel | Fehlermeldungen aus Ausnahmen werden Benutzern angezeigt | Code |
+| S2 | Behoben | Fehlermeldungen aus Ausnahmen werden Benutzern angezeigt | Code |
 | S3 | Behoben | Benutzer löschen entfernt per Kaskade deren Aufträge | Code |
-| S4 | Niedrig | Lokale Werkzeugeinstellungen im Repository | Code |
-| S5 | Niedrig | Externes Skript ohne Integritätsprüfung | Code |
+| S4 | Behoben | Lokale Werkzeugeinstellungen im Repository | Code |
+| S5 | Behoben | Externes Skript ohne Integritätsprüfung | Code |
 | S6 | Behoben | Abhängigkeiten mit bekannten Schwachstellen (55 Hinweise in 15 Composer-Paketen, 12 in npm) | Skript (`composer audit`, `npm audit`) |
 | M1 | Behoben | Packen ohne Statusprüfung des Auftrags | Code |
 | M2 | Behoben | Lieferschein-Druck umgeht die Statusübergänge | Code |
@@ -121,6 +121,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 - Fundstelle: `DeliveryNoteController::generate`, `OrderPackingController` (`packItem`, `unpackItem`, `completeOrder`): `withErrors([$e->getMessage()])`
 - Auswirkung: Interne Fehlertexte (Datenbank, Dateisystem) können an Benutzer gelangen. Dieselben Methoden werfen bewusst englische Fachtexte (`Cannot pack more than remaining quantity.`), die so ungeprüft und unübersetzt angezeigt werden.
 - Korrektur: Eigene Fachausnahme oder Rückgabecodes mit Übersetzung; sonstige Ausnahmen loggen und allgemeine Meldung zeigen (wie in `ProtocolController`).
+- Status: behoben. Neue Klasse `App\Exceptions\OrderWorkflowException` (erweitert `DomainException`) trägt einen Übersetzungsschlüssel samt Parametern und liefert den Text über `userMessage()`; `getMessage()` liefert den Schlüssel und dient nur dem Log. `Order::lockOrder`, `Order::markAsInDelivery`, `OrderItem::markAsPacked` und `OrderItem::unpack` werfen sie statt `\Exception` mit englischem Text. Die Controller (`OrderPackingController`, `DeliveryNoteController`) zeigen bei dieser Ausnahme den übersetzten Text (de und en), bei jeder anderen Ausnahme schreiben sie `Log::error(..., ['exception' => $e])` und zeigen nur `common.messages.unexpected_error`. Neue Schlüssel: `packing.messages.exceeds_remaining`, `packing.messages.not_all_items_packed`, `common.messages.unexpected_error`. Tests: `tests/Feature/Orders/ErrorHandlingTest.php`; zwei Wächter in `CodeConventionsTest` (kein `getMessage()` in `withErrors(` oder `->with(` der Controller, kein `throw new \Exception(` in den Models).
 
 ### S3 Kaskade beim Löschen von Benutzern
 
@@ -134,12 +135,14 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 - Fundstelle: `.claude/settings.local.json` ist versioniert (seit Commit `6787310`), enthält lokale Pfade und erlaubte Befehle (`E:\00_Git\RMS`, `php artisan migrate`, `tinker`, `rm`)
 - Auswirkung: Kein Geheimnis gefunden, aber lokale Freigaben werden mit dem Team geteilt.
 - Korrektur: Datei aus dem Index entfernen und in `.gitignore` aufnehmen.
+- Status: behoben. Die Datei ist aus dem Index entfernt (`git rm --cached`, lokal bleibt sie erhalten) und `/.claude/settings.local.json` steht in `.gitignore`; ein gemeinsames `.claude/settings.json` bliebe weiter möglich. Der Verlauf wurde nicht umgeschrieben: Der Inhalt enthielt nur Befehlsfreigaben und lokale Pfade, keine Geheimnisse. Test: `CodeConventionsTest`.
 
 ### S5 CDN-Skript ohne Integritätsprüfung
 
 - Fundstelle: `rental/protocol/form.blade.php`, `signature_pad@4.1.7` von `cdn.jsdelivr.net`
 - Auswirkung: Die Seite erfasst rechtsverbindliche Unterschriften; ein manipuliertes CDN-Skript könnte diese abgreifen. Zusätzlich Abhängigkeit von externer Erreichbarkeit.
 - Korrektur: Paket per npm einbinden und über Vite ausliefern, oder zumindest `integrity` und `crossorigin` setzen.
+- Status: behoben. `signature_pad` (`^4.2.0`) ist eine npm-Abhängigkeit und wird über Vite im eigenen Bundle ausgeliefert; die Logik steht im Modul `resources/js/signature.js` (von `app.js` importiert). Das Protokollformular enthält kein Inline-Skript und keinen externen Skript-Tag mehr: Das Formular trägt `data-signature-form` und den übersetzten Hinweistext in `data-please-sign`. Hintergrund: Vite-Skripte sind Module und laufen erst nach dem Parsen, ein Inline-Skript fände `SignaturePad` nicht. Im Browser gegen eine Wegwerf-Datenbank geprüft: keine Anfrage an fremde Hosts, leere Unterschrift zeigt den Hinweis und sendet nicht, eine gezeichnete Unterschrift wird als PNG auf der privaten Disk gespeichert. Tests: `FrontendConsistencyTest` (kein Skript von fremdem Host in den Views, Modul und Abhängigkeit vorhanden), `ProtocolTest`.
 
 ### S6 Abhängigkeiten mit bekannten Schwachstellen
 
@@ -168,7 +171,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## T Technische Schulden
 
-- **T1 Tests:** Die Suite ist vollständig grün (228 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
+- **T1 Tests:** Die Suite ist vollständig grün (248 Tests; die früher roten Breeze-Tests für Registrierung und Startseite sind durch passende Tests ersetzt). Auswertungsabfragen laufen nicht unter SQLite. Teilweise erledigt: Tests zu K1 bis K5 und zu Berechtigungen der betroffenen Bereiche existieren. Offen: Auftragsanlage und -bearbeitung, Statuswechsel über `updateStatus`, Vermietungen, Auswertung, Rollen- und Rechteverwaltung.
 - **T2 Stil:** Behoben. `vendor/bin/pint --test` meldete für das gesamte Projekt (`app`, `bootstrap`, `config`, `database`, `lang`, `routes`, `tests`) 101 von 292 PHP-Dateien; die frühere Zahl 54 von 118 galt nur für vier Verzeichnisse und eine ältere Pint-Version. Formatiert wurden 86 Dateien, die 15 alten Migrationen sind über `pint.json` ausgenommen (bestehende Migrationen werden nicht angefasst). Inhaltlich geprüft wurde ohne Tests: Syntaxprüfung aller geänderten Dateien, Anwendungsstart, gleiche Routenzahl (113), unveränderte Anzahl der Umlaute und Zeilenenden, sowie ein Vergleich der Namen, Zeichenketten und Zahlen jeder Datei vor und nach der Formatierung. Dabei zeigte sich genau eine inhaltliche Änderung: `OrderItem::markAsPacked(int $quantity = null)` wurde zu `?int $quantity = null` (in PHP 8.4 veraltet). Ein vollständiger Testlauf auf diesem Stand steht noch aus und ist vor dem Merge empfohlen.
 - **T3 Toter Code:** Behoben. Entfernt wurden `LocaleController`, `RegisteredUserController` (beide nicht geroutet), die ungenutzten Breeze-Komponenten `application-logo`, `danger-button`, `dropdown`, `dropdown-link`, `modal` und `responsive-nav-link`, das ungenutzte Recht `app.settings` im Seeder sowie die Pakete `spatie/laravel-medialibrary` und `tuytoosh/active` (`composer remove`; die Treffer für "active" waren der eigene Scope `Article::active()`). Rest: Der Menüpunkt "Berechtigungen" in der Navigation ist weiter auskommentiert, die Route bleibt erreichbar. `tests/Feature/Quality/CodeConventionsTest.php` verhindert die Rückkehr.
 - **T4 Übersetzungen:** Teilweise behoben. Alle benutzersichtbaren Meldungen der Controller (Erfolg, Fehler, `abort`) laufen jetzt über `__()` mit Schlüsseln unter `<bereich>.messages.*` in `lang/de` und `lang/en`; der Wortlaut für Deutsch blieb unverändert, die englischen Texte sind neu. Die zuvor ungenutzten Schlüssel `created`/`updated`/`deleted` mit abweichender Wortwahl (z. B. "Saal" statt "Halle") wurden durch die tatsächlich angezeigten Texte ersetzt. Offen: Feste deutsche Texte in den Views der Vermietung (Hallen, Inventar, Protokolle, Vermietungen), die englischen `order_history`-Beschreibungen sind fest, und die Benennung "Saal"/"Säle" in den Sprachdateien weicht von "Halle" in den Meldungen ab. Zwei Meldungen in `ProtocolController` (zu viele Fotos, ungültige Unterschrift) werden als Ausnahme geworfen und vom Controller als allgemeiner Fehler ausgegeben; der genaue Grund erreicht den Benutzer nicht (nur im Log).
@@ -177,7 +180,7 @@ Ursache K1 bis K5 (K6 und K7 haben eigene Ursachen): Die Umstellung von `Tenant`
 
 ## Empfohlene Reihenfolge
 
-1. K1 bis K7, S1, S3, S6, M1 bis M11, T2, T3, T5 und T6 sind erledigt, T4 teilweise.
+1. K1 bis K7, S1 bis S6, M1 bis M11, T2, T3, T5 und T6 sind erledigt, T4 teilweise.
 2. S1 (jetzt einschließlich der Arbeitsanweisungen) und S3 sind erledigt (auf bestehenden Installationen `php artisan files:make-private` und `php artisan migrate` ausführen). Das Deaktivieren von Benutzern ist umgesetzt; ausgeschiedene Mitarbeiter sollten deaktiviert statt gelöscht werden.
 3. Einen Parallel-Test der Nummernvergabe auf MariaDB durchführen (K7). M3 und M7 sind erledigt.
 4. Vor dem Produktivbetrieb: Zeitzone der Datenbank prüfen (M8) und den Cronjob für `schedule:run` einrichten (M10).

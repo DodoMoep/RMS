@@ -31,6 +31,8 @@ return [
         'item_unpacked' => 'Item unpacked.',
         'packing_completed' => 'Order completed and locked.',
         'all_items_packed' => 'All items are packed',
+        'exceeds_remaining' => 'You cannot pack more than the remaining quantity.',
+        'not_all_items_packed' => 'The order can only be completed once all items have been packed.',
         'order_not_packable' => 'This order is not in progress. Packing, unpacking and completing are only possible for orders in progress.',
     ],
 ];

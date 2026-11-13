@@ -178,3 +178,37 @@ test('rental models create string uuid keys', function () {
         ->and($hall->getKeyType())->toBe('string')
         ->and($hall->id)->toMatch('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/');
 });
+
+// -------------------------------------------------- Keine Rohtexte von Ausnahmen (S2)
+
+test('controllers never show exception messages to users', function () {
+    $offenders = [];
+
+    foreach (phpFilesIn(app_path('Http/Controllers')) as $file) {
+        if (preg_match_all('/(?:withErrors|->with)\([^;]*getMessage\(\)/', file_get_contents($file), $matches)) {
+            foreach ($matches[0] as $match) {
+                $offenders[] = relativePath($file).': '.$match;
+            }
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
+
+test('the models only throw the workflow exception for business errors', function () {
+    $offenders = [];
+
+    foreach (phpFilesIn(app_path('Models')) as $file) {
+        if (preg_match('/throw new \\\\Exception\(/', file_get_contents($file))) {
+            $offenders[] = relativePath($file);
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
+
+// -------------------------------------------- Lokale Werkzeugeinstellungen (S4)
+
+test('local tool settings are ignored by git', function () {
+    expect(file_get_contents(base_path('.gitignore')))->toContain('/.claude/settings.local.json');
+});

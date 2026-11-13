@@ -76,6 +76,7 @@ return [
         'created' => 'Successfully created',
         'min_one_item' => 'At least one item must be present.',
         'please_sign' => 'Please sign.',
+        'unexpected_error' => 'An unexpected error occurred. Please try again or contact an administrator.',
         'please_select' => 'Please select…',
     ],
 

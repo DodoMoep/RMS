@@ -77,6 +77,7 @@ return [
         'min_one_item' => 'Mindestens ein Artikel muss vorhanden sein.',
         'please_sign' => 'Bitte unterschreiben.',
         'please_select' => 'Bitte wählen…',
+        'unexpected_error' => 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an einen Administrator.',
     ],
 
     'validation' => [
