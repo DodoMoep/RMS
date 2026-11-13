@@ -47,7 +47,7 @@ Scopes: `active()`, `tenants()` (tenant, both), `customers()` (customer, both). 
 
 ### Auftragsverwaltung
 
-**`articles`** (`Order\Article`, `HasUuids`, `SoftDeletes`): `name`, `sku` (unique, null), `description`, `price` decimal(10,2) null, `is_active`. Soft Delete seit Migration `2026_04_11_000002`.
+**`articles`** (`Order\Article`, `HasUuids`, `SoftDeletes`): `name`, `sku` (unique, null), `description`, `price` decimal(10,2) null, `is_active`. Soft Delete seit Migration `2026_04_11_000002`. Beim weichen Löschen setzt `Article::booted` die `sku` auf `null`, damit die Nummer wieder vergeben werden kann (Befund M13); die Nummer bleibt in `order_items.article_sku` erhalten.
 
 **`orders`** (`Order\Order`, `HasUuids`)
 
@@ -143,5 +143,6 @@ Vergabe: `App\Services\NumberSequence::next()` zählt den Eintrag in `number_seq
 | 2026-04-12 `200001`-`200003` | Arbeitsanweisungen, Recht `work-instructions.manage` |
 | 2026-10-23 `000001`-`000003` | Soft Delete für Aufträge, Tabelle `number_sequences`, `orders.created_by` auf `nullOnDelete` |
 | 2026-10-29 `000001` | `users.is_active` (Benutzer deaktivieren), bestehende Benutzer bleiben aktiv |
+| 2026-11-13 `000001` | Datenmigration: Artikelnummern bereits gelöschter Artikel werden freigegeben (`down()` leer) |
 
 Hinweise zur Kontakt-Migration: Die Kopie der Kunden setzt voraus, dass keine UUID zwischen `tenants` und `customers` kollidiert (im Code nur als Kommentar vermerkt, nicht geprüft). Migration `000006` ist mit einer Exception als irreversibel markiert; vor dem Einspielen in Produktion ist ein Backup zwingend.

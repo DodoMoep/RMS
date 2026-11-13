@@ -17,7 +17,7 @@ Controller: `Contact\ContactController`, Präfix `/contacts`, Rechte `contacts.*
 
 ### Aufträge (`Order\OrderController`, Präfix `/orders`)
 
-- Anlegen (`orders.create`): Kunde wählen (`existing`, nur aktive Kunden) oder einen Einmalkunden erfassen (`individual`; es wird ein neuer `Contact` vom Typ `customer` angelegt). Lieferart `delivery` oder `pickup`, Lieferdatum (muss nach heute liegen), Positionen aus aktiven Artikeln mit Menge und Notiz. Bei `delivery` muss der Kunde Straße, PLZ und Ort haben, sonst wird abgelehnt.
+- Anlegen (`orders.create`): Kunde wählen (`existing`, das Formular bietet nur aktive Kunden an; die Prüfung akzeptiert nur Kontakte vom Typ `customer` oder `both`, ein reiner Mieter wird abgelehnt) oder einen Einmalkunden erfassen (`individual`; es wird ein neuer `Contact` vom Typ `customer` angelegt). Lieferart `delivery` oder `pickup`, Lieferdatum (muss nach heute liegen), Positionen aus aktiven Artikeln mit Menge und Notiz. Bei `delivery` muss der Kunde Straße, PLZ und Ort haben, sonst wird abgelehnt.
 - Positionen speichern einen Schnappschuss von Name, SKU und Preis des Artikels. Preisänderungen am Artikel wirken nicht auf bestehende Aufträge.
 - Bearbeiten (`orders.edit`): nur in Status `new` und `in_progress`. Das Formular sendet `expected_status`; weicht der aktuelle Status ab, wird mit einer Meldung zurückgeleitet (einfache Konfliktprüfung). Gepackte oder teilgepackte Positionen können weder geändert noch entfernt werden. Das Lieferdatum darf beim Ändern auch heute sein (`after_or_equal`), beim Anlegen nicht (`after`).
 - Löschen (`orders.delete`): nur in `new` und `in_progress`. Der Auftrag wird weich gelöscht (Soft Delete): Er verschwindet aus Listen, Detailseiten (404), Packübersicht und Auswertungen, bleibt aber mit Positionen und vollständiger Historie in der Datenbank. Der Observer schreibt das Ereignis `order_deleted`. Die Auftragsnummer bleibt belegt. Positionen gelöschter Aufträge lassen sich nicht mehr packen oder entpacken (404). Eine Wiederherstellung ist in der Oberfläche nicht vorgesehen (nur per `Order::withTrashed()->find(...)->restore()`).
@@ -26,7 +26,7 @@ Controller: `Contact\ContactController`, Präfix `/contacts`, Rechte `contacts.*
 
 ### Artikel (`Order\ArticleController`, Präfix `/articles`)
 
-CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft Delete) ist gesperrt, solange Auftragspositionen auf den Artikel verweisen. Alle Artikelrouten sind mit `orders.create` geschützt, es gibt keine eigenen Artikelrechte.
+CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft Delete) ist gesperrt, solange Auftragspositionen auf den Artikel verweisen. Beim Löschen wird die SKU freigegeben (`Article::booted` setzt sie auf `null`), sie lässt sich danach für einen neuen Artikel verwenden; Auftragspositionen behalten sie als Schnappschuss. Alle Artikelrouten sind mit `orders.create` geschützt, es gibt keine eigenen Artikelrechte.
 
 ### Packen (`Order\OrderPackingController`, Präfix `/packing`, Recht `orders.pack`)
 

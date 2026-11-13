@@ -198,6 +198,25 @@ test('an individual customer needs a name', function () {
     expect(Order::count())->toBe(0);
 });
 
+test('an existing order contact must be a customer or both', function (ContactType $type, bool $accepted) {
+    $contact = makeContact(['type' => $type, 'name' => 'Typ '.$type->value]);
+
+    $response = $this->actingAs($this->user)
+        ->post(route('orders.store'), orderPayload(['contact_id' => $contact->id]));
+
+    if ($accepted) {
+        $response->assertSessionHasNoErrors();
+    } else {
+        $response->assertSessionHasErrors('contact_id');
+    }
+
+    expect(Order::where('contact_id', $contact->id)->count())->toBe($accepted ? 1 : 0);
+})->with([
+    'customer' => [ContactType::Customer, true],
+    'both' => [ContactType::Both, true],
+    'tenant only' => [ContactType::Tenant, false],
+]);
+
 test('an existing customer needs a contact id', function () {
     $this->actingAs($this->user)
         ->post(route('orders.store'), orderPayload(['contact_id' => null]))

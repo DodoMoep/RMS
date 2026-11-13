@@ -9,6 +9,7 @@ use App\Models\Contact;
 use App\Models\Order\Article;
 use App\Models\Order\Order;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -54,7 +55,12 @@ class OrderController extends Controller
     {
         $rules = [
             'customer_type' => 'required|in:existing,individual',
-            'contact_id' => 'required_if:customer_type,existing|nullable|exists:contacts,id',
+            // Nur Kunden (und "beides"), wie Contact::scopeCustomers und das Formular
+            'contact_id' => [
+                'required_if:customer_type,existing',
+                'nullable',
+                Rule::exists('contacts', 'id')->whereIn('type', [ContactType::Customer->value, ContactType::Both->value]),
+            ],
             'customer_name' => 'required_if:customer_type,individual|nullable|string|max:255',
             'contact_person_name' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email',

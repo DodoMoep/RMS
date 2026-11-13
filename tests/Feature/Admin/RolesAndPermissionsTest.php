@@ -251,6 +251,72 @@ test('permissions of another guard cannot be opened or changed', function () {
     expect($apiPermission->refresh()->name)->toBe('api.recht');
 });
 
+// ------------------------------------- Anlegen und Aendern getrennt berechtigt (M15)
+
+test('creating a role needs only the add permission', function () {
+    $creator = userWithPermissions(['role.add']);
+
+    $this->actingAs($creator)
+        ->post(route('roles.store'), ['name' => 'nur-anlegen'])
+        ->assertRedirect(route('roles.index'));
+
+    expect(Role::where('name', 'nur-anlegen')->exists())->toBeTrue();
+});
+
+test('changing a role needs the edit permission and not the add permission', function () {
+    $role = Role::findOrCreate('wird-geaendert', 'web');
+
+    $this->actingAs(userWithPermissions(['role.add']))
+        ->put(route('roles.update', $role), ['name' => 'geaendert'])
+        ->assertForbidden();
+
+    $this->actingAs(userWithPermissions(['role.edit']))
+        ->put(route('roles.update', $role), ['name' => 'geaendert'])
+        ->assertRedirect(route('roles.index'));
+
+    expect($role->refresh()->name)->toBe('geaendert');
+});
+
+test('creating a role is not possible with the edit permission alone', function () {
+    $this->actingAs(userWithPermissions(['role.edit']))
+        ->post(route('roles.store'), ['name' => 'nur-bearbeiten'])
+        ->assertForbidden();
+
+    expect(Role::where('name', 'nur-bearbeiten')->exists())->toBeFalse();
+});
+
+test('creating a permission needs only the add permission', function () {
+    $creator = userWithPermissions(['perm.add']);
+
+    $this->actingAs($creator)
+        ->post(route('permissions.store'), ['name' => 'nur.anlegen'])
+        ->assertRedirect(route('permissions.index'));
+
+    expect(Permission::where('name', 'nur.anlegen')->exists())->toBeTrue();
+});
+
+test('changing a permission needs the edit permission and not the add permission', function () {
+    $permission = Permission::findOrCreate('wird.geaendert', 'web');
+
+    $this->actingAs(userWithPermissions(['perm.add']))
+        ->put(route('permissions.update', $permission), ['name' => 'geaendert.recht'])
+        ->assertForbidden();
+
+    $this->actingAs(userWithPermissions(['perm.edit']))
+        ->put(route('permissions.update', $permission), ['name' => 'geaendert.recht'])
+        ->assertRedirect(route('permissions.index'));
+
+    expect($permission->refresh()->name)->toBe('geaendert.recht');
+});
+
+test('creating a permission is not possible with the edit permission alone', function () {
+    $this->actingAs(userWithPermissions(['perm.edit']))
+        ->post(route('permissions.store'), ['name' => 'nur.bearbeiten'])
+        ->assertForbidden();
+
+    expect(Permission::where('name', 'nur.bearbeiten')->exists())->toBeFalse();
+});
+
 test('every permission action needs its own permission', function () {
     $permission = Permission::findOrCreate('geschuetztes.recht', 'web');
     $viewer = userWithPermissions(['perm.list']);

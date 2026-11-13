@@ -16,7 +16,7 @@ Namensschema: `<bereich>.<aktion>`. Ausnahme: Die Administration nutzt `user.`, 
 |---|---|---|
 | Benutzer | `user.list`, `user.add`, `user.edit`, `user.delete` | `/admin/users`; `user.edit` gilt auch für Aktivieren und Deaktivieren (`users.toggle-status`); `user.list` schützt zusätzlich das Aktivitätslog |
 | Rollen | `role.list`, `role.add`, `role.edit`, `role.delete` | `/admin/roles` |
-| Berechtigungen | `perm.list`, `perm.add`, `perm.edit`, `perm.delete` | `/admin/permissions`; Form Requests prüfen zusätzlich `perm.edit` bzw. `role.edit` |
+| Berechtigungen | `perm.list`, `perm.add`, `perm.edit`, `perm.delete` | `/admin/permissions`; die Form Requests prüfen beim Anlegen `role.add` bzw. `perm.add`, beim Ändern `role.edit` bzw. `perm.edit` (früher beim Anlegen ebenfalls das Edit-Recht, Befund M15) |
 | Kontakte | `contacts.view`, `contacts.create`, `contacts.edit`, `contacts.delete`, `contacts.toggle-status` | `/contacts` |
 | Aufträge | `orders.view`, `orders.create`, `orders.edit`, `orders.delete`, `orders.update-status`, `orders.view-history`, `orders.pack`, `orders.print` | `/orders`, `/packing`, `/delivery-notes`; `orders.create` schützt auch `/articles` |
 | Auswertung | `analytics.view`, `analytics.export` | `/analytics` |
