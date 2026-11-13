@@ -70,3 +70,32 @@ test('the contact form contains the alpine state for the type selection', functi
         ->assertSee('x-data=', false)
         ->assertSee('x-model="contactType"', false);
 });
+
+test('no view loads scripts from foreign hosts', function () {
+    $offenders = collect(bladeViews())
+        ->filter(fn ($path) => preg_match('/<script[^>]+src=["\']https?:\/\//i', file_get_contents($path)))
+        ->map(fn ($path) => str_replace(base_path().DIRECTORY_SEPARATOR, '', $path))
+        ->values()
+        ->all();
+
+    expect($offenders)->toBe([]);
+});
+
+test('the signature pad is bundled with vite instead of loaded from a cdn', function () {
+    $app = file_get_contents(resource_path('js/app.js'));
+    $signature = file_get_contents(resource_path('js/signature.js'));
+    $dependencies = json_decode(file_get_contents(base_path('package.json')), true)['dependencies'];
+
+    expect($app)->toContain("import './signature.js'")
+        ->and($signature)->toContain("from 'signature_pad'")
+        ->and($dependencies)->toHaveKey('signature_pad');
+});
+
+test('the protocol form uses data attributes and has no inline script', function () {
+    $form = file_get_contents(resource_path('views/rental/protocol/form.blade.php'));
+
+    expect($form)->toContain('data-signature-form')
+        ->toContain('data-please-sign')
+        ->not->toContain('<script')
+        ->not->toContain('onsubmit=');
+});

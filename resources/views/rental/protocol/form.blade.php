@@ -82,7 +82,7 @@
                 <div class="card-body">
                     <h6 class="mb-3">Unterschrift</h6>
                     @if(!$protocol->pdf_path)
-                    <form method="post" action="{{ route('protocol.sign',$protocol) }}" onsubmit="return beforeSubmit()">
+                    <form method="post" action="{{ route('protocol.sign',$protocol) }}" data-signature-form data-please-sign="{{ __('common.messages.please_sign') }}">
                         @csrf
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3">
@@ -118,29 +118,4 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-        <script>
-            const canvas = document.getElementById('sig');
-            const pad = new SignaturePad(canvas,{minWidth:1,maxWidth:2.5});
-            const resize = () => {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                const rect = canvas.getBoundingClientRect();
-                canvas.width = rect.width * ratio;
-                canvas.height = 240 * ratio;
-                canvas.getContext('2d').scale(ratio, ratio);
-                pad.clear();
-            };
-            window.addEventListener('resize', resize);
-            resize();
-
-            document.getElementById('clear').onclick = () => pad.clear();
-
-            function beforeSubmit(){
-                if (pad.isEmpty()){ alert('{{ __('common.messages.please_sign') }}'); return false; }
-                document.getElementById('signature_data').value = pad.toDataURL('image/png');
-                return true;
-            }
-        </script>
-    @endpush
 </x-app-layout>

@@ -132,3 +132,19 @@ test('protocol routes are not accessible without permission', function () {
         ->get(route('protocols.index'))
         ->assertForbidden();
 });
+
+test('the protocol form carries the signature attributes and the translated hint', function (string $locale, string $hint) {
+    $user = userWithPermissions(['protocols.view', 'protocols.create']);
+    $protocol = makeProtocol();
+
+    $this->withSession(['locale' => $locale])
+        ->actingAs($user)
+        ->get(route('protocol.form', $protocol))
+        ->assertOk()
+        ->assertSee('data-signature-form', false)
+        ->assertSee('data-please-sign="'.$hint.'"', false)
+        ->assertDontSee('cdn.jsdelivr.net', false);
+})->with([
+    'german' => ['de', 'Bitte unterschreiben.'],
+    'english' => ['en', 'Please sign.'],
+]);

@@ -3,6 +3,7 @@
 namespace App\Models\Order;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\OrderWorkflowException;
 use App\Models\Contact;
 use App\Models\User;
 use App\Services\NumberSequence;
@@ -103,11 +104,11 @@ class Order extends Model
     public function lockOrder(): void
     {
         if ($this->status !== OrderStatus::IN_PROGRESS) {
-            throw new \Exception('Cannot lock an order that is not in progress.');
+            throw new OrderWorkflowException('packing.messages.order_not_packable');
         }
 
         if (! $this->isFullyPacked()) {
-            throw new \Exception('Cannot lock order. Not all items are packed.');
+            throw new OrderWorkflowException('packing.messages.not_all_items_packed');
         }
 
         $this->update([
@@ -146,7 +147,7 @@ class Order extends Model
     public function markAsInDelivery(): void
     {
         if (! $this->status->canTransitionTo(OrderStatus::IN_DELIVERY)) {
-            throw new \Exception('Cannot mark an order as in delivery that is not packed.');
+            throw new OrderWorkflowException('delivery_notes.messages.not_printable');
         }
 
         $this->update([

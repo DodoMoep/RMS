@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Order;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\OrderWorkflowException;
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class DeliveryNoteController extends Controller
@@ -19,8 +21,12 @@ class DeliveryNoteController extends Controller
             $path = $order->generateDeliveryNote();
 
             return back()->with('ok', __('delivery_notes.messages.created'));
-        } catch (\Exception $e) {
-            return back()->withErrors([$e->getMessage()]);
+        } catch (OrderWorkflowException $e) {
+            return back()->withErrors([$e->userMessage()]);
+        } catch (\Throwable $e) {
+            Log::error('Delivery note error', ['order_id' => $order->id, 'exception' => $e]);
+
+            return back()->withErrors([__('common.messages.unexpected_error')]);
         }
     }
 

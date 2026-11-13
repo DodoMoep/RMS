@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Order;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\OrderWorkflowException;
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
 use App\Models\Order\OrderItem;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrderPackingController extends Controller
 {
@@ -55,8 +58,8 @@ class OrderPackingController extends Controller
             $orderItem->markAsPacked($quantity);
 
             return back()->with('ok', __('packing.messages.item_packed'));
-        } catch (\Exception $e) {
-            return back()->withErrors([$e->getMessage()]);
+        } catch (\Throwable $e) {
+            return $this->failed($e, __METHOD__);
         }
     }
 
@@ -72,8 +75,8 @@ class OrderPackingController extends Controller
             $orderItem->unpack();
 
             return back()->with('ok', __('packing.messages.item_unpacked'));
-        } catch (\Exception $e) {
-            return back()->withErrors([$e->getMessage()]);
+        } catch (\Throwable $e) {
+            return $this->failed($e, __METHOD__);
         }
     }
 
@@ -88,8 +91,23 @@ class OrderPackingController extends Controller
 
             return redirect()->route('orders.show', $order)
                 ->with('ok', __('packing.messages.packing_completed'));
-        } catch (\Exception $e) {
-            return back()->withErrors([$e->getMessage()]);
+        } catch (\Throwable $e) {
+            return $this->failed($e, __METHOD__);
         }
+    }
+
+    /**
+     * Fachfehler zeigen ihren uebersetzten Text, alle anderen Fehler werden geloggt und dem
+     * Benutzer nur als allgemeine Meldung angezeigt (keine internen Texte nach aussen).
+     */
+    private function failed(\Throwable $e, string $context): RedirectResponse
+    {
+        if ($e instanceof OrderWorkflowException) {
+            return back()->withErrors([$e->userMessage()]);
+        }
+
+        Log::error('Packing error', ['context' => $context, 'exception' => $e]);
+
+        return back()->withErrors([__('common.messages.unexpected_error')]);
     }
 }
