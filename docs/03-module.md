@@ -22,7 +22,7 @@ Controller: `Contact\ContactController`, Präfix `/contacts`, Rechte `contacts.*
 - Bearbeiten (`orders.edit`): nur in Status `new` und `in_progress`. Das Formular sendet `expected_status`; weicht der aktuelle Status ab, wird mit einer Meldung zurückgeleitet (einfache Konfliktprüfung). Gepackte oder teilgepackte Positionen können weder geändert noch entfernt werden. Das Lieferdatum darf beim Ändern auch heute sein (`after_or_equal`), beim Anlegen nicht (`after`).
 - Löschen (`orders.delete`): nur in `new` und `in_progress`. Der Auftrag wird weich gelöscht (Soft Delete): Er verschwindet aus Listen, Detailseiten (404), Packübersicht und Auswertungen, bleibt aber mit Positionen und vollständiger Historie in der Datenbank. Der Observer schreibt das Ereignis `order_deleted`. Die Auftragsnummer bleibt belegt. Positionen gelöschter Aufträge lassen sich nicht mehr packen oder entpacken (404). Eine Wiederherstellung ist in der Oberfläche nicht vorgesehen (nur per `Order::withTrashed()->find(...)->restore()`).
 - Statuswechsel (`orders.update-status`, `PATCH /orders/{order}/status`): nur erlaubte Übergänge laut `OrderStatus::canTransitionTo`; `packed` setzt voraus, dass alle Positionen gepackt sind; `delivered` setzt `delivered_at`. Es gibt keine getrennte Berechtigung je Übergang. Der Wechsel von Hand setzt nur den Status: `packed_by`, `delivery_note_printed_at` und ein Lieferschein entstehen nur über Packen (`lockOrder`) und Druck (Befund M12).
-- Historie (`orders.view-history`): Ereignisse `order_created`, `status_changed`, `order_deleted`, `item_packed`, `item_unpacked`, `order_completed`, `delivery_note_generated`, `delivery_note_printed`. Erzeugt durch `OrderObserver` und `Order::logHistory()` inklusive Benutzer, IP und User-Agent.
+- Historie (`orders.view-history`): Ereignisse `order_created`, `status_changed`, `order_deleted`, `item_packed`, `item_unpacked`, `order_completed`, `delivery_note_generated`, `delivery_note_printed`. Erzeugt durch `OrderObserver` und `Order::logHistory()` inklusive Benutzer, IP und User-Agent. Gespeichert wird ein englischer Beschreibungstext. Die Historienseite baut ihn beim Anzeigen in der gewählten Sprache aus Ereignistyp und `metadata` neu (`OrderHistory::localizedDescription`, Schlüssel `orders.history_events.*`; der Typ-Badge über `orders.history_event_types.*`). Fehlt ein Wert oder ist der Typ unbekannt, erscheint der gespeicherte Text. Die technischen Detailzeilen (`item_id`, `old_status` ...) bleiben unübersetzt.
 
 ### Artikel (`Order\ArticleController`, Präfix `/articles`)
 
@@ -56,6 +56,8 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 
 ### Stammdaten
 
+- Bezeichnung und Texte: In der Oberfläche heißt es durchgängig "Halle" (früher stand im Menü und in den Sprachdateien "Saal"/"Säle"). Alle Seiten der Vermietung (Hallen, Inventar, Vermietungen, Protokolle) und der Dashboard laufen über Sprachdateien (`halls`, `inventory`, `rentals`, `protocols`, `dashboard`, gemeinsame Texte in `common`). Erfolgsmeldungen und Sperrgründe zeigt die Komponente `<x-flash />` (Erfolg, Fehler, Status und allgemeine Fehler ohne Feldbezug; Feldfehler erscheinen am Feld). Vorher gaben diese Seiten keine Meldung aus.
+- Entscheidung Dokumente: Das Protokoll-PDF (`pdf/protocol`), die Protokoll-E-Mail samt Betreff und der Lieferschein bleiben bewusst fest deutsch, weil sie als Dokument an Mieter und Kunden gehen und der Hash des PDFs nicht von der Oberflächensprache abhängen soll. Ebenfalls deutsch: die Positionsbezeichnung `Name (Soll: n)`, die beim Anlegen des Übergabeprotokolls in die Datenbank geschrieben wird.
 - Hallen (`Rental\HallController`, `/halls`): Name, Adresse, Notizen und eine Inventarliste mit Soll-Menge je Position (Pivot `hall_inventory`). Löschen ist gesperrt, solange Vermietungen existieren.
 - Inventar (`Rental\InventoryItemController`, `/inventory-items`): Name, SKU, Beschreibung. Löschen ist gesperrt, solange die Position einer Halle zugeordnet ist. Der frühere Fehler K4 (Controller-Parameter `$inventory_item` passte nicht zur Route `{inventoryItem}`) ist behoben.
 
@@ -69,7 +71,7 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 ### Protokolle (`Rental\ProtocolController`, `/protocols`)
 
 1. Formular (`protocols.create`): Zählerstände Strom und Wasser, Notizen, je Position Zustand (`ok`, `missing`, `damaged`), Kommentar und Aufschlag, Fotos.
-2. Speichern (`protocols.edit`): in einer Transaktion; Fotos nur JPEG/PNG, höchstens 5 MB je Foto, 20 je Upload und 30 je Protokoll.
+2. Speichern (`protocols.edit`): in einer Transaktion; Fotos nur JPEG/PNG, höchstens 5 MB je Foto, 20 je Upload und 30 je Protokoll. Fehler erreichen den Benutzer mit ihrem Grund: Validierungsfehler der Fotos erscheinen am Feld (die Transaktion wird zurückgerollt, vorher wurden sie zur allgemeinen Meldung `save_error`), die 30-Fotos-Grenze und die Gründe einer ungültigen Unterschrift kommen als `ProtocolWorkflowException` mit übersetztem Text (`protocols.messages.too_many_photos`, `invalid_signature`, `signature_not_png`, `signature_too_large`). Unerwartete Ausnahmen werden mit der Ausnahme geloggt und nur allgemein gemeldet (`ProtocolController::failed`).
 3. Unterschreiben (`protocols.sign`): Rolle `tenant` oder `landlord`, Name und Unterschrift als PNG-Data-URI. Geprüft werden Format (echtes PNG über `getimagesizefromstring`) und Größe (max. 2 MB). Die Zeile des Protokolls wird mit `lockForUpdate` gesperrt, damit nicht doppelt finalisiert wird.
 4. Sobald beide Rollen unterschrieben haben: PDF erzeugen und speichern, SHA-256 und Metadaten (IP, User-Agent) im Protokoll ablegen, Vermietungsstatus fortschreiben (Übergabe: `scheduled` zu `active`; Rückgabe: zu `closed`), nach dem Commit E-Mail mit PDF-Anhang an den Mieter senden (synchron, Fehler werden nur geloggt).
 5. PDF anzeigen (`protocols.pdf`): `response()->file()`; nur wenn finalisiert.
@@ -90,7 +92,7 @@ CRUD mit Name, SKU (eindeutig), Beschreibung, Preis, Aktiv-Flag. Löschen (Soft 
 
 ## Dashboard und Profil
 
-- Dashboard (`/`): lädt nur mit Recht `rentals.view` die heutigen Vermietungen (Beginn oder Ende heute, höchstens 10) und nur mit `protocols.view` die offenen Protokolle (ohne PDF, höchstens 10).
+- Dashboard (`/`): lädt nur mit Recht `rentals.view` die heutigen Vermietungen (Beginn oder Ende heute, höchstens 10) und nur mit `protocols.view` die offenen Protokolle (ohne PDF, höchstens 10). Texte über `lang/*/dashboard.php` und die Schlüssel der Vermietung.
 - Profil (`/profile`): Name und E-Mail ändern, Passwort ändern, Konto löschen. Avatar-Upload wird mit Intervention Image als WebP unter `avatars/{user_id}/` gespeichert; ohne Avatar wird `images/avatar-placeholder.png` verwendet.
 
 ## Mehrsprachigkeit im Betrieb

@@ -3,7 +3,7 @@
         <div class="col-lg-9">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h1 class="h5 mb-3">Vermietung bearbeiten</h1>
+                    <h1 class="h5 mb-3">{{ __('rentals.edit') }}</h1>
                     <form method="post" action="{{ route('rentals.update',$rental) }}">
                         @method('PUT')
                         @include('rental.rentals._form', ['rental' => $rental])

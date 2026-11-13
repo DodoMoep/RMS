@@ -6,7 +6,7 @@
 
 <div class="row g-3">
     <div class="col-md-6">
-        <x-input-label for="contact_id" value="Mieter:in"/>
+        <x-input-label for="contact_id" :value="__('rentals.tenant')"/>
         <select id="contact_id" name="contact_id" class="form-select" required>
             <option value="">{{ __('common.messages.please_select') }}</option>
             @foreach($contacts as $c)
@@ -17,7 +17,7 @@
     </div>
 
     <div class="col-md-6">
-        <x-input-label for="hall_id" value="Halle"/>
+        <x-input-label for="hall_id" :value="__('rentals.hall')"/>
         <select id="hall_id" name="hall_id" class="form-select" required>
             <option value="">{{ __('common.messages.please_select') }}</option>
             @foreach($halls as $h)
@@ -28,34 +28,34 @@
     </div>
 
     <div class="col-md-6">
-        <x-input-label for="start" value="Start"/>
+        <x-input-label for="start" :value="__('rentals.start')"/>
         <x-text-input id="start" name="start" type="datetime-local" :value="$startVal" required />
         <x-input-error :messages="$errors->get('start')" />
     </div>
 
     <div class="col-md-6">
-        <x-input-label for="end" value="Ende"/>
+        <x-input-label for="end" :value="__('rentals.end')"/>
         <x-text-input id="end" name="end" type="datetime-local" :value="$endVal" required />
         <x-input-error :messages="$errors->get('end')" />
     </div>
 
     <div class="col-md-6">
-        <x-input-label for="price" value="Preis (€)"/>
+        <x-input-label for="price" :value="__('rentals.price_eur')"/>
         <x-text-input id="price" name="price" type="number" step="0.01" :value="old('price', $rental->price ?? '')" />
         <x-input-error :messages="$errors->get('price')" />
     </div>
 
     <div class="col-md-6">
-        <x-input-label for="deposit" value="Kaution (€)"/>
+        <x-input-label for="deposit" :value="__('rentals.deposit_eur')"/>
         <x-text-input id="deposit" name="deposit" type="number" step="0.01" :value="old('deposit', $rental->deposit ?? '')" />
         <x-input-error :messages="$errors->get('deposit')" />
     </div>
 
     <div class="col-md-6">
-        <x-input-label for="status" value="Status"/>
+        <x-input-label for="status" :value="__('rentals.status')"/>
         <select id="status" name="status" class="form-select">
-            @foreach(['scheduled'=>'geplant','active'=>'aktiv','closed'=>'geschlossen','cancelled'=>'storniert'] as $k=>$v)
-                <option value="{{ $k }}" @selected(old('status', $rental->status ?? 'scheduled')==$k)>{{ $v }}</option>
+            @foreach(['scheduled', 'active', 'closed', 'cancelled'] as $status)
+                <option value="{{ $status }}" @selected(old('status', $rental->status ?? 'scheduled')==$status)>{{ __('rentals.statuses.'.$status) }}</option>
             @endforeach
         </select>
         <x-input-error :messages="$errors->get('status')" />
@@ -63,6 +63,6 @@
 </div>
 
 <div class="mt-3 d-flex gap-2">
-    <x-primary-button>Speichern</x-primary-button>
-    <x-secondary-button onclick="history.back();return false;">Abbrechen</x-secondary-button>
+    <x-primary-button>{{ __('common.common.save') }}</x-primary-button>
+    <x-secondary-button onclick="history.back();return false;">{{ __('common.common.cancel') }}</x-secondary-button>
 </div>

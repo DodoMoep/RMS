@@ -69,6 +69,7 @@ return [
         'confirm_action' => 'Are you sure you want to perform this action?',
         'confirm_delete' => 'Really delete?',
         'no_results' => 'No results found',
+        'no_entries' => 'No entries.',
         'loading' => 'Loading...',
         'saved' => 'Successfully saved',
         'deleted' => 'Successfully deleted',

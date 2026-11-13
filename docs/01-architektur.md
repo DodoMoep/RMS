@@ -51,7 +51,7 @@ config/                     Standard plus activitylog, dompdf, permission
 database/
   migrations/               35 Dateien (siehe 02-datenmodell.md)
   seeders/                  Rechte und Rollen je Bereich (teilweise veraltet)
-lang/{de,en}/               22 Dateien je Sprache, identische Dateiliste
+lang/{de,en}/               23 Dateien je Sprache, identische Dateiliste
 resources/
   views/                    admin, auth, contacts, dashboard, order, rental, public, pdf, emails, layouts, components
   scss/, js/                CoreUI-Einbindung, Vite-Einstieg
@@ -115,13 +115,14 @@ Die Pfade in der Datenbank sind relativ und gelten unabhängig von der Disk. Bes
 ## Mehrsprachigkeit
 
 - Sprachdateien liegen je Bereich in `lang/{de,en}/*.php` mit identischer Dateiliste.
-- Views nutzen überwiegend `__('datei.schluessel')`; in einzelnen Views der Vermietung (Hallen, Inventar, Protokolle, Vermietungen) stehen noch feste deutsche Texte. Alle Meldungen der Controller (Erfolg, Fehler, `abort`) laufen über `__()` und liegen in `lang/de` und `lang/en` unter `<bereich>.messages.*`; `tests/Feature/Quality/CodeConventionsTest.php` schlägt bei neuen festen Texten in Controllern fehl. Interne Ausnahmetexte (Logs, Modelle) sind englisch und nicht für Benutzer bestimmt.
+- Views nutzen überwiegend `__('datei.schluessel')`. Die Seiten der Vermietung (Hallen, Inventar, Vermietungen, Protokolle) und der Dashboard sind vollständig übersetzt; feste deutsche Texte stehen noch in den Admin-Views (Benutzer, Rollen, Berechtigungen, Aktivitätslog, Arbeitsanweisungen) sowie bewusst in den Dokumenten (Lieferschein, Protokoll-PDF, Protokoll-E-Mail, Auswertungs-PDF). Alle Meldungen der Controller (Erfolg, Fehler, `abort`) laufen über `__()` und liegen in `lang/de` und `lang/en` unter `<bereich>.messages.*`; `tests/Feature/Quality/CodeConventionsTest.php` schlägt bei neuen festen Texten in Controllern fehl. Interne Ausnahmetexte (Logs, Modelle) sind englisch und nicht für Benutzer bestimmt.
 - Der `OrderObserver` und `Order::logHistory()` schreiben englische Beschreibungstexte in `order_history`.
 
 ## Frontend
 
 - Einstieg: `resources/js/app.js` importiert `bootstrap.js`, das CoreUI komplett lädt und als `window.coreui` bereitstellt. Styles: `resources/scss/app.scss` (CoreUI, Font Awesome, `_theme.scss`).
-- Layouts als Blade-Komponenten: `<x-app-layout>` (Sidebar-Navigation mit Rechteprüfung über `@can`), `<x-guest-layout>` (Login), `<x-public-layout>` (Arbeitsanweisungen ohne Login).
+- Layouts als Blade-Komponenten: `<x-app-layout>` (Sidebar-Navigation mit Rechteprüfung über `@can`), `<x-guest-layout>` (Login), `<x-public-layout>` (Arbeitsanweisungen ohne Login). `<x-flash />` zeigt Erfolgs-, Fehler- und Statusmeldungen sowie allgemeine Fehler ohne Feldbezug; die Seiten der Vermietung binden sie ein, andere Bereiche haben ihre Meldungen noch inline in der View.
+- Ausnahmen für Benutzertexte: `App\Exceptions\UserMessageException` (abstrakt, Übersetzungsschlüssel plus Parameter, `userMessage()`) mit `OrderWorkflowException` (Auftragsablauf) und `ProtocolWorkflowException` (Protokolle). Nur diese Ausnahmen dürfen mit Text an Benutzer gehen.
 - Navigation: `resources/views/layouts/navigation.blade.php`. Der Menüpunkt "Berechtigungen" ist auskommentiert; die Route bleibt erreichbar.
 - Inline-Skripte gibt es in drei Views (`admin/activity-log/index`, `order/orders/_form`, `rental/halls/_form`). Die Unterschrift im Protokollformular läuft über das Modul `resources/js/signature.js` (`signature_pad` als npm-Paket im Vite-Bundle, kein externer Host); das Formular wird über `data-signature-form` erkannt. Die Auswertungsseite rendert serverseitig; die JSON-Endpunkte `/analytics/api/*` werden von keiner View aufgerufen.
 - Alpine.js ist über npm (`alpinejs`) und Vite eingebunden: `resources/js/app.js` importiert es und ruft `Alpine.start()` auf (früherer Befund M3). Tatsächlich genutzt wird es nur in `contacts/_form.blade.php` (Ein- und Ausblenden von Ansprechpartner und Adresse je nach Kontakttyp). Ausgeblendete Elemente tragen `x-cloak`, die Regel `[x-cloak]` steht in `resources/scss/app.scss`, damit sie vor dem Start von Alpine nicht aufblitzen. `components/dropdown.blade.php` und `components/modal.blade.php` (Breeze-Reste mit Tailwind-Klassen) enthalten ebenfalls Alpine-Direktiven, werden aber nirgends verwendet.

@@ -117,5 +117,18 @@ return [
         'item_packed' => 'Artikel verpackt',
         'item_unpacked' => 'Artikel entpackt',
         'delivery_note_generated' => 'Lieferschein erstellt',
+        'order_completed' => 'Bestellung abgeschlossen',
+        'delivery_note_printed' => 'Lieferschein gedruckt',
+    ],
+
+    'history_events' => [
+        'order_created' => 'Bestellung :number erstellt',
+        'order_deleted' => 'Bestellung :number gelöscht',
+        'status_changed' => 'Status von ":from" auf ":to" geändert',
+        'item_packed' => 'Artikel ":item" verpackt (:quantity Stück)',
+        'item_unpacked' => 'Artikel ":item" entpackt',
+        'order_completed' => 'Bestellung abgeschlossen und gesperrt',
+        'delivery_note_generated' => 'Lieferschein erstellt',
+        'delivery_note_printed' => 'Lieferschein gedruckt, Bestellung in Zustellung gesetzt',
     ],
 ];

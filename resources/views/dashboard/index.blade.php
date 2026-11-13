@@ -4,12 +4,12 @@
             <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">Heute – Vermietungen</h5>
+                        <h5 class="card-title mb-3">{{ __('dashboard.today_rentals') }}</h5>
                         <div class="table-responsive">
                             <table class="table table-sm align-middle mb-0">
                                 <thead class="table-light">
                                 <tr>
-                                    <th>Mieter:in</th><th>Halle</th><th>Start</th><th>Ende</th><th>Status</th><th>Aktion</th>
+                                    <th>{{ __('rentals.tenant') }}</th><th>{{ __('rentals.hall') }}</th><th>{{ __('rentals.start') }}</th><th>{{ __('rentals.end') }}</th><th>{{ __('rentals.status') }}</th><th>{{ __('protocols.list.action') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -19,22 +19,22 @@
                                         <td>{{ $r->hall->name }}</td>
                                         <td>{{ $r->start->format('d.m. H:i') }}</td>
                                         <td>{{ $r->end->format('d.m. H:i') }}</td>
-                                        <td><span class="badge text-bg-secondary">{{ $r->status }}</span></td>
+                                        <td><span class="badge text-bg-secondary">{{ __('rentals.statuses.'.$r->status) }}</span></td>
                                         <td class="text-nowrap">
                                             @can('rentals.handover')
                                                 <form method="post" action="{{ route('rentals.handover',$r) }}" class="d-inline">@csrf
-                                                    <button class="btn btn-link btn-sm">Übergabe</button>
+                                                    <button class="btn btn-link btn-sm">{{ __('protocols.types.handover') }}</button>
                                                 </form>
                                             @endcan
                                             @can('rentals.return')
                                                 <form method="post" action="{{ route('rentals.return',$r) }}" class="d-inline">@csrf
-                                                    <button class="btn btn-link btn-sm">Rücknahme</button>
+                                                    <button class="btn btn-link btn-sm">{{ __('protocols.types.return') }}</button>
                                                 </form>
                                             @endcan
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-muted">Keine Einträge.</td></tr>
+                                    <tr><td colspan="6" class="text-muted">{{ __('common.messages.no_entries') }}</td></tr>
                                 @endforelse
                                 </tbody>
                             </table>
@@ -48,17 +48,17 @@
             <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">Protokolle ohne PDF (offen)</h5>
+                        <h5 class="card-title mb-3">{{ __('dashboard.open_protocols') }}</h5>
                         <ul class="mb-0">
                             @forelse($openProtocols as $p)
                                 <li class="mb-1">
-                                    {{ $p->type==='handover'?'Übergabe':'Rücknahme' }} – {{ $p->rental->contact->name }} / {{ $p->rental->hall->name }}
+                                    {{ __('protocols.types.'.$p->type) }} – {{ $p->rental->contact->name }} / {{ $p->rental->hall->name }}
                                     @can('protocols.create')
-                                        <a class="ms-2" href="{{ route('protocol.form',$p) }}">öffnen</a>
+                                        <a class="ms-2" href="{{ route('protocol.form',$p) }}">{{ __('protocols.list.open') }}</a>
                                     @endcan
                                 </li>
                             @empty
-                                <li class="text-muted">Keine offenen Protokolle.</li>
+                                <li class="text-muted">{{ __('dashboard.no_open_protocols') }}</li>
                             @endforelse
                         </ul>
                     </div>
@@ -72,8 +72,8 @@
                     <div class="card shadow-sm">
                         <div class="card-body text-center py-5">
                             <i class="fas fa-home fa-3x text-muted mb-3"></i>
-                            <h5>Willkommen im Rosenau Management System</h5>
-                            <p class="text-muted mb-0">Wählen Sie einen Menüpunkt aus der Navigation.</p>
+                            <h5>{{ __('dashboard.welcome') }}</h5>
+                            <p class="text-muted mb-0">{{ __('dashboard.welcome_hint') }}</p>
                         </div>
                     </div>
                 </div>
