@@ -44,27 +44,7 @@ class ContactController extends Controller
 
     public function store(Request $request)
     {
-        $type = $request->input('type', 'customer');
-
-        $rules = [
-            'type'    => 'required|in:tenant,customer,both',
-            'name'    => 'required|string|max:255',
-            'email'   => 'nullable|email',
-            'phone'   => 'nullable|string|max:50',
-            'notes'   => 'nullable|string',
-            'is_active' => 'boolean',
-        ];
-
-        // Address and contact_person_name only required for customer/both
-        if (in_array($type, ['customer', 'both'])) {
-            $rules['contact_person_name'] = 'nullable|string|max:255';
-            $rules['street']       = 'nullable|string|max:255';
-            $rules['zip_code']     = 'nullable|string|max:20';
-            $rules['city']         = 'nullable|string|max:100';
-            $rules['address_notes'] = 'nullable|string';
-        }
-
-        $validated = $request->validate($rules);
+        $validated = $request->validate($this->rules($request->input('type', 'customer')));
         $validated['is_active'] = $request->has('is_active');
 
         $contact = Contact::create($validated);
@@ -100,6 +80,26 @@ class ContactController extends Controller
     {
         $type = $request->input('type', $contact->type->value);
 
+        $validated = $request->validate($this->rules($type));
+        $validated['is_active'] = $request->has('is_active');
+
+        // If switching to customer/both and no customer_number, generate one
+        if (in_array($type, ['customer', 'both']) && !$contact->customer_number) {
+            $validated['customer_number'] = Contact::generateCustomerNumber();
+        }
+
+        $contact->update($validated);
+
+        return redirect()->route('contacts.show', $contact)
+            ->with('ok', __('contacts.messages.contact_updated'));
+    }
+
+    /**
+     * Validierungsregeln fuer Anlegen und Aendern. Ansprechpartner und Adresse werden
+     * nur fuer Kunden und Mieter-und-Kunde validiert.
+     */
+    private function rules(string $type): array
+    {
         $rules = [
             'type'    => 'required|in:tenant,customer,both',
             'name'    => 'required|string|max:255',
@@ -117,18 +117,7 @@ class ContactController extends Controller
             $rules['address_notes'] = 'nullable|string';
         }
 
-        $validated = $request->validate($rules);
-        $validated['is_active'] = $request->has('is_active');
-
-        // If switching to customer/both and no customer_number, generate one
-        if (in_array($type, ['customer', 'both']) && !$contact->customer_number) {
-            $validated['customer_number'] = Contact::generateCustomerNumber();
-        }
-
-        $contact->update($validated);
-
-        return redirect()->route('contacts.show', $contact)
-            ->with('ok', __('contacts.messages.contact_updated'));
+        return $rules;
     }
 
     public function destroy(Contact $contact)

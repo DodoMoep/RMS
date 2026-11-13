@@ -32,6 +32,7 @@ return [
     'total_amount' => 'Gesamtbetrag',
     'created_at' => 'Erstellt am',
     'created_by' => 'Erstellt von',
+    'deleted_user' => 'Gelöschter Benutzer',
     'updated_at' => 'Aktualisiert am',
     'packed_by' => 'Verpackt von',
     'delivered_at' => 'Zugestellt am',

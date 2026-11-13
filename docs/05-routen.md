@@ -8,7 +8,7 @@ Zugriffsstufen:
 - `Login`: nur `auth`
 - `oeffentlich`: ohne Anmeldung erreichbar. Das sind die Arbeitsanweisungen, der Sprachwechsel und die Gast-Routen von Breeze (`/login`, `/forgot-password`, `/reset-password`, die nur für nicht angemeldete Benutzer gedacht sind)
 
-Eine Registrierungsroute gibt es nicht. `Auth\RegisteredUserController` ist nicht eingebunden; die Breeze-Tests für `/register` laufen deshalb ins Leere. Der Health-Check liegt unter `/up`.
+Eine Registrierungsroute gibt es nicht. `Auth\RegisteredUserController` ist nicht eingebunden; `tests/Feature/Auth/RegistrationDisabledTest.php` hält fest, dass `/register` mit 404 antwortet und sich niemand selbst registrieren kann. Der Health-Check liegt unter `/up`.
 
 Zusätzlich zur Routen-Berechtigung blenden die Views Menüpunkte und Schaltflächen per `@can` aus.
 
@@ -41,6 +41,7 @@ Zusätzlich zur Routen-Berechtigung blenden die Views Menüpunkte und Schaltflä
 | PUT | `/admin/users/{user}` | `users.update` | `Admin\UserController@update` | `user.edit` | Login+verifiziert |
 | DELETE | `/admin/users/{user}` | `users.destroy` | `Admin\UserController@destroy` | `user.delete` | Login+verifiziert |
 | GET | `/admin/users/{user}/edit` | `users.edit` | `Admin\UserController@edit` | `user.edit` | Login+verifiziert |
+| PATCH | `/admin/users/{user}/toggle-status` | `users.toggle-status` | `Admin\UserController@toggleStatus` | `user.edit` | Login+verifiziert |
 | GET | `/admin/work-instructions` | `work-instructions.categories.index` | `Admin\WorkInstructionCategoryController@index` | `work-instructions.manage` | Login+verifiziert |
 | POST | `/admin/work-instructions` | `work-instructions.categories.store` | `Admin\WorkInstructionCategoryController@store` | `work-instructions.manage` | Login+verifiziert |
 | GET | `/admin/work-instructions/create` | `work-instructions.categories.create` | `Admin\WorkInstructionCategoryController@create` | `work-instructions.manage` | Login+verifiziert |

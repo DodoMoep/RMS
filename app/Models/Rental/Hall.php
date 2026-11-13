@@ -3,11 +3,11 @@ namespace App\Models\Rental;
 
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Hall extends Model {
 
-    use HasUuid;
+    use HasUuids;
 
     protected $fillable = [
         'name','address','notes'

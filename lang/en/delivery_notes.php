@@ -19,6 +19,11 @@ return [
     'download' => 'Download',
 
     'messages' => [
+        'only_packed' => 'A delivery note can only be created for packed orders.',
+        'created' => 'Delivery note created.',
+        'none_available' => 'No delivery note available.',
+        'invalid_path' => 'Invalid file path.',
+        'file_not_found' => 'File not found.',
         'not_printable' => 'The delivery note can only be printed once the order has been packed.',
     ],
 ];

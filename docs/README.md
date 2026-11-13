@@ -9,7 +9,7 @@ RMS ist eine interne Laravel-Webanwendung (Laravel 12, PHP 8.2+, MariaDB) mit vi
 | Kontakte | Gemeinsamer Stamm für Kunden und Mieter (`Contact`) |
 | Auftragsverwaltung | Aufträge, Artikel, Packen, Lieferschein (PDF), Auswertungen |
 | Vermietung | Hallen, Inventar, Vermietungen, Übergabe-/Rückgabeprotokolle mit Unterschrift, Fotos und PDF |
-| Arbeitsanweisungen | PDF-Ablage je Tätigkeit, öffentlich abrufbar unter `/anweisungen/{slug}` |
+| Arbeitsanweisungen | PDF-Ablage je Tätigkeit, ohne Login abrufbar unter `/anweisungen/{slug}` (Dateien liegen privat, nur aktive Einträge) |
 
 Dazu kommen Benutzer-, Rollen- und Rechteverwaltung (Spatie Permission), ein Aktivitätslog (Spatie Activitylog) sowie eine zweisprachige Oberfläche (Deutsch, Englisch).
 
@@ -28,10 +28,11 @@ Dazu kommen Benutzer-, Rollen- und Rechteverwaltung (Spatie Permission), ein Akt
 
 ## Wichtigste Erkenntnisse vorab
 
-1. Der Umbau vom 2026-04-12 (Zusammenführung von `tenants` und `customers` zu `contacts`) war nicht vollständig nachgezogen. Die dadurch verursachten Fehler K1 bis K5 sowie M6 (Seeder, Rechte) sind behoben. Ebenfalls behoben und getestet: K6 (Auftrag löschen, jetzt Soft Delete), K7 (atomare Nummernvergabe), M1 (Packen nur in Bearbeitung), M2 (Lieferscheindruck erst ab "verpackt") und M5 (Admin-Benutzer sind verifiziert). Offen sind die übrigen Punkte in [08-bekannte-probleme.md](08-bekannte-probleme.md).
-2. Automatisierte Tests gibt es für Kontakte, Packübersicht, Lieferschein, Inventar, Protokolle, Seeder, Auftragslöschung, Packstatus, Nummernkreise und Benutzerverwaltung (75 Tests, gesamt 97 grün). Auftragsanlage und -bearbeitung, Vermietungen und Auswertung sind weiterhin ungetestet.
-3. Erzeugte PDFs (Lieferscheine, Protokolle) liegen auf der öffentlichen Disk und sind bei vorhandenem `storage:link` ohne Anmeldung abrufbar, sofern der Pfad bekannt ist.
-4. Der Code-Stil ist uneinheitlich: Das Laravel-Pint-Standardpreset beanstandet 54 von 118 PHP-Dateien.
+1. Der Umbau vom 2026-04-12 (Zusammenführung von `tenants` und `customers` zu `contacts`) war nicht vollständig nachgezogen. Die dadurch verursachten Fehler K1 bis K5 sowie M6 (Seeder, Rechte) sind behoben. Ebenfalls behoben und getestet: K6 (Auftrag löschen, jetzt Soft Delete), K7 (atomare Nummernvergabe), M1 (Packen nur in Bearbeitung), M2 (Lieferscheindruck erst ab "verpackt"), M5 (Admin-Benutzer sind verifiziert) sowie M3, M4, M7, M8 (Zeitzone Europe/Berlin), M9 (Vermietungen, die sich nur berühren, sind erlaubt) und M10 (Aktivitätslog wird täglich bereinigt). Offen sind die übrigen Punkte in [08-bekannte-probleme.md](08-bekannte-probleme.md).
+2. Automatisierte Tests gibt es für Kontakte, Packübersicht, Lieferschein, Inventar, Protokolle, Seeder, Auftragslöschung, Packstatus, Nummernkreise, Benutzerverwaltung, Benutzer löschen, private Dateispeicherung, Arbeitsanweisungen, Frontend-Konsistenz, Dashboard-Zugriff, fehlende Selbstregistrierung, Analyse-Export, Vermietungs-Überschneidungen, Zeitzone, Aktivitätslog-Bereinigung, Deaktivieren von Benutzern, Rollen und Rechte, Meldungen in beiden Sprachen sowie Wächter für Konventionen (206 neue Tests, gesamt 228 grün, keiner rot). Auftragsanlage und -bearbeitung, Vermietungen und Auswertung sind weiterhin ungetestet.
+3. Lieferscheine, Protokoll-PDFs, Unterschriften, Fotos und Arbeitsanweisungen liegen auf der privaten Disk und werden nur über berechtigte Routen ausgeliefert (S1 behoben). Auf bestehenden Installationen muss einmalig `php artisan files:make-private` ausgeführt werden. Das Löschen eines Benutzers entfernt dessen Aufträge nicht mehr (S3 behoben); ausgeschiedene Mitarbeiter lassen sich außerdem deaktivieren statt löschen (Anmeldung gesperrt, Aufträge und Ersteller bleiben erhalten).
+4. Der Code-Stil ist weiterhin uneinheitlich: Das Laravel-Pint-Standardpreset beanstandet 54 von 118 PHP-Dateien (Bereinigung steht als eigener, rein formaler Schritt aus). Toter Code, ungenutzte Pakete, feste Controller-Texte und der doppelte UUID-Mechanismus sind bereinigt.
+5. Die Abhängigkeiten sind aktualisiert: `composer audit` und `npm audit` melden keine Hinweise mehr (vorher 55 bzw. 12; Befund S6 behoben). Neue Hauptversionen (u. a. Laravel 13, Pest 5, Activitylog 5, Permission 8) sind bewusst nicht eingespielt.
 
 ## Wie diese Dokumentation entstanden ist
 

@@ -32,10 +32,8 @@ class PermissionController extends Controller
             'guard_name' => 'web',
         ]);
 
-        \Artisan::call('permission:cache-reset');
-
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        return redirect()->route('permissions.index')->with('status', 'Berechtigung erstellt.');
+        return redirect()->route('permissions.index')->with('status', __('permissions.messages.created'));
     }
 
     public function edit(Permission $permission)
@@ -49,10 +47,9 @@ class PermissionController extends Controller
         abort_unless($permission->guard_name === 'web', 404);
 
         $permission->update(['name' => $request->name]);
-        \Artisan::call('permission:cache-reset');
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        return redirect()->route('permissions.index')->with('status', 'Berechtigung aktualisiert.');
+        return redirect()->route('permissions.index')->with('status', __('permissions.messages.updated'));
     }
 
     public function destroy(Permission $permission)
@@ -60,10 +57,9 @@ class PermissionController extends Controller
         abort_unless($permission->guard_name === 'web', 404);
 
         $permission->delete();
-        \Artisan::call('permission:cache-reset');
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        return redirect()->route('permissions.index')->with('status', 'Berechtigung gelöscht.');
+        return redirect()->route('permissions.index')->with('status', __('permissions.messages.deleted'));
     }
 }
 

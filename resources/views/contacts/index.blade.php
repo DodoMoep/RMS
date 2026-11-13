@@ -26,7 +26,7 @@
     @if(session('ok'))
         <div class="alert alert-success alert-dismissible fade show">
             {{ session('ok') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
         </div>
     @endif
 

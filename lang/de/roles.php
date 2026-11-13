@@ -12,9 +12,10 @@ return [
     'permissions' => 'Berechtigungen',
     
     'messages' => [
-        'created' => 'Rolle erfolgreich erstellt',
-        'updated' => 'Rolle erfolgreich aktualisiert',
-        'deleted' => 'Rolle erfolgreich gelöscht',
+        'created' => 'Rolle erstellt.',
+        'updated' => 'Rolle aktualisiert.',
+        'deleted' => 'Rolle gelöscht.',
+        'protected' => 'Diese Rolle ist geschützt und kann nicht gelöscht werden.',
         'confirm_delete' => 'Möchten Sie diese Rolle wirklich löschen?',
     ],
 ];

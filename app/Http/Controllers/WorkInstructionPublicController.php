@@ -22,9 +22,10 @@ class WorkInstructionPublicController extends Controller
         abort_unless($category->is_active && $instruction->is_active, 404);
         abort_unless($instruction->category_id === $category->id, 404);
 
-        $path = Storage::disk('public')->path($instruction->pdf_path);
+        // Die Datei liegt auf der privaten Disk und ist nur ueber diese Route erreichbar
+        abort_unless(Storage::disk('local')->exists($instruction->pdf_path), 404);
 
-        abort_unless(file_exists($path), 404);
+        $path = Storage::disk('local')->path($instruction->pdf_path);
 
         return response()->file($path, [
             'Content-Type'        => 'application/pdf',

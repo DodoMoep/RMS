@@ -109,6 +109,75 @@ test('tenants do not receive a customer number', function () {
     expect(makeContact(['type' => ContactType::Tenant])->customer_number)->toBeNull();
 });
 
+test('a tenant is stored without contact person and address', function () {
+    $user = userWithPermissions(['contacts.create']);
+
+    $this->actingAs($user)->post(route('contacts.store'), [
+        'type' => 'tenant',
+        'name' => 'Nur Mieter',
+        'contact_person_name' => 'Wird ignoriert',
+        'street' => 'Wird ignoriert 1',
+        'city' => 'Ignorierstadt',
+    ]);
+
+    $contact = Contact::where('name', 'Nur Mieter')->firstOrFail();
+
+    expect($contact->contact_person_name)->toBeNull()
+        ->and($contact->street)->toBeNull()
+        ->and($contact->city)->toBeNull()
+        ->and($contact->customer_number)->toBeNull();
+});
+
+test('a customer is stored with contact person and address', function () {
+    $user = userWithPermissions(['contacts.create']);
+
+    $this->actingAs($user)->post(route('contacts.store'), [
+        'type' => 'customer',
+        'name' => 'Nur Kunde',
+        'contact_person_name' => 'Frau Beispiel',
+        'street' => 'Kundenweg 3',
+        'zip_code' => '11111',
+        'city' => 'Kundenstadt',
+    ]);
+
+    $contact = Contact::where('name', 'Nur Kunde')->firstOrFail();
+
+    expect($contact->contact_person_name)->toBe('Frau Beispiel')
+        ->and($contact->street)->toBe('Kundenweg 3')
+        ->and($contact->zip_code)->toBe('11111')
+        ->and($contact->city)->toBe('Kundenstadt')
+        ->and($contact->customer_number)->not->toBeNull();
+});
+
+test('a tenant who becomes a customer receives a customer number and the address is saved', function () {
+    $user = userWithPermissions(['contacts.edit']);
+    $contact = makeContact(['type' => ContactType::Tenant, 'name' => 'Wird Kunde', 'street' => null, 'zip_code' => null, 'city' => null]);
+
+    expect($contact->customer_number)->toBeNull();
+
+    $this->actingAs($user)->put(route('contacts.update', $contact), [
+        'type' => 'both',
+        'name' => 'Wird Kunde',
+        'street' => 'Neuer Weg 5',
+        'zip_code' => '22222',
+        'city' => 'Neustadt',
+    ]);
+
+    $contact->refresh();
+
+    expect($contact->customer_number)->toMatch('/^CUS-\d{4}-\d{4}$/')
+        ->and($contact->street)->toBe('Neuer Weg 5')
+        ->and($contact->city)->toBe('Neustadt');
+});
+
+test('the contact type is validated', function () {
+    $user = userWithPermissions(['contacts.create']);
+
+    $this->actingAs($user)
+        ->post(route('contacts.store'), ['type' => 'unbekannt', 'name' => 'Fehler'])
+        ->assertSessionHasErrors('type');
+});
+
 test('contacts are not accessible without permission', function () {
     $user = User::factory()->create();
     $contact = makeContact();

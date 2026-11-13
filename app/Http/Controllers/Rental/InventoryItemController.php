@@ -23,7 +23,7 @@ class InventoryItemController extends Controller
             'description'=>'nullable|string'
         ]);
         InventoryItem::create($data);
-        return redirect()->route('inventory-items.index')->with('ok','Inventarposition angelegt.');
+        return redirect()->route('inventory-items.index')->with('ok', __('inventory.messages.created'));
     }
 
     public function edit(InventoryItem $inventoryItem)
@@ -39,17 +39,17 @@ class InventoryItemController extends Controller
             'description'=>'nullable|string'
         ]);
         $inventoryItem->update($data);
-        return redirect()->route('inventory-items.index')->with('ok','Inventar aktualisiert.');
+        return redirect()->route('inventory-items.index')->with('ok', __('inventory.messages.updated'));
     }
 
     public function destroy(InventoryItem $inventoryItem)
     {
         if ($inventoryItem->halls()->exists()) {
-            return back()->withErrors(['Inventarposition kann nicht gelöscht werden, da sie noch Hallen zugeordnet ist.']);
+            return back()->withErrors([__('inventory.messages.assigned_to_halls')]);
         }
         
         $inventoryItem->delete();
-        return back()->with('ok','Inventar gelöscht.');
+        return back()->with('ok', __('inventory.messages.deleted'));
     }
 }
 

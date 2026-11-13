@@ -34,7 +34,7 @@
             <x-text-input id="name" name="name" :value="old('name', $contact->name ?? '')" required/>
             <x-input-error :messages="$errors->get('name')" />
         </div>
-        <div class="col-md-6" x-show="contactType === 'customer' || contactType === 'both'">
+        <div class="col-md-6" x-cloak x-show="contactType === 'customer' || contactType === 'both'">
             <x-input-label for="contact_person_name" value="{{ __('contacts.contact_person_name') }}"/>
             <x-text-input id="contact_person_name" name="contact_person_name"
                           :value="old('contact_person_name', $contact->contact_person_name ?? '')"/>
@@ -57,7 +57,7 @@
     </div>
 
     {{-- Address fields — only for customer/both --}}
-    <div x-show="contactType === 'customer' || contactType === 'both'">
+    <div x-cloak x-show="contactType === 'customer' || contactType === 'both'">
         <div class="row">
             <div class="col-md-6">
                 <x-input-label for="street" value="{{ __('contacts.street') }}"/>

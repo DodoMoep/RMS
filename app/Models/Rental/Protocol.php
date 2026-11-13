@@ -2,10 +2,10 @@
 namespace App\Models\Rental;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Protocol extends Model {
-    use HasUuid;
+    use HasUuids;
     protected $fillable=['rental_id','type','checklist','notes','meta','pdf_path','pdf_sha256'];
     protected $casts=['checklist'=>'array','meta'=>'array'];
 

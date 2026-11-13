@@ -31,7 +31,7 @@ class ArticleController extends Controller
 
         Article::create($validated);
 
-        return redirect()->route('articles.index')->with('ok', 'Artikel erstellt.');
+        return redirect()->route('articles.index')->with('ok', __('articles.messages.created'));
     }
 
     public function edit(Article $article)
@@ -51,17 +51,17 @@ class ArticleController extends Controller
 
         $article->update($validated);
 
-        return redirect()->route('articles.index')->with('ok', 'Artikel aktualisiert.');
+        return redirect()->route('articles.index')->with('ok', __('articles.messages.updated'));
     }
 
     public function destroy(Article $article)
     {
         if ($article->orderItems()->exists()) {
-            return back()->withErrors(['Artikel kann nicht gelöscht werden, da er in bestehenden Bestellungen verwendet wird.']);
+            return back()->withErrors([__('articles.messages.in_use')]);
         }
 
         $article->delete();
-        return redirect()->route('articles.index')->with('ok', 'Artikel gelöscht.');
+        return redirect()->route('articles.index')->with('ok', __('articles.messages.deleted'));
     }
 }
 

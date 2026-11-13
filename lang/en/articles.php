@@ -24,6 +24,10 @@ return [
     'actions' => 'Actions',
     
     'messages' => [
+        'created' => 'Article created.',
+        'updated' => 'Article updated.',
+        'deleted' => 'Article deleted.',
+        'in_use' => 'The article cannot be deleted because it is used in existing orders.',
         'confirm_delete' => 'Are you sure you want to delete this article?',
     ],
 ];

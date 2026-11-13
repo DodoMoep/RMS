@@ -24,6 +24,10 @@ return [
     'actions' => 'Aktionen',
     
     'messages' => [
+        'created' => 'Artikel erstellt.',
+        'updated' => 'Artikel aktualisiert.',
+        'deleted' => 'Artikel gelöscht.',
+        'in_use' => 'Artikel kann nicht gelöscht werden, da er in bestehenden Bestellungen verwendet wird.',
         'confirm_delete' => 'Möchten Sie diesen Artikel wirklich löschen?',
     ],
 ];

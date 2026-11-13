@@ -88,7 +88,7 @@
 </head>
 <body>
     <h1>Bestellungs-Analytik Bericht</h1>
-    <p style="color: #7f8c8d; margin-bottom: 20px;">Erstellt am: {{ $generatedAt->format('d.m.Y H:i') }} Uhr</p>
+    <p style="color: #7f8c8d; margin-bottom: 20px;">Erstellt am: {{ $generatedAt->format('d.m.Y H:i') }} Uhr<br>Zeitraum: {{ $periodLabel }}</p>
 
     <!-- Overview Statistics -->
     <div style="margin-bottom: 30px;">

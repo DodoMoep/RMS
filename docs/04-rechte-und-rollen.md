@@ -14,7 +14,7 @@ Namensschema: `<bereich>.<aktion>`. Ausnahme: Die Administration nutzt `user.`, 
 
 | Bereich | Rechte | Verwendet in |
 |---|---|---|
-| Benutzer | `user.list`, `user.add`, `user.edit`, `user.delete` | `/admin/users`; `user.list` schützt zusätzlich das Aktivitätslog |
+| Benutzer | `user.list`, `user.add`, `user.edit`, `user.delete` | `/admin/users`; `user.edit` gilt auch für Aktivieren und Deaktivieren (`users.toggle-status`); `user.list` schützt zusätzlich das Aktivitätslog |
 | Rollen | `role.list`, `role.add`, `role.edit`, `role.delete` | `/admin/roles` |
 | Berechtigungen | `perm.list`, `perm.add`, `perm.edit`, `perm.delete` | `/admin/permissions`; Form Requests prüfen zusätzlich `perm.edit` bzw. `role.edit` |
 | Kontakte | `contacts.view`, `contacts.create`, `contacts.edit`, `contacts.delete`, `contacts.toggle-status` | `/contacts` |
@@ -26,11 +26,7 @@ Namensschema: `<bereich>.<aktion>`. Ausnahme: Die Administration nutzt `user.`, 
 | Protokolle | `protocols.view`, `protocols.create`, `protocols.edit`, `protocols.sign`, `protocols.pdf` | `/protocols` |
 | Arbeitsanweisungen | `work-instructions.manage` | `/admin/work-instructions` |
 
-Weiterer Eintrag im Seeder, der im Code nicht verwendet wird:
-
-| Recht | Herkunft | Stand |
-|---|---|---|
-| `app.settings` | `RolesAndPermissionsSeeder` | nirgends geprüft |
+Das früher im `RolesAndPermissionsSeeder` angelegte, aber nirgends geprüfte Recht `app.settings` wird nicht mehr angelegt. Auf bestehenden Installationen kann der Eintrag in der Tabelle `permissions` noch stehen; er ist wirkungslos und lässt sich in der Rechteverwaltung löschen.
 
 Die früheren Rechte `tenants.*` und `customers.*` werden von den Seedern nicht mehr angelegt. Auf bestehenden Installationen können sie noch in der Tabelle `permissions` stehen (Migration `000007` kopiert nur die Rollenzuordnung, löscht aber nichts); sie haben keine Wirkung und können über die Rechteverwaltung entfernt werden.
 
@@ -72,4 +68,3 @@ Die Rollenpflege im laufenden System erfolgt über die Rollenverwaltung; die See
 
 - Eigene Artikelrechte (`articles.*`) einführen, statt `orders.create` zu überladen.
 - `protocols.create` für das reine Anzeigen des Protokollformulars durch `protocols.view` ersetzen oder bewusst dokumentieren.
-- `app.settings` entfernen oder verwenden.

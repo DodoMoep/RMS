@@ -60,7 +60,7 @@ Scopes: `active()`, `tenants()` (tenant, both), `customers()` (customer, both). 
 | `status` | DB-Enum, Cast auf `OrderStatus` |
 | `notes` | text |
 | `delivery_note_path`, `delivery_note_printed_at` | Lieferschein |
-| `created_by` | FK `users`, `onDelete cascade` |
+| `created_by` | FK `users`, nullable, `nullOnDelete` (seit Migration `2026_10_23_000003`; früher `cascade`); bleibt leer, wenn der Ersteller gelöscht wurde |
 | `packed_by` | FK `users`, `set null` |
 | `delivered_at` | timestamp |
 | `deleted_at` | Soft Delete (seit Migration `2026_10_23_000001`); gelöschte Aufträge bleiben samt Positionen und Historie erhalten und sind in Listen, Detailseiten und Auswertungen nicht mehr sichtbar |
@@ -97,7 +97,7 @@ Ein Protokoll gilt als finalisiert, sobald `pdf_path` gesetzt ist. Danach sind S
 
 | Tabelle | Herkunft |
 |---|---|
-| `users` | Laravel plus `avatar_path`; Primärschlüssel `bigint` |
+| `users` | Laravel plus `avatar_path` und `is_active` (bool, Default true, indiziert; deaktivierte Benutzer können sich nicht anmelden, bleiben aber mit Aufträgen und Historie erhalten); Primärschlüssel `bigint` |
 | `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` | Spatie Permission |
 | `activity_log` | Spatie Activitylog (inkl. `event`, `batch_uuid`) |
 | `number_sequences` | Zähler für Nummernkreise: `name` (PK, z. B. `order-2026`, `customer-2026`), `last_value`, Zeitstempel (siehe Abschnitt Nummernkreise) |
@@ -128,7 +128,7 @@ Es gibt keine Rücksprünge und kein Storno. Bearbeitbar (Auftrag und Positionen
 | Auftrag | `ORD-JJJJ-NNNN` | `Order::generateOrderNumber` über `NumberSequence::next("order-JJJJ")` | Atomar (siehe unten). Die Nummer bleibt auch nach dem Löschen (Soft Delete) des Auftrags belegt. |
 | Kunde | `CUS-JJJJ-NNNN` | `Contact::generateCustomerNumber` über `NumberSequence::next("customer-JJJJ")` | Atomar (siehe unten). Reine Mieter erhalten keine Kundennummer. |
 
-Vergabe: `App\Services\NumberSequence::next()` zählt den Eintrag in `number_sequences` innerhalb einer Transaktion mit Zeilensperre (`lockForUpdate`) hoch. Gleichzeitige Anfragen erhalten dadurch verschiedene Nummern. Beim ersten Zugriff auf einen Zähler (neues Jahr oder erste Nutzung nach der Migration) wird er aus der höchsten vorhandenen Nummer abgeleitet (`highestSuffix`, einschließlich gelöschter Aufträge, auch über 9999 hinaus), sodass bestehende Daten weitergezählt werden. Der Jahreswechsel richtet sich nach der Anwendungszeitzone (UTC, siehe M8). Lücken sind möglich, wenn ein Anlegevorgang nach der Nummernvergabe scheitert; eine Doppelvergabe ist ausgeschlossen. Ein Zähler lässt sich über `number_sequences.last_value` zurücksetzen oder setzen.
+Vergabe: `App\Services\NumberSequence::next()` zählt den Eintrag in `number_sequences` innerhalb einer Transaktion mit Zeilensperre (`lockForUpdate`) hoch. Gleichzeitige Anfragen erhalten dadurch verschiedene Nummern. Beim ersten Zugriff auf einen Zähler (neues Jahr oder erste Nutzung nach der Migration) wird er aus der höchsten vorhandenen Nummer abgeleitet (`highestSuffix`, einschließlich gelöschter Aufträge, auch über 9999 hinaus), sodass bestehende Daten weitergezählt werden. Der Jahreswechsel richtet sich nach der Anwendungszeitzone (`Europe/Berlin`, früherer Befund M8). Lücken sind möglich, wenn ein Anlegevorgang nach der Nummernvergabe scheitert; eine Doppelvergabe ist ausgeschlossen. Ein Zähler lässt sich über `number_sequences.last_value` zurücksetzen oder setzen.
 
 ## Migrationshistorie
 
@@ -141,6 +141,7 @@ Vergabe: `App\Services\NumberSequence::next()` zählt den Eintrag in `number_seq
 | 2026-04-11 | Soft Deletes für Artikel, Activity-Log-Tabellen |
 | 2026-04-12 `000001`-`000007` | Zusammenführung zu `contacts`: Tabelle anlegen, Mieter und Kunden kopieren (gleiche UUIDs), `contact_id` ergänzen, befüllen und FKs setzen, Altspalten und Alttabellen löschen (nicht umkehrbar), Rechte `tenants.*`/`customers.*` auf `contacts.*` abbilden |
 | 2026-04-12 `200001`-`200003` | Arbeitsanweisungen, Recht `work-instructions.manage` |
-| 2026-10-23 `000001`-`000002` | Soft Delete für Aufträge, Tabelle `number_sequences` |
+| 2026-10-23 `000001`-`000003` | Soft Delete für Aufträge, Tabelle `number_sequences`, `orders.created_by` auf `nullOnDelete` |
+| 2026-10-29 `000001` | `users.is_active` (Benutzer deaktivieren), bestehende Benutzer bleiben aktiv |
 
 Hinweise zur Kontakt-Migration: Die Kopie der Kunden setzt voraus, dass keine UUID zwischen `tenants` und `customers` kollidiert (im Code nur als Kommentar vermerkt, nicht geprüft). Migration `000006` ist mit einer Exception als irreversibel markiert; vor dem Einspielen in Produktion ist ein Backup zwingend.

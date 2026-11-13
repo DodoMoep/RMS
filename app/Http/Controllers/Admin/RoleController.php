@@ -36,10 +36,9 @@ class RoleController extends Controller
         ]);
 
         $role->syncPermissions($request->input('permissions', []));
-        \Artisan::call('permission:cache-reset');
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        return redirect()->route('roles.index')->with('status', 'Rolle erstellt.');
+        return redirect()->route('roles.index')->with('status', __('roles.messages.created'));
     }
 
     public function edit(Role $role)
@@ -58,10 +57,9 @@ class RoleController extends Controller
 
         $role->update(['name' => $request->name]);
         $role->syncPermissions($request->input('permissions', []));
-        \Artisan::call('permission:cache-reset');
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        return redirect()->route('roles.index')->with('status', 'Rolle aktualisiert.');
+        return redirect()->route('roles.index')->with('status', __('roles.messages.updated'));
     }
 
     public function destroy(Role $role)
@@ -70,14 +68,13 @@ class RoleController extends Controller
 
         // Optional: Geschützte Rollen nicht löschen
         if ($role->name == 'super-admin') {
-            return back()->with('error', 'Diese Rolle ist geschützt und kann nicht gelöscht werden.');
+            return back()->with('error', __('roles.messages.protected'));
         }
 
         $role->delete();
-        \Artisan::call('permission:cache-reset');
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        return redirect()->route('roles.index')->with('status', 'Rolle gelöscht.');
+        return redirect()->route('roles.index')->with('status', __('roles.messages.deleted'));
     }
 }
 

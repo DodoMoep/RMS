@@ -9,3 +9,8 @@ $primary: #4f46e5;
 /* Eigene Styles nach CoreUI */
 
 @import "theme";
+
+/* Alpine: Elemente mit x-cloak bleiben bis zum Start von Alpine verborgen */
+[x-cloak] {
+    display: none !important;
+}

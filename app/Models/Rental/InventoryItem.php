@@ -2,10 +2,10 @@
 namespace App\Models\Rental;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class InventoryItem extends Model {
-    use HasUuid;
+    use HasUuids;
     protected $fillable=['name','sku','description'];
     
     public function halls(){

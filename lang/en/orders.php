@@ -32,6 +32,7 @@ return [
     'total_amount' => 'Total Amount',
     'created_at' => 'Created At',
     'created_by' => 'Created By',
+    'deleted_user' => 'Deleted user',
     'updated_at' => 'Updated At',
     'packed_by' => 'Packed By',
     'delivered_at' => 'Delivered At',

@@ -14,9 +14,10 @@ return [
     'location' => 'Standort',
     
     'messages' => [
-        'created' => 'Artikel erfolgreich erstellt',
-        'updated' => 'Artikel erfolgreich aktualisiert',
-        'deleted' => 'Artikel erfolgreich gelöscht',
+        'created' => 'Inventarposition angelegt.',
+        'updated' => 'Inventar aktualisiert.',
+        'deleted' => 'Inventar gelöscht.',
+        'assigned_to_halls' => 'Inventarposition kann nicht gelöscht werden, da sie noch Hallen zugeordnet ist.',
         'confirm_delete' => 'Möchten Sie diesen Artikel wirklich löschen?',
     ],
 ];

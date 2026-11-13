@@ -6,7 +6,7 @@ return [
     'regards' => 'Regards',
     'all_rights_reserved' => 'All rights reserved.',
     
-    'action_text' => 'If you're having trouble clicking the ":actionText" button, copy and paste the URL below into your web browser:',
+    'action_text' => 'If you\'re having trouble clicking the ":actionText" button, copy and paste the URL below into your web browser:',
     
     'reset_password_subject' => 'Reset Password Notification',
     'reset_password_line1' => 'You are receiving this email because we received a password reset request for your account.',

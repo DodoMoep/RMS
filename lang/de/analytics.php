@@ -27,6 +27,7 @@ return [
         'last_30_days' => 'Letzte 30 Tage',
         'last_90_days' => 'Letzte 90 Tage',
         'last_year' => 'Letztes Jahr',
+        'last_n_days' => 'Letzte :days Tage',
         'all_time' => 'Alle Zeit',
     ],
     

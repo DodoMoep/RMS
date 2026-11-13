@@ -39,7 +39,7 @@ class HallController extends Controller
         }
         $hall->inventory()->sync($sync);
 
-        return redirect()->route('halls.index')->with('ok','Halle angelegt.');
+        return redirect()->route('halls.index')->with('ok', __('halls.messages.created'));
     }
 
     public function edit(Hall $hall){
@@ -66,17 +66,17 @@ class HallController extends Controller
         }
         $hall->inventory()->sync($sync);
 
-        return redirect()->route('halls.index')->with('ok','Halle aktualisiert.');
+        return redirect()->route('halls.index')->with('ok', __('halls.messages.updated'));
     }
 
     public function destroy(Hall $hall){
         if ($hall->rentals()->exists()) {
-            return back()->withErrors(['Halle kann nicht gelöscht werden, da noch Vermietungen vorhanden sind.']);
+            return back()->withErrors([__('halls.messages.has_rentals')]);
         }
         
         $hall->inventory()->detach();
         $hall->delete();
-        return back()->with('ok','Halle gelöscht.');
+        return back()->with('ok', __('halls.messages.deleted'));
     }
 }
 
