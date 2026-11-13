@@ -5,6 +5,9 @@ use App\Enums\OrderStatus;
 use App\Models\Contact;
 use App\Models\Order\Article;
 use App\Models\Order\Order;
+use App\Models\Rental\Hall;
+use App\Models\Rental\Protocol;
+use App\Models\Rental\Rental;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -149,4 +152,41 @@ function registerSqliteDateFormat(): void
             '%Y' => 'Y', '%m' => 'm', '%d' => 'd', '%H' => 'H', '%u' => 'W',
         ]));
     }, 2);
+}
+
+/**
+ * Legt ein Protokoll mit Vermietung, Halle, Mieter (englische Namen, damit Sprachtests
+ * deutsche Texte sicher erkennen) und einer Position an.
+ */
+function makeRentalProtocol(string $type = 'handover', string $rentalStatus = 'scheduled'): Protocol
+{
+    $tenant = makeContact([
+        'type' => ContactType::Tenant,
+        'name' => 'Test Club',
+        'email' => 'club@example.test',
+    ]);
+    $hall = Hall::create(['name' => 'Test Hall', 'address' => 'Test Street 1']);
+    $rental = Rental::create([
+        'contact_id' => $tenant->id,
+        'hall_id' => $hall->id,
+        'start' => now()->addDay(),
+        'end' => now()->addDays(2),
+        'status' => $rentalStatus,
+    ]);
+    $protocol = Protocol::create([
+        'rental_id' => $rental->id,
+        'type' => $type,
+        'checklist' => ['stromzaehler' => null, 'wasserzaehler' => null],
+    ]);
+    $protocol->items()->create(['label' => 'Test Chair (Soll: 4)', 'state' => 'ok']);
+
+    return $protocol;
+}
+
+/**
+ * Gueltige Unterschrift: ein PNG mit 1 mal 1 Pixel als Data-URI.
+ */
+function signaturePngDataUri(): string
+{
+    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 }

@@ -1,19 +1,19 @@
 @csrf
 <div class="vstack gap-3">
     <div>
-        <x-input-label for="name" value="Name"/>
+        <x-input-label for="name" :value="__('halls.name')"/>
         <x-text-input id="name" name="name" :value="old('name', $hall->name ?? '')" required />
         <x-input-error :messages="$errors->get('name')" />
     </div>
 
     <div>
-        <x-input-label for="address" value="Adresse"/>
+        <x-input-label for="address" :value="__('halls.address')"/>
         <x-text-input id="address" name="address" :value="old('address', $hall->address ?? '')" />
         <x-input-error :messages="$errors->get('address')" />
     </div>
 
     <div>
-        <x-input-label for="notes" value="Notizen"/>
+        <x-input-label for="notes" :value="__('halls.notes')"/>
         <textarea id="notes" name="notes" class="form-control" rows="3">{{ old('notes', $hall->notes ?? '') }}</textarea>
         <x-input-error :messages="$errors->get('notes')" />
     </div>
@@ -21,7 +21,7 @@
     {{-- INVENTAR-ZUORDNUNG --}}
     <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <h6 class="card-title mb-3">Inventar der Halle</h6>
+            <h6 class="card-title mb-3">{{ __('halls.inventory.title') }}</h6>
 
             @php
                 // Pivot-Mengen für Edit bequem greifbar machen:
@@ -35,9 +35,9 @@
                     <thead class="table-light">
                     <tr>
                         <th style="width:38px;"></th>
-                        <th>Artikel</th>
-                        <th>SKU</th>
-                        <th style="width:140px;">Menge</th>
+                        <th>{{ __('halls.inventory.article') }}</th>
+                        <th>{{ __('halls.inventory.sku') }}</th>
+                        <th style="width:140px;">{{ __('halls.inventory.quantity') }}</th>
                     </tr>
                     </thead>
                     <tbody id="inv-table">
@@ -65,24 +65,25 @@
                                        name="inventory[{{ $it->id }}][quantity]"
                                        value="{{ $qty }}"
                                        @if(!$checked) disabled @endif
-                                       placeholder="Stück">
+                                       placeholder="{{ __('halls.inventory.pieces') }}">
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-muted">Noch keine Inventar-Artikel angelegt.</td></tr>
+                        <tr><td colspan="4" class="text-muted">{{ __('halls.inventory.empty') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="form-text">Häkchen setzen, Menge eintragen. Ungesetzte Positionen werden entfernt.</div>
-            <x-input-error :messages="$errors->get('inventory.*.quantity')" />
+            <div class="form-text">{{ __('halls.inventory.hint') }}</div>
+            {{-- get('inventory.*.quantity') liefert ein verschachteltes Array, x-input-error braucht eine flache Liste --}}
+            <x-input-error :messages="collect($errors->get('inventory.*.quantity'))->flatten()->all()" />
         </div>
     </div>
 </div>
 
 <div class="mt-3 d-flex gap-2">
-    <x-primary-button>Speichern</x-primary-button>
-    <x-secondary-button onclick="history.back();return false;">Abbrechen</x-secondary-button>
+    <x-primary-button>{{ __('common.common.save') }}</x-primary-button>
+    <x-secondary-button onclick="history.back();return false;">{{ __('common.common.cancel') }}</x-secondary-button>
 </div>
 
 @push('scripts')

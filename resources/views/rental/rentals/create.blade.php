@@ -3,7 +3,7 @@
         <div class="col-lg-9">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h1 class="h5 mb-3">Neue Vermietung</h1>
+                    <h1 class="h5 mb-3">{{ __('rentals.new_title') }}</h1>
                     <form method="post" action="{{ route('rentals.store') }}">
                         @include('rental.rentals._form', ['rental' => new \App\Models\Rental\Rental])
                     </form>

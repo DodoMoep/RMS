@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Rental;
 
+use App\Exceptions\ProtocolWorkflowException;
 use App\Http\Controllers\Controller;
 use App\Mail\ProtocolFinalizedMail;
 use App\Models\Rental\Protocol;
 use App\Models\Rental\ProtocolItem;
 use App\Models\Rental\Signature;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProtocolController extends Controller
 {
@@ -66,7 +69,7 @@ class ProtocolController extends Controller
                 $currentPhotoCount = $protocol->photos()->count();
                 $newPhotos = $r->file('photos');
                 if ($currentPhotoCount + count($newPhotos) > 30) {
-                    throw new \Exception('Maximale Anzahl von 30 Fotos pro Protokoll erreicht.');
+                    throw new ProtocolWorkflowException('protocols.messages.too_many_photos', ['max' => 30]);
                 }
 
                 foreach ($newPhotos as $file) {
@@ -79,11 +82,8 @@ class ProtocolController extends Controller
 
             return back()->with('ok', __('protocols.messages.saved'));
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Protocol save error', ['error' => $e->getMessage()]);
-
-            return back()->withErrors([__('protocols.messages.save_error')]);
+        } catch (\Throwable $e) {
+            return $this->failed($e, 'Protocol save error', 'protocols.messages.save_error');
         }
     }
 
@@ -108,21 +108,21 @@ class ProtocolController extends Controller
 
             $sigData = $r->input('signature_data');
             if (! str_contains($sigData, ',')) {
-                throw new \Exception('Ungültige Signatur-Daten');
+                throw new ProtocolWorkflowException('protocols.messages.invalid_signature');
             }
             [$meta, $b64] = explode(',', $sigData, 2);
             $png = base64_decode($b64, true);
             if ($png === false) {
-                throw new \Exception('Ungültige Signatur-Daten');
+                throw new ProtocolWorkflowException('protocols.messages.invalid_signature');
             }
             // Validate that the decoded data is a PNG image
             $imageInfo = @getimagesizefromstring($png);
             if ($imageInfo === false || $imageInfo[2] !== IMAGETYPE_PNG) {
-                throw new \Exception('Signatur muss ein PNG-Bild sein.');
+                throw new ProtocolWorkflowException('protocols.messages.signature_not_png');
             }
             // Limit signature size to 2 MB to prevent disk exhaustion
             if (strlen($png) > 2 * 1024 * 1024) {
-                throw new \Exception('Signaturdaten sind zu groß.');
+                throw new ProtocolWorkflowException('protocols.messages.signature_too_large');
             }
 
             $path = "protocols/{$protocol->id}/sign-".Str::uuid().'.png';
@@ -213,12 +213,31 @@ class ProtocolController extends Controller
 
             return back()->with('ok', $message);
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Protocol signing error', ['error' => $e->getMessage()]);
-
-            return back()->withErrors([__('protocols.messages.sign_error')]);
+        } catch (\Throwable $e) {
+            return $this->failed($e, 'Protocol signing error', 'protocols.messages.sign_error');
         }
+    }
+
+    /**
+     * Gemeinsame Fehlerbehandlung: Rollback, dann je nach Art der Ausnahme. Validierungsfehler
+     * gehen unveraendert weiter, damit der Benutzer die Feldmeldungen sieht. Fachfehler zeigen
+     * ihren uebersetzten Text. Alles andere wird geloggt und nur allgemein gemeldet.
+     */
+    private function failed(\Throwable $e, string $logMessage, string $genericKey): RedirectResponse
+    {
+        DB::rollBack();
+
+        if ($e instanceof ValidationException) {
+            throw $e;
+        }
+
+        if ($e instanceof ProtocolWorkflowException) {
+            return back()->withErrors([$e->userMessage()]);
+        }
+
+        Log::error($logMessage, ['exception' => $e]);
+
+        return back()->withErrors([__($genericKey)]);
     }
 
     public function pdf(Protocol $protocol)

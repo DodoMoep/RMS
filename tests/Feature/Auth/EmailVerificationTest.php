@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
@@ -44,3 +45,18 @@ test('email is not verified with invalid hash', function () {
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
+
+test('the verification screen shows a sentence after the link was sent again', function (string $locale, string $sentence) {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->withSession(['locale' => $locale])->actingAs($user)
+        ->from('/verify-email')
+        ->followingRedirects()
+        ->post(route('verification.send'));
+
+    $response->assertSee($sentence)->assertDontSee('auth_ui.verification_sent');
+})->with([
+    'german' => ['de', 'Ein neuer Verifizierungslink wurde an Ihre E-Mail-Adresse gesendet.'],
+    'english' => ['en', 'A new verification link has been sent to your email address.'],
+]);

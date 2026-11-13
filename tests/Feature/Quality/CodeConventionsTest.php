@@ -1,5 +1,8 @@
 <?php
 
+use App\Exceptions\OrderWorkflowException;
+use App\Exceptions\ProtocolWorkflowException;
+use App\Exceptions\UserMessageException;
 use App\Models\Contact;
 use App\Models\Order\Article;
 use App\Models\Order\Order;
@@ -16,6 +19,7 @@ use App\Models\WorkInstruction;
 use App\Models\WorkInstructionCategory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Statische Pruefungen fuer Konventionen aus docs/07-coding-guidelines.md. Sie verhindern,
@@ -211,4 +215,64 @@ test('the models only throw the workflow exception for business errors', functio
 
 test('local tool settings are ignored by git', function () {
     expect(file_get_contents(base_path('.gitignore')))->toContain('/.claude/settings.local.json');
+});
+
+// ---------------------------------------- Uebersetzungen und Ausnahmen (T4)
+
+test('every literal translation key in views and code exists in both languages', function () {
+    $files = array_merge(
+        phpFilesIn(resource_path('views')),
+        phpFilesIn(app_path()),
+    );
+
+    $missing = [];
+
+    foreach ($files as $file) {
+        // Nur vollstaendige Schluessel in einfachen Anfuehrungszeichen, zusammengesetzte
+        // wie __('rentals.statuses.'.$status) enden nicht direkt auf Klammer oder Komma
+        if (! preg_match_all("/__\(\s*'([a-z_]+(?:\.[a-z_0-9]+)+)'\s*[,)]/", file_get_contents($file), $matches)) {
+            continue;
+        }
+
+        foreach (array_unique($matches[1]) as $key) {
+            foreach (['de', 'en'] as $locale) {
+                if (! Lang::has($key, $locale, false)) {
+                    $missing[] = relativePath($file)." : {$key} fehlt in {$locale}";
+                }
+            }
+        }
+    }
+
+    expect($missing)->toBe([]);
+});
+
+test('controllers do not throw exceptions with literal texts', function () {
+    $offenders = [];
+
+    foreach (phpFilesIn(app_path('Http/Controllers')) as $file) {
+        if (preg_match("/throw new \\Exception\(/", file_get_contents($file))) {
+            $offenders[] = relativePath($file);
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
+
+test('the german language files call the halls halls and not rooms', function () {
+    $offenders = [];
+
+    foreach (glob(lang_path('de/*.php')) as $file) {
+        if (preg_match('/\b(Saal|Säle|Sälen)\b/u', file_get_contents($file))) {
+            $offenders[] = basename($file);
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
+
+test('the business exceptions share the base class for user messages', function () {
+    expect(new OrderWorkflowException('a.b'))->toBeInstanceOf(UserMessageException::class)
+        ->and(new ProtocolWorkflowException('a.b'))->toBeInstanceOf(UserMessageException::class)
+        ->and((new ProtocolWorkflowException('protocols.messages.too_many_photos', ['max' => 30]))->userMessage())
+        ->toBe(__('protocols.messages.too_many_photos', ['max' => 30]));
 });

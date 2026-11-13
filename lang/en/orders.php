@@ -117,5 +117,18 @@ return [
         'item_packed' => 'Item Packed',
         'item_unpacked' => 'Item Unpacked',
         'delivery_note_generated' => 'Delivery Note Generated',
+        'order_completed' => 'Order Completed',
+        'delivery_note_printed' => 'Delivery Note Printed',
+    ],
+
+    'history_events' => [
+        'order_created' => 'Order :number created',
+        'order_deleted' => 'Order :number deleted',
+        'status_changed' => 'Status changed from ":from" to ":to"',
+        'item_packed' => 'Item ":item" packed (:quantity units)',
+        'item_unpacked' => 'Item ":item" unpacked',
+        'order_completed' => 'Order completed and locked',
+        'delivery_note_generated' => 'Delivery note generated',
+        'delivery_note_printed' => 'Delivery note printed, order set to in delivery',
     ],
 ];

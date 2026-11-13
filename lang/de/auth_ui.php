@@ -18,5 +18,6 @@ return [
     'verify_email' => 'E-Mail verifizieren',
     'verify_email_text' => 'Vielen Dank für Ihre Registrierung! Bevor Sie beginnen, verifizieren Sie bitte Ihre E-Mail-Adresse, indem Sie auf den Link klicken, den wir Ihnen gerade per E-Mail gesendet haben. Wenn Sie die E-Mail nicht erhalten haben, senden wir Ihnen gerne eine neue.',
     'resend_verification_email' => 'Verifizierungs-E-Mail erneut senden',
+    'verification_sent' => 'Ein neuer Verifizierungslink wurde an Ihre E-Mail-Adresse gesendet.',
     'log_out' => 'Abmelden',
 ];

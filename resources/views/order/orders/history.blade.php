@@ -44,7 +44,7 @@
                                     <div class="card bg-light border">
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="mb-0">{{ $history->description }}</h6>
+                                                <h6 class="mb-0">{{ $history->localizedDescription($order->order_number) }}</h6>
                                                 <small class="text-muted">{{ $history->created_at->format('d.m.Y H:i') }}</small>
                                             </div>
                                             
@@ -53,7 +53,7 @@
                                                     <div><strong>{{ __('orders.user') }}:</strong> {{ $history->user->name }}</div>
                                                 @endif
                                                 
-                                                <div><strong>{{ __('orders.event_type') }}:</strong> <code class="badge bg-secondary">{{ $history->event_type }}</code></div>
+                                                <div><strong>{{ __('orders.event_type') }}:</strong> <code class="badge bg-secondary">{{ $history->localizedEventType() }}</code></div>
                                                 
                                                 @if($history->metadata && count($history->metadata) > 0)
                                                     <div class="mt-2">

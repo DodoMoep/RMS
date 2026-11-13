@@ -170,7 +170,7 @@ test('the rental list shows tenant, hall and status', function () {
         ->assertOk()
         ->assertSee('Sportverein Beispiel')
         ->assertSee('Testhalle')
-        ->assertSee('active');
+        ->assertSee('aktiv');
 });
 
 test('the rental list offers opening or creating the handover', function () {

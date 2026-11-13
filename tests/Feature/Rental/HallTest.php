@@ -89,6 +89,19 @@ test('invalid hall data is rejected', function (array $overrides, string $errorF
     'quantity not a number' => [['inventory' => ['x' => ['selected' => '1', 'quantity' => 'viele']]], 'inventory.x.quantity'],
 ]);
 
+test('the hall form renders and explains an invalid inventory quantity', function () {
+    $response = $this->actingAs($this->user)
+        ->from(route('halls.create'))
+        ->followingRedirects()
+        ->post(route('halls.store'), hallPayload([
+            'inventory' => [$this->tables->id => ['selected' => '1', 'quantity' => 'viele']],
+        ]));
+
+    // Vorher brach die Seite hier mit einem Fehler 500 ab (verschachtelte Fehlermeldungen)
+    $response->assertOk()->assertSee('Festhalle Nord');
+    expect($response->getContent())->toContain('invalid-feedback');
+});
+
 test('address and notes are optional', function () {
     $this->actingAs($this->user)
         ->post(route('halls.store'), ['name' => 'Nur Name'])
