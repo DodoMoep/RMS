@@ -3,9 +3,12 @@
 use App\Enums\ContactType;
 use App\Enums\OrderStatus;
 use App\Models\Contact;
+use App\Models\Order\Article;
 use App\Models\Order\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -112,4 +115,38 @@ function makeOrder(Contact $contact, User $creator, array $overrides = []): Orde
     ]);
 
     return $order;
+}
+
+/**
+ * Legt einen aktiven Artikel an (erfundene Testdaten).
+ *
+ * @param  array<string, mixed>  $overrides
+ */
+function makeArticle(array $overrides = []): Article
+{
+    return Article::create(array_merge([
+        'name' => 'Testartikel',
+        'sku' => 'ART-'.fake()->unique()->numerify('####'),
+        'price' => 12.50,
+        'is_active' => true,
+    ], $overrides));
+}
+
+/**
+ * Bildet die MariaDB-Funktion DATE_FORMAT unter SQLite nach, damit die Auswertungsabfragen
+ * (Order::ordersOverTime) in der Testumgebung laufen. Unterstuetzt werden die Formate der
+ * Anwendung: %Y, %m, %d, %H und %u (Kalenderwoche). Die echte MariaDB-Funktion prueft das
+ * nicht, die Abfrage selbst ist daher nur auf MariaDB voll abgesichert.
+ */
+function registerSqliteDateFormat(): void
+{
+    DB::connection()->getPdo()->sqliteCreateFunction('DATE_FORMAT', function ($value, $format) {
+        if ($value === null) {
+            return null;
+        }
+
+        return Carbon::parse($value)->format(strtr($format, [
+            '%Y' => 'Y', '%m' => 'm', '%d' => 'd', '%H' => 'H', '%u' => 'W',
+        ]));
+    }, 2);
 }
